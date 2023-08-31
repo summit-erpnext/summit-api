@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:INQ-{######}",
+ "creation": "2023-01-24 11:37:57.634113",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "email_id",
+  "cre_mail_id",
+  "column_break_2",
+  "search_text",
+  "section_break_4",
+  "item_part",
+  "model_of_item",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email ID"
+  },
+  {
+   "fieldname": "search_text",
+   "fieldtype": "Small Text",
+   "label": "Search Text",
+   "length": 255
+  },
+  {
+   "fieldname": "model_of_item",
+   "fieldtype": "Data",
+   "label": "Model Of Item"
+  },
+  {
+   "fieldname": "item_part",
+   "fieldtype": "Data",
+   "label": "Item Part No"
+  },
+  {
+   "fieldname": "cre_mail_id",
+   "fieldtype": "Data",
+   "label": "CRE Mail ID",
+   "options": "Email"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-04 15:33:49.957635",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Customer Inquiry",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Guest",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

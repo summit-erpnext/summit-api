@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include summitapp *.css
+recursive-include summitapp *.csv
+recursive-include summitapp *.html
+recursive-include summitapp *.ico
+recursive-include summitapp *.js
+recursive-include summitapp *.json
+recursive-include summitapp *.md
+recursive-include summitapp *.png
+recursive-include summitapp *.py
+recursive-include summitapp *.svg
+recursive-include summitapp *.txt
+recursive-exclude summitapp *.pyc

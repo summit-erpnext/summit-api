@@ -1,0 +1,193 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "hash",
+ "creation": "2023-01-13 15:50:22.583127",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "item_code_1",
+  "item_code_2",
+  "item_code_3",
+  "item_code_4",
+  "item_code_5",
+  "item_code_6",
+  "item_code_7",
+  "item_code_8",
+  "item_code_9",
+  "item_code_10",
+  "column_break_12",
+  "item_code_11",
+  "item_code_12",
+  "item_code_13",
+  "item_code_14",
+  "item_code_15",
+  "item_code_16",
+  "item_code_17",
+  "item_code_18",
+  "item_code_19",
+  "item_code_20"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Type",
+   "options": "Equivalent\nAlternate\nMandatory\nSuggested"
+  },
+  {
+   "fieldname": "item_code_1",
+   "fieldtype": "Link",
+   "label": "Item Code 1",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_2",
+   "fieldtype": "Link",
+   "label": "Item Code 2",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_3",
+   "fieldtype": "Link",
+   "label": "Item Code 3",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_4",
+   "fieldtype": "Link",
+   "label": "Item Code 4",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_5",
+   "fieldtype": "Link",
+   "label": "Item Code 5",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_6",
+   "fieldtype": "Link",
+   "label": "Item Code 6",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_7",
+   "fieldtype": "Link",
+   "label": "Item Code 7",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_8",
+   "fieldtype": "Link",
+   "label": "Item Code 8",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_9",
+   "fieldtype": "Link",
+   "label": "Item Code 9",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_10",
+   "fieldtype": "Link",
+   "label": "Item Code 10",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_11",
+   "fieldtype": "Link",
+   "label": "Item Code 11",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_12",
+   "fieldtype": "Link",
+   "label": "Item Code 12",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_13",
+   "fieldtype": "Link",
+   "label": "Item Code 13",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_14",
+   "fieldtype": "Link",
+   "label": "Item Code 14",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_15",
+   "fieldtype": "Link",
+   "label": "Item Code 15",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_16",
+   "fieldtype": "Link",
+   "label": "Item Code 16",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_17",
+   "fieldtype": "Link",
+   "label": "Item Code 17",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_18",
+   "fieldtype": "Link",
+   "label": "Item Code 18",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_19",
+   "fieldtype": "Link",
+   "label": "Item Code 19",
+   "options": "Item"
+  },
+  {
+   "fieldname": "item_code_20",
+   "fieldtype": "Link",
+   "label": "Item Code 20",
+   "options": "Item"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-01-18 19:29:12.109083",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Matching Items",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

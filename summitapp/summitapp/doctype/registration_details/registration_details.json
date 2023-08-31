@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:CRD-{#####}",
+ "creation": "2023-02-04 11:27:51.145066",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "username",
+  "company_name",
+  "designation",
+  "column_break_3",
+  "is_existing",
+  "buy_parts_for",
+  "address__contact_details_section",
+  "address",
+  "city",
+  "pincode",
+  "state",
+  "gst_no",
+  "column_break_11",
+  "email_id",
+  "contact_no"
+ ],
+ "fields": [
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Company Name"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_existing",
+   "fieldtype": "Check",
+   "label": "Are you an existing customer with Shanparts"
+  },
+  {
+   "fieldname": "buy_parts_for",
+   "fieldtype": "Select",
+   "label": "You want to buy parts for",
+   "options": "My/Our own machines\nFurther reselling"
+  },
+  {
+   "fieldname": "address__contact_details_section",
+   "fieldtype": "Section Break",
+   "label": "Address  & Contact Details"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Address"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "pincode",
+   "fieldtype": "Data",
+   "label": "Pincode"
+  },
+  {
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fieldname": "gst_no",
+   "fieldtype": "Autocomplete",
+   "label": "GST No"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email Id"
+  },
+  {
+   "fieldname": "contact_no",
+   "fieldtype": "Data",
+   "label": "Contact No"
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-02-04 11:47:50.633319",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Registration Details",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,116 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:title",
+ "creation": "2022-06-29 12:49:24.561640",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "img",
+  "button_1_title",
+  "button_2_title",
+  "sequence",
+  "for_customer",
+  "column_break_6",
+  "button_1_url",
+  "button_2_url",
+  "description",
+  "section_break_11",
+  "home_banner_sequence"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "unique": 1
+  },
+  {
+   "fieldname": "button_1_title",
+   "fieldtype": "Data",
+   "label": "Button 1 Title"
+  },
+  {
+   "fieldname": "button_2_title",
+   "fieldtype": "Data",
+   "label": "Button 2 Title"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Sequence",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "button_1_url",
+   "fieldtype": "Data",
+   "label": "Button 1 URL"
+  },
+  {
+   "fieldname": "button_2_url",
+   "fieldtype": "Data",
+   "label": "Button 2 URL"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Long Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "img",
+   "fieldtype": "Attach",
+   "label": "Image",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.for_customer",
+   "description": "Fill any one of customer or customer group",
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "home_banner_sequence",
+   "fieldtype": "Table",
+   "label": "Home Banner Sequence",
+   "options": "Home Banner Sequence"
+  },
+  {
+   "default": "0",
+   "fieldname": "for_customer",
+   "fieldtype": "Check",
+   "label": "For Customer"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-02-07 15:45:17.229205",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Home Banner",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

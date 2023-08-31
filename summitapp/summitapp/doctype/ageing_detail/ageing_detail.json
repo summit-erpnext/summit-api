@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:AD-{######}",
+ "creation": "2023-03-31 17:15:54.096651",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer_code",
+  "customer_name",
+  "column_break_3",
+  "d_0_30",
+  "d_31_60",
+  "d_61_90",
+  "d_90_120",
+  "d_120_to_above"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer_code",
+   "fieldtype": "Link",
+   "label": "Customer Code",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "customer_code.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "d_0_30",
+   "fieldtype": "Float",
+   "label": "0-30"
+  },
+  {
+   "fieldname": "d_31_60",
+   "fieldtype": "Float",
+   "label": "31-60"
+  },
+  {
+   "fieldname": "d_61_90",
+   "fieldtype": "Float",
+   "label": "61-90"
+  },
+  {
+   "fieldname": "d_90_120",
+   "fieldtype": "Float",
+   "label": "90-120"
+  },
+  {
+   "fieldname": "d_120_to_above",
+   "fieldtype": "Float",
+   "label": "120 To Above"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-04-03 10:51:22.137610",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Ageing Detail",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
