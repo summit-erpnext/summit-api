@@ -1,0 +1,15 @@
+[project]
+name = "summitapp"
+authors = [{name = "8848 Digital LLP", email = "deepak@8848digital.com"}]
+description = "Customized APIs"
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dynamic = ["version"]
+dependencies = [
+    "python-barcode~=0.13.1",
+]
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"

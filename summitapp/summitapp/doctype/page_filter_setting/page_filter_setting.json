@@ -1,0 +1,76 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{doctype_name}-{doctype_link}",
+ "creation": "2022-08-17 14:02:47.832896",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "doctype_name",
+  "doctype_link",
+  "dynamic_field_name",
+  "filter_sections",
+  "response_json"
+ ],
+ "fields": [
+  {
+   "fieldname": "doctype_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Doctype Name",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "doctype_link",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Doctype Link",
+   "options": "doctype_name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dynamic_field_name",
+   "fieldtype": "Data",
+   "label": "Dynamic Field Name"
+  },
+  {
+   "fieldname": "response_json",
+   "fieldtype": "Code",
+   "label": "Response Json"
+  },
+  {
+   "fieldname": "filter_sections",
+   "fieldtype": "Table",
+   "label": "Filter Sections",
+   "options": "Filter Sections"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-06-23 17:01:06.262229",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Page Filter Setting",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

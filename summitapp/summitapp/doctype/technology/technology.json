@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{technology}",
+ "creation": "2022-09-01 13:31:54.565106",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "technology",
+  "video_1",
+  "video_2",
+  "image",
+  "description",
+  "technology_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "technology",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Technology",
+   "reqd": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "video_1",
+   "fieldtype": "Attach",
+   "label": "Video 1"
+  },
+  {
+   "fieldname": "video_2",
+   "fieldtype": "Attach",
+   "label": "Video 2"
+  },
+  {
+   "fieldname": "technology_details",
+   "fieldtype": "Table",
+   "label": "Technology Details",
+   "options": "Technology Details"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-05-10 17:18:18.732002",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Technology",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

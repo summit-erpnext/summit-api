@@ -1,0 +1,107 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-27 18:33:31.415833",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "default_price_list",
+  "allow_items_not_in_stock",
+  "display_both_item_and_variant",
+  "column_break_2",
+  "default_warehouse",
+  "product_limit",
+  "apply_product_limit",
+  "guest_restrictions_section",
+  "allowed_categories",
+  "column_break_6",
+  "allowed_brands"
+ ],
+ "fields": [
+  {
+   "fieldname": "default_price_list",
+   "fieldtype": "Link",
+   "label": "Default Price List",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "guest_restrictions_section",
+   "fieldtype": "Section Break",
+   "label": "Guest Restrictions"
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "allowed_categories",
+   "fieldtype": "Table",
+   "label": "Allowed Categories",
+   "options": "Category Multiselect"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "allowed_brands",
+   "fieldtype": "Table MultiSelect",
+   "label": "Allowed Brands",
+   "options": "Brand Multiselect"
+  },
+  {
+   "fieldname": "default_warehouse",
+   "fieldtype": "Link",
+   "label": "Common Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_items_not_in_stock",
+   "fieldtype": "Check",
+   "label": "Allow items not in stock to be added to cart"
+  },
+  {
+   "default": "0",
+   "fieldname": "display_both_item_and_variant",
+   "fieldtype": "Check",
+   "label": "Display both Item and Variant"
+  },
+  {
+   "fieldname": "product_limit",
+   "fieldtype": "Int",
+   "label": "Product Limit"
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_product_limit",
+   "fieldtype": "Check",
+   "label": "Apply Product Limit"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-07-17 12:37:18.379107",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Web Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

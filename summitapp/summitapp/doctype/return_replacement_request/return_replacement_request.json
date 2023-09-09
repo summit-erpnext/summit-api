@@ -1,0 +1,114 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format: {type}-{order_id}-{product_id}",
+ "creation": "2022-11-01 13:40:58.234694",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "status",
+  "column_break_3",
+  "product_id",
+  "order_id",
+  "new_invoice",
+  "new_order_id",
+  "outstanding_amount",
+  "section_break_4",
+  "reason",
+  "return_replacement_image"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Return\nReplacement"
+  },
+  {
+   "fieldname": "reason",
+   "fieldtype": "Text",
+   "label": "Reason"
+  },
+  {
+   "fieldname": "return_replacement_image",
+   "fieldtype": "Table",
+   "label": "Return Replacement Image",
+   "options": "Return Replacement Image"
+  },
+  {
+   "fieldname": "product_id",
+   "fieldtype": "Link",
+   "label": "Product Id",
+   "options": "Item"
+  },
+  {
+   "fieldname": "order_id",
+   "fieldtype": "Link",
+   "label": "Order Id",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nResolved\nReturned"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.order_id",
+   "fieldname": "new_invoice",
+   "fieldtype": "Link",
+   "label": "New Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fetch_from": "new_invoice.outstanding_amount",
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "new_invoice.sales_order",
+   "fieldname": "new_order_id",
+   "fieldtype": "Link",
+   "label": "New Order Id",
+   "options": "Sales Order",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-02-24 20:58:58.040050",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Return Replacement Request",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{filter_section_name}",
+ "creation": "2022-08-17 13:56:52.815435",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "filter_section_name",
+  "doctype_name",
+  "static_condition",
+  "field",
+  "sequence",
+  "apply_dynamic_filter"
+ ],
+ "fields": [
+  {
+   "fieldname": "filter_section_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Filter Section Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "static_condition",
+   "fieldtype": "Text",
+   "label": "Static Condition"
+  },
+  {
+   "fieldname": "field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Field",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Sequence",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "apply_dynamic_filter",
+   "fieldtype": "Check",
+   "label": "Apply Dynamic Filter"
+  },
+  {
+   "fieldname": "doctype_name",
+   "fieldtype": "Link",
+   "label": "Doctype Name",
+   "options": "DocType",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-08-24 11:19:59.224490",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Filter Section Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

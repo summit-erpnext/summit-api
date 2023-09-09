@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-01-02 12:41:39.371873",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "assembly_charges",
+  "gateway_charges",
+  "shipping_rule",
+  "column_break_4",
+  "assembly_account",
+  "payment_gateway_account"
+ ],
+ "fields": [
+  {
+   "fieldname": "assembly_charges",
+   "fieldtype": "Float",
+   "label": "Standard Assembly Charges"
+  },
+  {
+   "fieldname": "gateway_charges",
+   "fieldtype": "Float",
+   "label": "Payment Gatway Charges"
+  },
+  {
+   "fieldname": "shipping_rule",
+   "fieldtype": "Link",
+   "label": "Standard Shipping Rule",
+   "options": "Shipping Rule"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assembly_account",
+   "fieldtype": "Link",
+   "label": "Assembly Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "payment_gateway_account",
+   "fieldtype": "Link",
+   "label": "Payment Gateway Account",
+   "options": "Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-01-02 12:42:13.539921",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Additional Charges Detail",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "All",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
