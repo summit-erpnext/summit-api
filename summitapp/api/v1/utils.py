@@ -1,6 +1,7 @@
 import frappe
 from summitapp.utils import success_response, error_response
-from erpnext.utilities.product import adjust_qty_for_expired_items
+# from erpnext.utilities.product import adjust_qty_for_expired_items  # this will not work for erpnext V15 as the ecommerce module is moved to webshop
+from webshop.webshop.utils import adjust_qty_for_expired_items
 from frappe.utils import flt
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
