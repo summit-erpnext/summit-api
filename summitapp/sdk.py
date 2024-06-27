@@ -12,6 +12,7 @@ def api(**kwargs):
         if version == "v1":
             api = V1()
         elif version =="v2":
+            print("version 2",version)
             api = V2()
         response = api.class_map(kwargs)
         et = time.time()

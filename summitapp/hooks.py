@@ -85,7 +85,7 @@ scheduler_events = {
 		]
 	},}
 
-import summitapp.monkey_patches
+# import summitapp.monkey_patches
 # Authentication and authorization
 # --------------------------------
 

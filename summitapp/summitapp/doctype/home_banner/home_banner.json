@@ -9,14 +9,18 @@
  "field_order": [
   "title",
   "img",
+  "mobile_banner",
   "button_1_title",
   "button_2_title",
   "sequence",
   "for_customer",
+  "show_on_home_page",
+  "category",
   "column_break_6",
   "button_1_url",
   "button_2_url",
   "description",
+  "heading",
   "section_break_11",
   "home_banner_sequence"
  ],
@@ -86,11 +90,33 @@
    "fieldname": "for_customer",
    "fieldtype": "Check",
    "label": "For Customer"
+  },
+  {
+   "fieldname": "heading",
+   "fieldtype": "Data",
+   "label": "Heading"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_on_home_page",
+   "fieldtype": "Check",
+   "label": "Show on Home Page"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "label": "Category",
+   "options": "Category"
+  },
+  {
+   "fieldname": "mobile_banner",
+   "fieldtype": "Attach Image",
+   "label": "Mobile Banner"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-02-07 15:45:17.229205",
+ "modified": "2023-11-30 15:02:05.576551",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Home Banner",

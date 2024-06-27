@@ -88,7 +88,7 @@ def get_payment_details(kwargs):
 def place_order(kwargs):
 	try:
 		frappe.set_user("Administrator")
-		email = frappe.session.user
+		party_name = kwargs.get('party_name')
 		common_comment = kwargs.get('common_comment')
 		payment_date = kwargs.get('payment_date')
 		order_id = kwargs.get('order_id')
@@ -111,6 +111,7 @@ def place_order(kwargs):
 		quotation.location = location
 		quotation.remarks = remarks
 		quotation.transport_charges = transport_charges
+		quotation.party_name = party_name
 		order = submit_quotation(quotation, billing_address_id, shipping_address_id,payment_date)
 		return order
 	except Exception as e:

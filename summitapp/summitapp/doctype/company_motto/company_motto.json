@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-20 13:39:02.349888",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "heading_1",
+  "heading_2",
+  "heading_3",
+  "description_1",
+  "column_break_ckfpp",
+  "company_moto_details",
+  "description_2"
+ ],
+ "fields": [
+  {
+   "fieldname": "heading_1",
+   "fieldtype": "Data",
+   "label": "Heading 1"
+  },
+  {
+   "fieldname": "heading_2",
+   "fieldtype": "Data",
+   "label": "Heading 2"
+  },
+  {
+   "fieldname": "heading_3",
+   "fieldtype": "Data",
+   "label": "Heading 3"
+  },
+  {
+   "fieldname": "description_1",
+   "fieldtype": "Small Text",
+   "label": "Description 1"
+  },
+  {
+   "fieldname": "column_break_ckfpp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company_moto_details",
+   "fieldtype": "Table",
+   "label": "Company Moto Details",
+   "options": "Company Motto Details"
+  },
+  {
+   "fieldname": "description_2",
+   "fieldtype": "Text",
+   "label": "Description 2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-20 14:24:40.795373",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Company Motto",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

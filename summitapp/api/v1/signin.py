@@ -21,14 +21,23 @@ def signin(kwargs):
 		return error_response(e)
 
 def existing_user_signin(kwargs):
-	try:
-		temp_session = kwargs.get("guest_token")
-		synced = resync_cart(temp_session)
-		token = get_access_token(kwargs)
-		frappe.response["data"] = {"is_synced": synced,"message":"Logged In", "access_token":token}
-	except frappe.exceptions.AuthenticationError as e:
-		frappe.logger("signin").exception(e)
-		return error_response(e)
+    try:
+        temp_session = kwargs.get("guest_token")
+        # Authenticate the user
+        login_manager = frappe.auth.LoginManager()
+        login_manager.authenticate(user=kwargs.get('usr'), pwd=kwargs.get('pwd'))
+        login_manager.post_login()
+        
+        synced = resync_cart(temp_session)
+        token = get_access_token(kwargs)
+        
+        frappe.response["data"] = {"is_synced": synced, "message": "Logged In", "access_token": token}
+        
+    except frappe.exceptions.AuthenticationError as e:
+        frappe.logger("signin").exception(e)
+        return error_response(e)
+
+
 
     
 def signin_as_guest(kwargs):
@@ -76,7 +85,6 @@ def login_via_otp(email):
 
 def login_without_password(email):
 	access_token = get_token(email)
-	print("TOKEN",access_token)
 	roles = frappe.get_roles(frappe.session.user)
 	is_superadmin = "Administrator" in roles
 	is_dealer = "Dealer" in roles

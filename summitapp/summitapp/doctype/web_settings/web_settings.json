@@ -16,7 +16,8 @@
   "guest_restrictions_section",
   "allowed_categories",
   "column_break_6",
-  "allowed_brands"
+  "allowed_brands",
+  "use_pc_as_menu"
  ],
  "fields": [
   {
@@ -79,12 +80,18 @@
    "fieldname": "apply_product_limit",
    "fieldtype": "Check",
    "label": "Apply Product Limit"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_pc_as_menu",
+   "fieldtype": "Check",
+   "label": "Use Product Category as Menu"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-07-17 12:37:18.379107",
+ "modified": "2023-12-22 13:13:43.451160",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Web Settings",

@@ -75,6 +75,8 @@ def put_products(kwargs):
 			fields["cust_name"] = cust_name
 		if purity:=kwargs.get("purity"):
 			fields["purity"] = purity
+		if party_name:=kwargs.get("party_name"):
+			fields["party_name"] = party_name	
 		added_to_cart = add_item_to_cart(item_list, access_token, kwargs.get("currency"),fields)
 		if added_to_cart == "Currency cannot be changed for the same cart.":
 			return error_response(added_to_cart)
@@ -88,6 +90,7 @@ def put_products(kwargs):
 	except Exception as e:
 		frappe.logger('cart').exception(e)
 		return error_response(e)
+
 
 @frappe.whitelist(allow_guest=True)
 def delete_products(kwargs):  
@@ -172,6 +175,8 @@ def get_processed_cart(quot_doc):
         item_doc = frappe.db.get_value("Item", row.item_code, "*")
         computed_fields = {
             'min_order_qty': lambda: {'min_order_qty': item_doc.get("min_order_qty")},
+			'weight_per_unit':lambda:{"weight_per_unit":item_doc.get("weight_per_unit")},
+			'total_weight':lambda:{"total_weight":row.get("total_weight")},
             'brand_img': lambda: {'brand_img': frappe.get_value('Brand', {'name': item_doc.get('brand')}, 'image')},
             'level_three_category_name': lambda: {'level_three_category_name': item_doc.get("level_three_category_name")},
             'tax': lambda: {'tax': flt(get_item_wise_tax(quot_doc.taxes).get(item_doc.name, {}).get('tax_amount', 0), 2)},
@@ -305,13 +310,15 @@ def create_cart(currency,accees_token, party_name = None):
 		quot_doc.company_gstin = company_addr.get("gstin")
 	return quot_doc
 
-def add_item_to_cart(item_list, access_token, currency,fields={}):
+def add_item_to_cart(item_list, access_token, currency, fields={}):
     customer_id = frappe.db.get_value('Customer', {'email': frappe.session.user})
     quotation = create_cart(currency, access_token, customer_id)
     price_list = get_price_list(customer_id)
+    
     # Check if currency is already set in the quotation
     if quotation.currency is not None and currency != quotation.currency:
         return 'Currency cannot be changed for the same cart.'
+    
     quotation.update(fields)
     quotation.selling_price_list = price_list
     
@@ -352,6 +359,7 @@ def add_item_to_cart(item_list, access_token, currency,fields={}):
 
     item_codes = ", ".join([row.item_code for row in quotation.items])
     return f'Item {item_codes} Added To Cart'
+
 
 def delete_item_from_cart(item_list, quot_doc):
     item_deleted = False
@@ -423,5 +431,5 @@ def get_pdf_link(voucher_type, voucher_no, print_format = None):
 			"value",
 		)
 	if print_format:
-		return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype={voucher_type}&name={voucher_no}&format={print_format}&no_letterhead=0&settings=%7B%7D&_lang=en"
+		return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype={voucher_type}&name={voucher_no}&format={print_format}"
 	return "#"

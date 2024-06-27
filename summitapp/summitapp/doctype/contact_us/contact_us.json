@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-03 11:33:32.417252",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_email_id",
+  "sales_contact_number",
+  "supports_email_id",
+  "supports_contact_number"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_email_id",
+   "fieldtype": "Data",
+   "label": "Sales Email ID"
+  },
+  {
+   "fieldname": "sales_contact_number",
+   "fieldtype": "Data",
+   "label": "Sales Contact Number"
+  },
+  {
+   "fieldname": "supports_email_id",
+   "fieldtype": "Data",
+   "label": "Supports Email ID"
+  },
+  {
+   "fieldname": "supports_contact_number",
+   "fieldtype": "Data",
+   "label": "Supports Contact Number"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-01-03 11:33:32.417252",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Contact Us",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

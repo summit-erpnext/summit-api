@@ -1,0 +1,181 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:menu",
+ "creation": "2023-12-22 13:11:13.757459",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "menu",
+  "label",
+  "image",
+  "heading",
+  "slug",
+  "menu_image_1",
+  "menu_image_3",
+  "description",
+  "column_break_y33pq",
+  "enable_category",
+  "url",
+  "sequence",
+  "mega_image_1_url",
+  "mega_image_2_url",
+  "mega_image_3_url",
+  "column_break_jtsih",
+  "lft",
+  "rgt",
+  "is_group",
+  "old_parent",
+  "parent_category",
+  "is_product_category"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "heading",
+   "fieldtype": "Data",
+   "label": "Heading "
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug"
+  },
+  {
+   "fieldname": "menu_image_1",
+   "fieldtype": "Attach",
+   "label": "Menu Image 1"
+  },
+  {
+   "fieldname": "menu_image_3",
+   "fieldtype": "Attach",
+   "label": "Menu Image 3"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_y33pq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enable_category",
+   "fieldtype": "Select",
+   "label": "Enable category",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Data",
+   "label": "Sequence"
+  },
+  {
+   "fieldname": "mega_image_1_url",
+   "fieldtype": "Data",
+   "label": "Mega Image 1 URL"
+  },
+  {
+   "fieldname": "mega_image_2_url",
+   "fieldtype": "Data",
+   "label": "Mega Image 2 URL"
+  },
+  {
+   "fieldname": "mega_image_3_url",
+   "fieldtype": "Data",
+   "label": "Mega Image 3 URL"
+  },
+  {
+   "fieldname": "column_break_jtsih",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_group",
+   "fieldtype": "Check",
+   "label": "Is Group"
+  },
+  {
+   "fieldname": "old_parent",
+   "fieldtype": "Link",
+   "label": "Old Parent",
+   "options": "Website Navigation Menu"
+  },
+  {
+   "fieldname": "parent_category",
+   "fieldtype": "Link",
+   "label": "Parent Category",
+   "options": "Website Navigation Menu"
+  },
+  {
+   "fieldname": "menu",
+   "fieldtype": "Data",
+   "label": "Menu",
+   "unique": 1
+  },
+  {
+   "fieldname": "lft",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Left",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "rgt",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Right",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_product_category",
+   "fieldtype": "Check",
+   "label": "Is Prodcut Category"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-12-22 15:25:34.656638",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Website Navigation Menu",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

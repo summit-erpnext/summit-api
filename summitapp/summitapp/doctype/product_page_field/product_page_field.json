@@ -15,7 +15,7 @@
    "fieldname": "product_type",
    "fieldtype": "Select",
    "label": "Product Type",
-   "options": "\nList\nDetails\nCart\nOrder\nBrand\nBanner\nCatalog"
+   "options": "\nList\nDetails\nCart\nOrder\nBrand\nBanner\nCatalog\nWarranty Claim\nSerial No"
   },
   {
    "fieldname": "product_fields",
@@ -26,7 +26,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-26 15:29:33.137937",
+ "modified": "2023-11-30 14:17:03.894471",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Product Page Field",

@@ -8,7 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "key_feature",
-  "description"
+  "description",
+  "image"
  ],
  "fields": [
   {
@@ -22,11 +23,16 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-05-10 15:06:56.781680",
+ "modified": "2023-11-20 09:39:53.360609",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Key Feature",

@@ -1,0 +1,77 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-16 11:47:59.219153",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "url",
+  "sender",
+  "dlttempid",
+  "column_break_rmtjf",
+  "messagetype",
+  "contenttype",
+  "apikey"
+ ],
+ "fields": [
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "URL"
+  },
+  {
+   "fieldname": "sender",
+   "fieldtype": "Data",
+   "label": "Sender"
+  },
+  {
+   "fieldname": "dlttempid",
+   "fieldtype": "Data",
+   "label": "dlttempid"
+  },
+  {
+   "fieldname": "messagetype",
+   "fieldtype": "Data",
+   "label": "messagetype"
+  },
+  {
+   "fieldname": "contenttype",
+   "fieldtype": "Data",
+   "label": "Content-Type"
+  },
+  {
+   "fieldname": "apikey",
+   "fieldtype": "Data",
+   "label": "apikey"
+  },
+  {
+   "fieldname": "column_break_rmtjf",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-01-16 11:51:13.028716",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Pinnacle SMS Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

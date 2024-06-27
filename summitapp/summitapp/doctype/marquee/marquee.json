@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-20 09:24:06.259807",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "heading_1",
+  "heading_2",
+  "heading_3",
+  "heading_4",
+  "heading_5",
+  "column_break_yo3zt",
+  "heading_6",
+  "heading_7",
+  "heading_8",
+  "heading_9",
+  "heading_10"
+ ],
+ "fields": [
+  {
+   "fieldname": "heading_1",
+   "fieldtype": "Data",
+   "label": "Heading 1"
+  },
+  {
+   "fieldname": "heading_2",
+   "fieldtype": "Data",
+   "label": "Heading 2"
+  },
+  {
+   "fieldname": "heading_3",
+   "fieldtype": "Data",
+   "label": "Heading 3"
+  },
+  {
+   "fieldname": "heading_4",
+   "fieldtype": "Data",
+   "label": "Heading 4"
+  },
+  {
+   "fieldname": "heading_5",
+   "fieldtype": "Data",
+   "label": "Heading 5"
+  },
+  {
+   "fieldname": "column_break_yo3zt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "heading_6",
+   "fieldtype": "Data",
+   "label": "Heading 6"
+  },
+  {
+   "fieldname": "heading_7",
+   "fieldtype": "Data",
+   "label": "Heading 7"
+  },
+  {
+   "fieldname": "heading_8",
+   "fieldtype": "Data",
+   "label": "Heading 8"
+  },
+  {
+   "fieldname": "heading_9",
+   "fieldtype": "Data",
+   "label": "Heading 9"
+  },
+  {
+   "fieldname": "heading_10",
+   "fieldtype": "Data",
+   "label": "Heading 10"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-11-20 09:24:06.259807",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Marquee",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

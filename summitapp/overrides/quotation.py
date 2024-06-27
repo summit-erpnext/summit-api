@@ -47,9 +47,10 @@ def add_additional_charges(self):
 def on_payment_authorized(self, *args, **kwargs):
 	try:
 		if args[1] == 'Authorized':
-			from summitapp.api.v1.order import place_order
+			from summitapp.api.v2.order import razorpay_place_order
 			fil_lst = {'order_id': self.name}
-			place_order(fil_lst)
+			party_name = {"party_name":self.party_name}
+			razorpay_place_order(fil_lst['order_id'], party_name=party_name['party_name'])
 			# if sales_order:
 			# 	make_payment_entry(sales_order)
 			# frappe.local.response['type'] = 'redirect'
