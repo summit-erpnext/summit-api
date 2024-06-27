@@ -12,7 +12,8 @@
   "title",
   "image",
   "icon",
-  "click_action"
+  "click_action",
+  "enable"
  ],
  "fields": [
   {
@@ -40,11 +41,17 @@
    "fieldname": "click_action",
    "fieldtype": "Data",
    "label": "Click Action"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-07-04 13:25:59.750710",
+ "modified": "2024-02-14 14:24:44.868224",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Push Notification Message",

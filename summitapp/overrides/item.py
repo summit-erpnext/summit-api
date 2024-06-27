@@ -1,7 +1,7 @@
 import frappe
 import json
 from frappe import _
-from erpnext.e_commerce.doctype.website_item.website_item import insert_item_to_index
+from webshop.webshop.redisearch_utils import insert_item_to_index
 
 def on_save(self, method):
 	if self.get("product_type"):

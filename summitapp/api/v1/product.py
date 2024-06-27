@@ -529,7 +529,7 @@ def get_web_item_future_stock(item_code, item_warehouse_field, warehouse=None):
 
 
 def get_default_currency(kwargs):
-    ecom_settings = frappe.get_single('E Commerce Settings')
+    ecom_settings = frappe.get_single('Webshop Settings')
     company_name = ecom_settings.company
     default_currency = frappe.get_value('Company', company_name, 'default_currency')
     if not default_currency:

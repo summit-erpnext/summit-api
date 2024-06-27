@@ -42,7 +42,7 @@ def validate(customer, store_credit):
     return bool(sc_info >= store_credit)
 
 def add_store_credit_to_quotation(store_credit):
-    from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation 
+    from webshop.webshop.shopping_cart.cart import _get_cart_quotation 
     quotation = _get_cart_quotation()
     quotation.store_credit_used = store_credit
     quotation.save(ignore_permissions=True)

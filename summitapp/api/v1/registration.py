@@ -105,7 +105,7 @@ def create_customer(kwargs):
 		'email_id': kwargs.get('usr') or kwargs.get('email'),
 		'email': kwargs.get('usr') or kwargs.get('email'),
 		'type': 'Individual', 
-		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("E Commerce Settings","default_customer_group")),
+		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("Webshop Settings","default_customer_group")),
 		'territory': 'All Territories'
 		})
 	customer_doc.insert(ignore_permissions=True)

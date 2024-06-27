@@ -87,11 +87,30 @@ def get_dealer_ledger(kwargs):
 		frappe.logger('gl').exception(e)
 		return error_response(e)
 
-def get_si_pdf_link(voucher_type, voucher_no):
+def get_si_pdf_link(voucher_type, voucher_no, print_format=None):
 	if voucher_type != "Sales Invoice":
 		return "#"
-	return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Invoice&name={voucher_no}&format=Standard%20SI&no_letterhead=0&letterhead=final%20sales%20%20Invoice&settings=%7B%7D&_lang=en"
 	# return f"{frappe.utils.get_url()}/api/method/sportnetwork.utils.download_pdf?doctype=Sales%20Invoice&name={voucher_no}&format=Standard%20SI&no_letterhead=0&letterhead=final%20sales%20%20Invoice&settings=%7B%7D&_lang=en"
+	pdf_data = get_pdf_data(voucher_type, voucher_no)
+	file_name = f"{voucher_no}.pdf".format(to_name=voucher_no.replace("/", "-"))   
+	attached_file = frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": file_name,
+				"attached_to_doctype": "Sales Invoice",
+				"attached_to_name": voucher_no,
+				"file_url": "",
+				"content": pdf_data,
+			}
+		)
+	attached_file.save()
+	file_url_link = attached_file.file_url
+	return f"{frappe.utils.get_url()}{file_url_link}"
+
+def get_pdf_data(doctype, name):
+	html = frappe.get_print(doctype, name)
+	return frappe.utils.pdf.get_pdf(html)     
+
 
 @frappe.whitelist()
 def get_ledger_summary(kwargs):

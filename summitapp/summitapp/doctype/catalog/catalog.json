@@ -9,7 +9,11 @@
  "field_order": [
   "name1",
   "access_level",
-  "items"
+  "items",
+  "column_break_tnhc",
+  "image",
+  "sequence",
+  "slug"
  ],
  "fields": [
   {
@@ -28,14 +32,34 @@
    "fieldtype": "Table",
    "label": "Items",
    "options": "Item Child"
+  },
+  {
+   "fieldname": "column_break_tnhc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach",
+   "label": "Image"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Data",
+   "label": "Sequence"
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-08-16 16:12:24.773838",
+ "modified": "2024-02-14 14:04:10.019433",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Catalog",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -53,5 +77,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

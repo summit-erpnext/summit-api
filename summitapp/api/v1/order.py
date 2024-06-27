@@ -7,7 +7,7 @@ from summitapp.api.v1.customer_address import get_details as get_address_details
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from erpnext.e_commerce.shopping_cart.cart import _get_cart_quotation
+from webshop.webshop.shopping_cart.cart import _get_cart_quotation
 from summitapp.api.v1.cart import calculate_quot_taxes
 from summitapp.api.v1.utils import get_field_names,get_currency,get_currency_symbol,get_logged_user,get_guest_user
 

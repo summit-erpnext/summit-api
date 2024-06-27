@@ -8,15 +8,10 @@
  "engine": "InnoDB",
  "field_order": [
   "type",
-  "reason_for_return",
-  "reason_for_replacement",
   "status",
-  "date",
   "column_break_3",
   "product_id",
   "order_id",
-  "customer",
-  "customer_email",
   "new_invoice",
   "new_order_id",
   "outstanding_amount",
@@ -79,8 +74,7 @@
    "fetch_from": "new_invoice.outstanding_amount",
    "fieldname": "outstanding_amount",
    "fieldtype": "Currency",
-   "label": "Outstanding Amount",
-   "read_only": 1
+   "label": "Outstanding Amount"
   },
   {
    "fetch_from": "new_invoice.sales_order",
@@ -89,43 +83,11 @@
    "label": "New Order Id",
    "options": "Sales Order",
    "read_only": 1
-  },
-  {
-   "depends_on": "eval:doc.type=='Return'",
-   "fieldname": "reason_for_return",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Reason For Return",
-   "options": "\nDamaged Item\nReceived wrong item\nThe Product received is defective\nProduct is missing in the package"
-  },
-  {
-   "depends_on": "eval:doc.type=='Replacement'",
-   "fieldname": "reason_for_replacement",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "label": "Reason For Replacement",
-   "options": "\nDamaged Item\nReceived wrong item\nThe Product received is defective\nProduct is missing in the package"
-  },
-  {
-   "fieldname": "date",
-   "fieldtype": "Date",
-   "label": "Date"
-  },
-  {
-   "fieldname": "customer",
-   "fieldtype": "Link",
-   "label": "Customer",
-   "options": "Customer"
-  },
-  {
-   "fieldname": "customer_email",
-   "fieldtype": "Data",
-   "label": "Customer Email"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-01 12:37:45.785610",
+ "modified": "2024-02-14 13:52:46.835542",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Return Replacement Request",

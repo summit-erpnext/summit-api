@@ -22,7 +22,8 @@
   {
    "fieldname": "name_value",
    "fieldtype": "Data",
-   "label": "Name Value"
+   "label": "Name Value",
+   "unique": 1
   },
   {
    "fieldname": "item",
@@ -33,7 +34,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-02 21:04:57.117198",
+ "modified": "2023-12-22 17:56:26.166854",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Item Specifications Value",

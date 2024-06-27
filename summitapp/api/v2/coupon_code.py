@@ -62,6 +62,8 @@ def delete(kwargs):
 
 
 def put_coupon_code(quot_doc, coupon_code):
-    quot_doc.coupon_code = coupon_code
+    coupon_code_doc = frappe.get_list(doctype ='Coupon Code', filters={"coupon_code": coupon_code}, pluck="name")
+    coupon_code_name = frappe.get_doc("Coupon Code", coupon_code_doc[0])
+    quot_doc.coupon_code = coupon_code_name.name
     quot_doc.save(ignore_permissions=True)
     return 'Coupon Code Applied!'

@@ -1,6 +1,6 @@
 import frappe
 from summitapp.utils import success_response, error_response
-from erpnext.utilities.product import adjust_qty_for_expired_items
+from webshop.webshop.utils.product import adjust_qty_for_expired_items
 from frappe.utils import flt
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate

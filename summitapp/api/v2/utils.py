@@ -1,6 +1,6 @@
 import frappe
 from summitapp.utils import success_response, error_response
-from erpnext.utilities.product import adjust_qty_for_expired_items
+from webshop.webshop.utils.product import adjust_qty_for_expired_items
 from frappe.utils import flt
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
@@ -92,7 +92,6 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     processed_items = []
     for item in items:
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names)
-        print("ITEM Fields",item_fields)
         processed_items.append(item_fields)
     return processed_items
 
@@ -214,27 +213,27 @@ def get_exchange_rate(currency):
 
 
 def get_stock_info(item_code, key, with_future_stock=True):
-	try:
-		roles = frappe.get_roles(frappe.session.user)
-		is_dealer = "Dealer" in roles
-		warehouse_field = 'dealer_warehouse' if is_dealer else 'website_warehouse'
-		variant_list = frappe.db.get_all('Item', {'variant_of': item_code}, 'name')
-		if not variant_list:
-			variant_list = frappe.db.get_all('Item', {'name': item_code}, 'name')
-		stock = 0
-		for variant in variant_list:
-			stock_qty = get_web_item_qty_in_stock(
-				variant.get('name'), warehouse_field).get(key)
-			stock += flt(stock_qty)
-			if with_future_stock:
-				future_stock = get_web_item_future_stock(
-					variant.get('name'), warehouse_field)
-				stock += flt(future_stock)
-		if key == 'stock_qty':
-			return stock
-	except Exception as e:
-		frappe.logger('product').exception(e)
-		return error_response(e)
+    try:
+        roles = frappe.get_roles(frappe.session.user)
+        is_dealer = "Dealer" in roles
+        warehouse_field = 'dealer_warehouse' if is_dealer else 'website_warehouse'
+        variant_list = frappe.db.get_all('Item', {'variant_of': item_code}, 'name')
+        if not variant_list:
+            variant_list = frappe.db.get_all('Item', {'name': item_code}, 'name')
+        stock = 0
+        for variant in variant_list:
+            stock_qty = get_web_item_qty_in_stock(
+                variant.get('name'), warehouse_field).get(key)
+            stock += flt(stock_qty)
+            if with_future_stock:
+                future_stock = get_web_item_future_stock(
+                    variant.get('name'), warehouse_field)
+                stock += flt(future_stock)
+        if key == 'stock_qty':
+            return stock
+    except Exception as e:
+        frappe.logger('product').exception(e)
+        return error_response(e)
 
 def get_web_item_future_stock(item_code, item_warehouse_field, warehouse=None):
 	try:
@@ -266,44 +265,44 @@ def get_web_item_future_stock(item_code, item_warehouse_field, warehouse=None):
 
 
 def get_web_item_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
-	try:
-		in_stock, stock_qty = 0, ""
-		total_qty = 0
-		template_item_code, is_stock_item = frappe.db.get_value(
-			"Item", item_code, ["variant_of", "is_stock_item"]
-		)
-		default_warehouse = frappe.get_cached_value("Web Settings", None, "default_warehouse")
-		warehouses = [default_warehouse] if default_warehouse else []
-		if not warehouse:
-			warehouse = frappe.db.get_value("Website Item", {"item_code": item_code}, item_warehouse_field)
+    try:
+        in_stock, stock_qty = 0, ""
+        total_qty = 0
+        template_item_code, is_stock_item = frappe.db.get_value(
+            "Item", item_code, ["variant_of", "is_stock_item"]
+        )
+        default_warehouse = frappe.get_cached_value("Web Settings", None, "default_warehouse")
+        warehouses = [default_warehouse] if default_warehouse else []
+        if not warehouse:
+            warehouse = frappe.db.get_value("Website Item", {"item_code": item_code}, item_warehouse_field)
 
-		if not warehouse and template_item_code and template_item_code != item_code:
-			warehouse = frappe.db.get_value(
-				"Website Item", {"item_code": template_item_code}, item_warehouse_field
-			)
-		if warehouse:
-			warehouses.append(warehouse)
-			stock_list = frappe.db.sql(
-				f"""
-				select GREATEST(S.actual_qty - S.reserved_qty - S.reserved_qty_for_production - S.reserved_qty_for_sub_contract, 0) / IFNULL(C.conversion_factor, 1),
-				S.warehouse
-				from tabBin S
-				inner join `tabItem` I on S.item_code = I.Item_code
-				left join `tabUOM Conversion Detail` C on I.sales_uom = C.uom and C.parent = I.Item_code
-				where S.item_code='{item_code}' and S.warehouse in ('{"', '".join(warehouses)}')"""
-			)
-			if stock_list:
-				for stock_qty in stock_list:
-					stock_qty = adjust_qty_for_expired_items(item_code, [stock_qty], stock_qty[1])
-					total_qty += stock_qty[0][0]
-					if not in_stock:
-						in_stock = stock_qty[0][0] > 0 and 1 or 0
-		return frappe._dict(
-			{"in_stock": in_stock, "stock_qty": total_qty, "is_stock_item": is_stock_item}
-		)
-	except Exception as e:
-		frappe.logger('product').exception(e)
-		return error_response(e)
+        if not warehouse and template_item_code and template_item_code != item_code:
+            warehouse = frappe.db.get_value(
+                "Website Item", {"item_code": template_item_code}, item_warehouse_field
+            )
+        if warehouse:
+            warehouses.append(warehouse)
+            stock_list = frappe.db.sql(
+                f"""
+                select GREATEST(S.actual_qty - S.reserved_qty - S.reserved_qty_for_production - S.reserved_qty_for_sub_contract, 0) / IFNULL(C.conversion_factor, 1),
+                S.warehouse
+                from `tabBin` as S
+                inner join `tabItem` I on S.item_code = I.Item_code
+                left join `tabUOM Conversion Detail` C on I.sales_uom = C.uom and C.parent = I.Item_code
+                where S.item_code='{item_code}' and S.warehouse in ('{"', '".join(warehouses)}')"""
+            )
+            if stock_list:
+                for stock_qty in stock_list:
+                    stock_qty = adjust_qty_for_expired_items(item_code, [stock_qty], stock_qty[1])
+                    total_qty += stock_qty
+                    if not in_stock:
+                        in_stock = stock_qty > 0 and 1 or 0
+        return frappe._dict(
+            {"in_stock": in_stock, "stock_qty": total_qty, "is_stock_item": is_stock_item}
+        )
+    except Exception as e:
+        frappe.logger('product').exception(e)
+        return error_response(e)
 	
 
 def get_slide_images(item, tile_image):

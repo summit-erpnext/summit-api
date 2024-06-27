@@ -88,10 +88,11 @@ def login_without_password(email):
 	roles = frappe.get_roles(frappe.session.user)
 	is_superadmin = "Administrator" in roles
 	is_dealer = "Dealer" in roles
+	doc = frappe.get_doc("User", {"name": email})
+	full_name = doc.full_name
 	return success_response(data = {
-									"is_superadmin": is_superadmin,
-									"is_dealer": is_dealer,
-									"access_token":access_token
+									"access_token":access_token,
+									"full_name": full_name
 								})
 
 def get_redirecting_urls(kwargs):
