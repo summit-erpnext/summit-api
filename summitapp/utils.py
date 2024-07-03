@@ -230,6 +230,7 @@ def get_access_level(customer_id=None):
 def get_allowed_categories(category_list = []):
 	categories = []
 	user = frappe.session.user
+	# Changes email to email_id
 	if user != "Guest":
 		cust = frappe.db.get_value("Customer", {"email_id": user}, [
 								   "name", "customer_group"], as_dict=1)
