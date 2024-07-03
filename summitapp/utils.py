@@ -231,7 +231,7 @@ def get_allowed_categories(category_list = []):
 	categories = []
 	user = frappe.session.user
 	if user != "Guest":
-		cust = frappe.db.get_value("Customer", {"email": user}, [
+		cust = frappe.db.get_value("Customer", {"email_id": user}, [
 								   "name", "customer_group"], as_dict=1)
 		if cust:
 			categories = frappe.db.get_values(
