@@ -92,11 +92,3 @@ scheduler_events = {
 # auth_hooks = [
 # 	"summitapp.auth.validate"
 # ]
-
-fixtures = [
-    {"dt": "Custom Field", "filters": [
-        [
-            "module", "=", "SummitApp"
-        ]
-    ]}
-]
