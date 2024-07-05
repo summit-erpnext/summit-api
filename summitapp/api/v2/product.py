@@ -371,25 +371,17 @@ def get_item(item_code, size, colour):  # for cart
 def get_tagged_products(kwargs):
     try:
         currency = kwargs.get("currency")
-        print("currency..............",currency)
         if not kwargs.get('tag'):
-            print("1111111111")
             return error_response("key missing 'tag'")
 
         tag = kwargs.get('tag')
-        print("1111111111tag",tag)
         # Fetching the product limit from Tags MultiSelect
         tag_doc = frappe.get_doc("Tag", tag)
-        print("1111111111tag_doc",tag_doc)
         product_limit = tag_doc.set_product_limit
-        print("product_limit",product_limit)
 
         items = frappe.get_list("Tags MultiSelect", {"tag": tag}, pluck='parent', ignore_permissions=True)
-        print("1111111111111111111______items",items)
         customer_id = kwargs.get("customer_id")
-        print("1111111111111111111customer_id",customer_id)
         res = get_detailed_item_list(currency, items, customer_id, None, product_limit)
-        print("1111111111111111111res..........",res)
         return success_response(data=res)
     except Exception as e:
         frappe.logger('product').exception(e)
