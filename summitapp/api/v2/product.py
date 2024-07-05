@@ -371,17 +371,25 @@ def get_item(item_code, size, colour):  # for cart
 def get_tagged_products(kwargs):
     try:
         currency = kwargs.get("currency")
+        print("currency..............",currency)
         if not kwargs.get('tag'):
+            print("1111111111")
             return error_response("key missing 'tag'")
 
         tag = kwargs.get('tag')
+        print("1111111111tag",tag)
         # Fetching the product limit from Tags MultiSelect
         tag_doc = frappe.get_doc("Tag", tag)
-        product_limit = tag_doc.product_limit
+        print("1111111111tag_doc",tag_doc)
+        product_limit = tag_doc.set_product_limit
+        print("product_limit",product_limit)
 
         items = frappe.get_list("Tags MultiSelect", {"tag": tag}, pluck='parent', ignore_permissions=True)
+        print("1111111111111111111______items",items)
         customer_id = kwargs.get("customer_id")
+        print("1111111111111111111customer_id",customer_id)
         res = get_detailed_item_list(currency, items, customer_id, None, product_limit)
+        print("1111111111111111111res..........",res)
         return success_response(data=res)
     except Exception as e:
         frappe.logger('product').exception(e)
@@ -395,8 +403,7 @@ def get_detailed_item_list(currency, items, customer_id=None, filters={}, produc
         filter.update(filters)
     
     if not customer_id:
-        customer_id = frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
-
+        customer_id = frappe.db.get_value("Customer", {"email_id": frappe.session.user}, 'name')
     user_role = frappe.session.user
     apply_product_limit = get_tagged_product_limit(user_role, customer_id)
     data = frappe.get_list('Item', filter, "*", ignore_permissions=True)

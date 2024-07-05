@@ -93,7 +93,7 @@ def get(kwargs):
         # Extracting desired fields after adding button_info
         for banner in banners:
             filtered_banner = {key: value for key, value in banner.items() if key in fields}
-            banner.clear()
+            banner = {}
             banner.update(filtered_banner)
 
         return success_response(banners)
