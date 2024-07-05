@@ -377,7 +377,7 @@ def get_tagged_products(kwargs):
         tag = kwargs.get('tag')
         # Fetching the product limit from Tags MultiSelect
         tag_doc = frappe.get_doc("Tag", tag)
-        product_limit = tag_doc.product_limit
+        product_limit = tag_doc.set_product_limit
 
         items = frappe.get_list("Tags MultiSelect", {"tag": tag}, pluck='parent', ignore_permissions=True)
         customer_id = kwargs.get("customer_id")
@@ -395,8 +395,7 @@ def get_detailed_item_list(currency, items, customer_id=None, filters={}, produc
         filter.update(filters)
     
     if not customer_id:
-        customer_id = frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
-
+        customer_id = frappe.db.get_value("Customer", {"email_id": frappe.session.user}, 'name')
     user_role = frappe.session.user
     apply_product_limit = get_tagged_product_limit(user_role, customer_id)
     data = frappe.get_list('Item', filter, "*", ignore_permissions=True)
