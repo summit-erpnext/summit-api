@@ -93,11 +93,11 @@ class PageFilterSetting(Document):
         data = frappe.get_list(
             "Category",
             filters={
-                "lft": (">=", lft),
-                "rgt": ("<=", rgt),
+                "lft": (">", lft),
+                "rgt": ("<", rgt),
                 "enable_category": 'Yes'
             },
-            fields=["name"],  # This replaces the need for 'pluck'
+            fields=["name"], 
             order_by="lft asc",
             pluck="name"
         )
