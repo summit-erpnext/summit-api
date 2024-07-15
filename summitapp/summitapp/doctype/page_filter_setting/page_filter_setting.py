@@ -52,18 +52,21 @@ class PageFilterSetting(Document):
     def update_filters(self):
         try:
             results = []
+            category_names = self.get_category_names()
             for section in self.filter_sections:
                 fs = frappe.get_doc('Filter Section Setting', section.filter_section)
                 values = []
                 template = f"SELECT DISTINCT({fs.field}) AS value FROM `tab{fs.doctype_name}`"
+                conditions = []
                 if fs.static_condition:
                     template += f" WHERE {fs.static_condition}"
+
                 if fs.apply_dynamic_filter and self.dynamic_field_name:
-                    if not fs.static_condition:
-                        template += " WHERE "
-                    else:
-                        template += " AND "
-                    template += f"{self.dynamic_field_name} = '{self.doctype_link}'"
+                    dynamic_conditions = [f"{self.dynamic_field_name} = '{item}'" for item in category_names]
+                    conditions.append(f"({ ' OR '.join(dynamic_conditions) })")
+                
+                if conditions:
+                    template += " WHERE " + " AND ".join(conditions)
                 data = frappe.db.sql(template, as_dict=True)
                 for row in data:
                     values.append(row.value)
@@ -82,3 +85,20 @@ class PageFilterSetting(Document):
         except Exception as e:
             frappe.log_error("Error updating filters for page", e)
             return None
+
+    def get_category_names(self):
+        lft = frappe.db.get_value("Category", self.doctype_link, "lft")
+        rgt = frappe.db.get_value("Category", self.doctype_link, "rgt")
+        
+        data = frappe.get_list(
+            "Category",
+            filters={
+                "lft": (">=", lft),
+                "rgt": ("<=", rgt),
+                "enable_category": 'Yes'
+            },
+            fields=["name"],  # This replaces the need for 'pluck'
+            order_by="lft asc",
+            pluck="name"
+        )
+        return [d for d in data]
