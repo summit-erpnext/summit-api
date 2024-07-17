@@ -75,9 +75,10 @@ def get_list(kwargs):
         print("RESTULT",result)
         total_count = count
         translated_item_fields = translate_result(result)
+        sorted_data = sort_items_data(kwargs.get("sort_by"),translated_item_fields)
         if internal_call:
-            return translated_item_fields
-        return {'msg': 'success', 'data': translated_item_fields, 'total_count': total_count}
+            return sorted_data
+        return {'msg': 'success', 'data': sorted_data, 'total_count': total_count}
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
@@ -538,3 +539,18 @@ def get_default_currency(kwargs):
           'default_currency': default_currency,
           'company':company_name
           }        
+
+def sort_items_data(sort_by, data_list):
+    if not data_list:  # Check if the data_list is empty.
+        sort_by = "latest"
+    
+    if sort_by == "latest":
+        return sorted(data_list, key=lambda x: x["creation"])
+    elif sort_by == "oldest":
+        return sorted(data_list, key=lambda x: x["creation"], reverse=True)
+    elif sort_by == "sequence":
+        return sorted(data_list, key=lambda x: x["sequence"])
+    elif sort_by == "weight_range":
+        return sorted(data_list, key=lambda x: x["weight_range"])
+    else:
+        return sorted(data_list, key=lambda x: x["creation"])
