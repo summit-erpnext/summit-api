@@ -78,7 +78,14 @@ def get_list(kwargs):
         sorted_data = sort_items_data(kwargs.get("sort_by"),translated_item_fields)
         if internal_call:
             return sorted_data
-        return {'msg': 'success', 'data': sorted_data, 'total_count': total_count}
+        
+        limit_sorted_data = []
+        for idx, item in enumerate(sorted_data):
+            if idx >= int(limit):
+                break
+            limit_sorted_data.append(item)
+        
+        return {'msg': 'success', 'data': limit_sorted_data, 'total_count': total_count}
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
@@ -225,7 +232,7 @@ def get_list_data(order_by, filters, price_range, global_items, page_no, limit, 
                            filters=filters,
                            or_filters=or_filters,
                            fields="*",
-                           limit_page_length=limit,
+                        #    limit_page_length=limit,
                            limit_start=offset,
                            order_by=order_by,
                            ignore_permissions=ignore_permissions,
