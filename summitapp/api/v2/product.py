@@ -33,6 +33,8 @@ def get_list(kwargs):
         price_range = kwargs.get('price_range')
         search_text = kwargs.get('search_text')
         currency = kwargs.get('currency')
+        sort_by = kwargs.get('sort_by')
+        search = kwargs.get('search')
         access_level = get_access_level(customer_id)
         if not search_text:
             order_by = None
@@ -42,10 +44,8 @@ def get_list(kwargs):
                 filter_args["category"] = child_categories
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
-            
             if kwargs.get('item'):
                 filter_args["name"] = frappe.get_value('Item', {'name': kwargs.get('item')})
-            
             filters = get_filter_listing(filter_args)
             type = 'brand-product' if check_brand_exist(filters) else 'product'
             if field_filters:
@@ -66,26 +66,18 @@ def get_list(kwargs):
                     order_by = 'sequence {}'.format(sort_order)
                     del filters['sequence']
             debug = kwargs.get("debug_query", 0)
-            count, data = get_list_data(order_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
+            count, data = get_list_data(order_by ,sort_by , filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, {}, price_range, global_items, page_no, limit)
         result = get_processed_list(currency, data, customer_id, type)
-        print("RESTULT",result)
+        print("RESULT",result)
         total_count = count
         translated_item_fields = translate_result(result)
-        sorted_data = sort_items_data(kwargs.get("sort_by"),translated_item_fields)
         if internal_call:
-            return sorted_data
-        
-        limit_sorted_data = []
-        for idx, item in enumerate(sorted_data):
-            if idx >= int(limit):
-                break
-            limit_sorted_data.append(item)
-        
-        return {'msg': 'success', 'data': limit_sorted_data, 'total_count': total_count}
+            return translated_item_fields
+        return {'msg': 'success', 'data': translated_item_fields, 'total_count': total_count}
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
@@ -206,7 +198,7 @@ def get_top_categories(kwargs):
 	return success_response(res)
 
 
-def get_list_data(order_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
+def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
         offset = int(page_no) * int(limit)
@@ -226,13 +218,21 @@ def get_list_data(order_by, filters, price_range, global_items, page_no, limit, 
 
     if not order_by:
         order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
+        if sort_by == "oldest":
+            order_by = "creation desc"
+        elif sort_by == "sequence":
+            order_by = "sequence asc"
+        elif sort_by == "weight_range":
+            order_by = "weight_range asc"
+        else:
+            order_by = "creation asc"
     else:
         order_by = order_by
     data = frappe.get_list('Item',
                            filters=filters,
                            or_filters=or_filters,
                            fields="*",
-                        #    limit_page_length=limit,
+                           limit_page_length=limit,
                            limit_start=offset,
                            order_by=order_by,
                            ignore_permissions=ignore_permissions,
@@ -546,18 +546,3 @@ def get_default_currency(kwargs):
           'default_currency': default_currency,
           'company':company_name
           }        
-
-def sort_items_data(sort_by, data_list):
-    if not data_list:  # Check if the data_list is empty.
-        sort_by = "latest"
-    
-    if sort_by == "latest":
-        return sorted(data_list, key=lambda x: x["creation"])
-    elif sort_by == "oldest":
-        return sorted(data_list, key=lambda x: x["creation"], reverse=True)
-    elif sort_by == "sequence":
-        return sorted(data_list, key=lambda x: x["sequence"])
-    elif sort_by == "weight_range":
-        return sorted(data_list, key=lambda x: x["weight_range"])
-    else:
-        return sorted(data_list, key=lambda x: x["creation"])
