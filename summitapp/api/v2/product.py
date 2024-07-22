@@ -34,14 +34,13 @@ def get_list(kwargs):
         search_text = kwargs.get('search_text')
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
-        search = kwargs.get('search')
         access_level = get_access_level(customer_id)
         if not search_text:
             order_by = None
             filter_args = {"access_level": access_level}
             if category_slug:
                 child_categories = get_child_categories(category_slug)
-                filter_args["category"] = child_categories
+                filter_args["category"] = ["in", child_categories]
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
             if kwargs.get('item'):
@@ -70,7 +69,7 @@ def get_list(kwargs):
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
-            count, data = get_list_data(None, {}, price_range, global_items, page_no, limit)
+            count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
         result = get_processed_list(currency, data, customer_id, type)
         print("RESULT",result)
         total_count = count
@@ -204,9 +203,9 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         offset = int(page_no) * int(limit)
     if 'access_level' not in filters:
         filters['access_level'] = 0
-
-    if categories := get_allowed_categories(filters.get("category")):
-        filters["category"] = ["in", categories]
+    if filters.get("category"):
+        if categories := get_allowed_categories(filters.get("category")[1]):
+            filters["category"] = ["in", categories]
     if brands := get_allowed_brands():
         if not (filters.get("brand") and filters.get("brand") in brands):
             filters["brand"] = ["in", brands]
@@ -219,13 +218,13 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     if not order_by:
         order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
         if sort_by == "oldest":
-            order_by = "creation desc"
+            order_by = "creation asc"
         elif sort_by == "sequence":
             order_by = "sequence asc"
         elif sort_by == "weight_range":
             order_by = "weight_range asc"
         else:
-            order_by = "creation asc"
+            order_by = "creation desc"
     else:
         order_by = order_by
     data = frappe.get_list('Item',
