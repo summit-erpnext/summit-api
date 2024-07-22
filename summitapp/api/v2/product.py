@@ -40,7 +40,7 @@ def get_list(kwargs):
             filter_args = {"access_level": access_level}
             if category_slug:
                 child_categories = get_child_categories(category_slug)
-                filter_args["category"] = child_categories
+                filter_args["category"] = ["in", child_categories]
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
             if kwargs.get('item'):
@@ -203,9 +203,9 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         offset = int(page_no) * int(limit)
     if 'access_level' not in filters:
         filters['access_level'] = 0
-
-    if categories := get_allowed_categories(filters.get("category")):
-        filters["category"] = ["in", categories]
+    if filters.get("category"):
+        if categories := get_allowed_categories(filters.get("category")[1]):
+            filters["category"] = ["in", categories]
     if brands := get_allowed_brands():
         if not (filters.get("brand") and filters.get("brand") in brands):
             filters["brand"] = ["in", brands]
