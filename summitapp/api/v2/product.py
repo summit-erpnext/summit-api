@@ -34,7 +34,6 @@ def get_list(kwargs):
         search_text = kwargs.get('search_text')
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
-        search = kwargs.get('search')
         access_level = get_access_level(customer_id)
         if not search_text:
             order_by = None
@@ -70,7 +69,7 @@ def get_list(kwargs):
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
-            count, data = get_list_data(None, {}, price_range, global_items, page_no, limit)
+            count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
         result = get_processed_list(currency, data, customer_id, type)
         print("RESULT",result)
         total_count = count
