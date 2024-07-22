@@ -218,13 +218,13 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     if not order_by:
         order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
         if sort_by == "oldest":
-            order_by = "creation desc"
+            order_by = "creation asc"
         elif sort_by == "sequence":
             order_by = "sequence asc"
         elif sort_by == "weight_range":
-            order_by = "weight_range asc"
+            order_by = "weight_range "
         else:
-            order_by = "creation asc"
+            order_by = "creation desc"
     else:
         order_by = order_by
     data = frappe.get_list('Item',
