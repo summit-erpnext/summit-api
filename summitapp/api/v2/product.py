@@ -222,7 +222,7 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         elif sort_by == "sequence":
             order_by = "sequence asc"
         elif sort_by == "weight_range":
-            order_by = "weight_range "
+            order_by = "weight_range asc"
         else:
             order_by = "creation desc"
     else:
