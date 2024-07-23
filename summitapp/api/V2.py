@@ -43,7 +43,7 @@ import summitapp.api.v2.access_token as access_token
 import summitapp.api.v2.translation as translation
 import summitapp.api.v2.customer_review as customer_review
 import summitapp.api.v2.warranty_claim as warranty_claim
-
+import summitapp.api.v2.variant as variant
 
 class V2():
     def __init__(self):
@@ -61,6 +61,7 @@ class V2():
             "mega_menu": ['get', 'breadcrums','get_mega_menu','get_navbar_data','get_menu'],
             "order": ['get_list', 'get_summary', 'get_order_id', 'place_order', 'return_replace_item', 'get_razorpay_payment_url', 'get_order_details', 'recently_bought'],
             "product": ['get_list', 'get_details', 'get_cyu_categories', 'get_variants', 'get_recommendation', 'get_top_categories', "get_tagged_products", "check_availability", "get_categories",'get_default_currency'],
+            "variant":["get_variants"],
             "registration": ['add_subscriber','customer_signup', 'change_password', 'reset_password', 'send_reset_link', 'create_registration'],
             "seller": ['get'],
             "signin": ['signin', 'get_user_profile', 'signin_as_guest', 'get_redirecting_urls', 'login_via_token','existing_user_signin'],
