@@ -133,7 +133,7 @@ def get_details(kwargs):
             return error_response(_("Invalid key 'item'"))
         customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
-        count, item = get_list_data(None, filters, None, None, None, limit=1)
+        count, item = get_list_data(None, None, filters, None, None, None, limit=1)
         field_names = get_field_names('Details')
         processed_items = []
 
