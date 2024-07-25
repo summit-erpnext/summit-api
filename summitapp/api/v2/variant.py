@@ -41,13 +41,13 @@ def get_variants(kwargs):
                 "Item Attribute Value",
                 filters={"abbr": ["IN", attr], "parent": attribute},
                 pluck='abbr',
-                order_by="idx asc"
+                order_by="idx asc",
             )
             # Append the attribute details to the list
             attributes_list.append({
                 "field_name": attribute,
                 "label": f"Select {attribute}",
-                "values": sorted_attr,
+                "values": attr,
                 "default_value": get_default_variant(item_code, attribute),
                 "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
             })
@@ -61,34 +61,60 @@ def get_variants(kwargs):
         frappe.logger('product').exception(e)
         return error_response(e)
 
+
+def get_variant_info(variant_list):
+    variant_info_list = []
+    for item in variant_list:
+        variant_info = {
+            'variant_code': item.name,
+            'slug': get_variant_slug(item.name),
+        }
+        item_variant_attribute = get_item_varient_attribute(item.name)
+        for attribute in item_variant_attribute:
+            if frappe.db.get_value("Item Attribute", attribute["attribute"], "numeric_values") == 1:
+                variant_info[attribute['attribute']] = attribute["attribute_value"]
+            else:
+                variant_info[attribute['attribute']] = attribute['abbr']
+        variant_info['stock'] = get_stock_info(item.name, 'stock_qty') != 0
+        variant_info['image'] = get_slide_images(item.name, False)
+        variant_info_list.append(variant_info)
+    return variant_info_list
+
+
 def get_item_varient_attribute(item_code):
     item_varient_details = frappe.get_all('Item Variant Attribute',
 							{'parent': item_code}, ['attribute', 'attribute_value'])
     
     for item in item_varient_details:
-        item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
+        if frappe.db.get_value("Item Attribute", item["attribute"], "numeric_values") == 1:
+            item["abbr"] = item["attribute_value"]
+        else:
+            item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
     return item_varient_details
 
-def get_variant_info(variant_list):
-    varient_info_list = []
-    for item in variant_list:
-        varient_info = {
-            'variant_code': item.name,
-            'slug': get_variant_slug(item.name),
-            }
-        item_varient_attribute = get_item_varient_attribute(item.name)
-        for attribute in item_varient_attribute:
-            varient_info[attribute['attribute']] = attribute['abbr']
-        varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        varient_info['image'] = get_slide_images(item.name, False)
-        varient_info_list.append(varient_info)
-    return varient_info_list
 
 # Get Variants Helper Functions
 def get_variant_details(filters):
 	ignore_perm = frappe.session.user == "Guest"
 	return frappe.get_list('Item', {'variant_of': filters.get('item_code')}, ignore_permissions=ignore_perm)
 
+
 def get_variant_slug(item_code):
 	return frappe.get_value('Item',{'item_code':item_code},'slug')
 
+
+def get_default_variant(item_code, attribute):
+    attr = frappe.get_value("Item Variant Attribute", {"variant_of": item_code, "is_default":1, "attribute": attribute},"attribute_value")
+    if attr: 
+        if frappe.db.get_value("Item Attribute", attribute, "numeric_values") == 1:
+            attr = frappe.db.get_value('Item Variant Attribute',filters={'variant_of': item_code,'is_default': 1,"attribute_value":attr},fieldname='attribute_value')
+            return attr
+        else:
+            attr = frappe.get_value("Item Variant Attribute", {"variant_of": item_code, "is_default":1, "attribute": attribute},"attribute_value")
+            return frappe.get_value('Item Attribute Value', {'attribute_value': attr}, 'abbr')
+
+
+def variant_thumbnail_reqd(item_code, attribute):
+	res = frappe.get_value("Item Variant Attribute", {"parent": item_code, "display_thumbnail":1, "attribute": attribute},"name")
+	return bool(res)
+    
