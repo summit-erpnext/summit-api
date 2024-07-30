@@ -124,26 +124,28 @@ def get(kwargs):
         response_body = frappe.as_json(banners)
         
         etag = hashlib.md5(response_body.encode()).hexdigest()
-        if etag:
-            item = etag[0] if etag else None
-            headers = {}
-            if item:
-                headers["Etag"] = etag
+        headers = {"Etag": etag}
+        # if etag:
+        #     item = etag[0] if etag else None
+        #     headers = {}
+        #     if item:
+        #         headers["Etag"] = etag
 
         if frappe.db.exists("Etag",etag):
             data =  {"status" : "Success","data":banners}
             return custom_response(data, headers=headers, status_code=304)
         else:
-            etab = frappe.get_doc({
-            "doctype": 'Etag',
-            'etag': etag,
+            # If ETag does not exist, create and save a new ETag
+            etag = frappe.get_doc({
+                "doctype": 'Etag',
+                'etag': etag,
             })
-            etab.insert(ignore_permissions=True)
-            etab.save()
-            print("Etag created succesfull",etab)
-            data =  {"status" : "Success","data":banners}
-            frappe.log_error("Etag",etab)
-            frappe.log_error("Headers",headers)
+            etag.insert(ignore_permissions=True)
+            etag.save()
+            print("Etag created successfully", etag)
+            data = {"status": "Success", "data": banners}
+            frappe.log_error("Etag", etag)
+            frappe.log_error("Headers", headers)
             return custom_response(data, headers=headers)
        
     except Exception as e:
