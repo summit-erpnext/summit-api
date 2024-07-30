@@ -164,5 +164,5 @@ def custom_response(data, headers=None, status_code=200):
     if headers:
         for key, value in headers.items():
             response.headers[key] = value
-    response.headers["Cache-Control"] = "no-cache, max-age=120"
+    response.headers["Cache-Control"] = "no-cache, max-age=1200"
     return response
