@@ -161,8 +161,8 @@ def custom_response(data, headers=None, status_code=200):
     response.status_code = status_code
     response.mimetype = "application/json"
     response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
-    # if headers:
-    #     for key, value in headers.items():
-    #         response.headers[key] = value
-    # response.headers["Cache-Control"] = "no-cache, max-age=1200"
+    if headers:
+        for key, value in headers.items():
+            response.headers[key] = value
+    response.headers["Cache-Control"] = "max-age=120"
     return response
