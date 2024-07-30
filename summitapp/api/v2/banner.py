@@ -121,32 +121,33 @@ def get(kwargs):
             banner = {}
             banner.update(filtered_banner)
 
-        response_body = frappe.as_json(banners)
+        # response_body = frappe.as_json(banners)
         
-        etag = hashlib.md5(response_body.encode()).hexdigest()
-        headers = {"Etag": etag}
-        # if etag:
-        #     item = etag[0] if etag else None
-        #     headers = {}
-        #     if item:
-        #         headers["Etag"] = etag
+        # etag = hashlib.md5(response_body.encode()).hexdigest()
+        # headers = {"Etag": etag}
+        # # if etag:
+        # #     item = etag[0] if etag else None
+        # #     headers = {}
+        # #     if item:
+        # #         headers["Etag"] = etag
 
-        if frappe.db.exists("Etag",etag):
-            data =  {"status" : "Success","data":banners}
-            return custom_response(data, headers=headers, status_code=304)
-        else:
-            # If ETag does not exist, create and save a new ETag
-            etag = frappe.get_doc({
-                "doctype": 'Etag',
-                'etag': etag,
-            })
-            etag.insert(ignore_permissions=True)
-            etag.save()
-            print("Etag created successfully", etag)
+        # if frappe.db.exists("Etag",etag):
+        #     data =  {"status" : "Success","data":banners}
+        #     return custom_response(data, headers=headers, status_code=304)
+        # else:
+        #     # If ETag does not exist, create and save a new ETag
+        #     etag = frappe.get_doc({
+        #         "doctype": 'Etag',
+        #         'etag': etag,
+        #     })
+        #     etag.insert(ignore_permissions=True)
+        #     etag.save()
+        #     print("Etag created successfully", etag)
+        #     data = {"status": "Success", "data": banners}
+        #     frappe.log_error("Etag", etag)
+        #     frappe.log_error("Headers", headers)
             data = {"status": "Success", "data": banners}
-            frappe.log_error("Etag", etag)
-            frappe.log_error("Headers", headers)
-            return custom_response(data, headers=headers)
+            return custom_response(data)
        
     except Exception as e:
         frappe.logger("banner").exception(e)
@@ -163,8 +164,5 @@ def custom_response(data, headers=None, status_code=200):
     response.status_code = status_code
     response.mimetype = "application/json"
     response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
-    if headers:
-        for key, value in headers.items():
-            response.headers[key] = value
     response.headers["Cache-Control"] = "max-age=120"
     return response
