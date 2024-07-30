@@ -142,6 +142,8 @@ def get(kwargs):
             etab.save()
             print("Etag created succesfull",etab)
             data =  {"status" : "Success","data":banners}
+            frappe.log_error("Etag",etab)
+            frappe.log_error("Headers",headers)
             return custom_response(data, headers=headers)
        
     except Exception as e:
