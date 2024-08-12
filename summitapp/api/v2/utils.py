@@ -91,10 +91,10 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
-        if item.image == None and item.status != "template":
+        if item.image in ("",None) :
             if frappe.db.exists("Item", item.variant_of):
                 data = frappe.get_doc("Item",item.variant_of) 
-                item.image = data.custom_item_image
+                item.image = data.image
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names)
         print("ITEM Fields",item_fields)
         processed_items.append(item_fields)

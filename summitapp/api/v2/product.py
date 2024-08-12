@@ -133,7 +133,6 @@ def get_details(kwargs):
             return error_response(_("Invalid key 'item'"))
         customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
         user_email = frappe.db.get_value("Customer", customer_id,"email")
-        print("user_email",user_email)
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
         count, item = get_list_data(None, None, filters, None, None, None, limit=1)
         field_names = get_field_names('Details')
@@ -149,6 +148,12 @@ def get_details(kwargs):
                         translated_item_fields["reject_button_value"] = 1
                     else:
                         translated_item_fields["reject_button_value"] = 0
+ 
+                if fieldname == 'image' and value in ("",None):
+                    if frappe.db.exists("Item", item.variant_of):
+                        data = frappe.get_doc("Item", item.variant_of)
+                        value = data.image
+                        
                 translated_item_fields[fieldname] = _(value)
             processed_items.append(translated_item_fields)
         
