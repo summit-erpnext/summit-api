@@ -91,7 +91,7 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
-        if item.image in("",None) :
+        if item.image in ("",None) :
             if frappe.db.exists("Item", item.variant_of):
                 data = frappe.get_doc("Item",item.variant_of) 
                 item.image = data.image
