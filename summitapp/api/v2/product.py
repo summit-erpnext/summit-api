@@ -132,6 +132,8 @@ def get_details(kwargs):
         if not item_slug:
             return error_response(_("Invalid key 'item'"))
         customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
+        user_email = frappe.db.get_value("Customer", customer_id,"email")
+        print("user_email",user_email)
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
         count, item = get_list_data(None, None, filters, None, None, None, limit=1)
         field_names = get_field_names('Details')
@@ -141,6 +143,12 @@ def get_details(kwargs):
             item_fields = get_item_field_values(currency, item, customer_id, None, field_names)
             translated_item_fields = {}
             for fieldname, value in item_fields.items():
+                if fieldname == 'name':
+                    data = frappe.db.exists("Ecommerce Item Rejection Details", {"parent": value, 'user': user_email})
+                    if data:
+                        translated_item_fields["reject_button_value"] = 1
+                    else:
+                        translated_item_fields["reject_button_value"] = 0
                 translated_item_fields[fieldname] = _(value)
             processed_items.append(translated_item_fields)
         
