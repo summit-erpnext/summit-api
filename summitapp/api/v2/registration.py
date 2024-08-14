@@ -101,12 +101,13 @@ def create_customer(kwargs):
 	account_manager = check_user_exists(kwargs.get('email'))
 	customer_doc = frappe.get_doc({
 		'doctype':"Customer",
+		'salutation':kwargs.get('salutation'),
 		'customer_name': kwargs.get('name'),
 		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'mobile_number': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'email_id': kwargs.get('usr') or kwargs.get('email'),
 		'email': kwargs.get('usr') or kwargs.get('email'),
-		'type': 'Individual', 
+		'customer_type': 'Individual', 
 		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("Webshop Settings","default_customer_group")),
 		'territory': 'All Territories',
 		'custom_sales_person': kwargs.get('sales_person'),
