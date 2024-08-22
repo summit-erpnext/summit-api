@@ -234,10 +234,10 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
             order_by = "creation asc"
         elif sort_by == "sequence":
             order_by = "sequence asc"
-            filters["sequence"] = ["is", "set"]
+            # filters["sequence"] = ["is", "set"]
         elif sort_by == "weight_range":
             order_by = "weight_range asc"
-            filters["weight_range"] = ["is", "set"]
+            # filters["weight_range"] = ["is", "set"]
         else:
             order_by = "creation desc"
     else:
