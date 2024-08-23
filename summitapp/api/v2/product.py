@@ -137,7 +137,6 @@ def get_details(kwargs):
         count, item = get_list_data(None, None, filters, None, None, None, limit=1)
         field_names = get_field_names('Details')
         processed_items = []
-
         if item:
             item_fields = get_item_field_values(currency, item, customer_id, None, field_names)
             translated_item_fields = {}
@@ -209,7 +208,6 @@ def get_top_categories(kwargs):
 		res.append(data)
 	return success_response(res)
 
-
 def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
@@ -222,12 +220,10 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     if brands := get_allowed_brands():
         if not (filters.get("brand") and filters.get("brand") in brands):
             filters["brand"] = ["in", brands]
-
     if global_items is not None:
-        return get_items_via_search(global_items, filters)
+        return get_items_via_search(global_items, filters, limit, offset)
 
     ignore_permissions = frappe.session.user == "Guest"
-
     if not order_by:
         order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
         if sort_by == "oldest":
@@ -253,7 +249,6 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
                            debug=debug)
     count = get_count("Item", filters=filters, or_filters=or_filters,
                       ignore_permissions=ignore_permissions)
-
     if limit == 1:
         data = data[0] if data else []
 
@@ -269,14 +264,19 @@ def get_count(doctype, **args):
 	return data
 
 
-def get_items_via_search(global_items, filters):
-	item_list = []
-	items = [item.name for item in global_items]
-	filters['name'] = ["in", items]
-	ignore_permission = bool(frappe.session.user == "Guest")
-	item_list = frappe.get_list(
-		'Item', filters, '*', ignore_permissions=ignore_permission)
-	return len(item_list), item_list
+def get_items_via_search(global_items, filters, limit, offset):
+    item_list = []
+    items = [item.name for item in global_items]
+    filters['name'] = ["in", items]
+    ignore_permission = bool(frappe.session.user == "Guest")
+
+    item_list = frappe.get_list(
+        'Item', filters, '*', limit_page_length=limit, limit_start=offset, ignore_permissions=ignore_permission)
+        
+    count = frappe.get_list(
+        'Item', filters, '*', ignore_permissions=ignore_permission)
+
+    return len(count), item_list
 
 
 # Get Variants Helper Functions
@@ -442,7 +442,7 @@ def get_tagged_product_limit(user_role, customer_id):
     elif customer_id:
         grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
         if grp:
-            apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_product_limit")
+            apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
 
             if apply_customer_group_limit:
                 return apply_customer_group_limit
