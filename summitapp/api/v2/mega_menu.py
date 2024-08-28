@@ -5,8 +5,10 @@ from summitapp.utils import error_response, success_response, get_allowed_catego
 @frappe.whitelist(allow_guest=True)
 def get(kwargs):
 	try:
+		summit_settings =  frappe.get_doc("Summit Settings")
+		enable_user_based_menu = summit_settings.enable_user_based_menu 
 		filters = {'parent_category':['is','not set']}
-		categories = get_allowed_categories()
+		categories = get_allowed_categories(enable_user_based_menu = enable_user_based_menu)
 		if categories:
 			filters.update({"name": ["in", categories]})
 		category_list = get_item_list('Category', filters)
@@ -156,7 +158,9 @@ def get_mega_menu(kwargs):
 		web_settings = frappe.get_doc("Web Settings")
 		if web_settings.use_pc_as_menu == 1:
 			menu = get(kwargs)
+			print("iffffffff")
 		else:
+			print("elseeeee")
 			menu = get_menu(kwargs)
 		return success_response(data=menu)	
 	except Exception as e:

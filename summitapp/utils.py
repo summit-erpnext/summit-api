@@ -227,22 +227,24 @@ def get_access_level(customer_id=None):
 		return access_level
 	return 0
 
-def get_allowed_categories(category_list = []):
+def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 	categories = []
 	user = frappe.session.user
 	# Changes email to email_id
-	if user != "Guest":
-		cust = frappe.db.get_value("Customer", {"email_id": user}, [
-								   "name", "customer_group"], as_dict=1)
-		if cust:
-			categories = frappe.db.get_values(
-				"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
-			if not categories and cust.get("customer_group"):
+	if enable_user_based_menu == 1:
+		if user != "Guest":
+			cust = frappe.db.get_value("Customer", {"email_id": user}, [
+									"name", "customer_group"], as_dict=1)
+			if cust:
 				categories = frappe.db.get_values(
 					"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
-	if not categories:
-		categories = frappe.db.get_values(
-			"Category Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)
+				if not categories and cust.get("customer_group"):
+					categories = frappe.db.get_values(
+						"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
+	else:
+		if not categories:
+			categories = frappe.db.get_values(
+				"Category Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)
 	allowed_categories = []
 	for category in categories:
 		allowed_categories += get_child_categories(category,True,True)
