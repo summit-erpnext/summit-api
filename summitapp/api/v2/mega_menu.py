@@ -158,9 +158,7 @@ def get_mega_menu(kwargs):
 		web_settings = frappe.get_doc("Web Settings")
 		if web_settings.use_pc_as_menu == 1:
 			menu = get(kwargs)
-			print("iffffffff")
 		else:
-			print("elseeeee")
 			menu = get_menu(kwargs)
 		return success_response(data=menu)	
 	except Exception as e:
