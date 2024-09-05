@@ -33,6 +33,7 @@ def get_list(kwargs):
         price_range = kwargs.get('price_range')
         search_text = kwargs.get('search_text')
         currency = kwargs.get('currency')
+        sort_by = kwargs.get('sort_by')
         access_level = get_access_level(customer_id)
         if not search_text:
             order_by = None
@@ -42,9 +43,25 @@ def get_list(kwargs):
                 filter_args["category"] = child_categories
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
-            
             if kwargs.get('item'):
                 filter_args["name"] = frappe.get_value('Item', {'name': kwargs.get('item')})
+            if sort_by not in ["low_to_high","high_to_low","oldest","latest"]:
+                tag_data = frappe.db.sql(
+                    f"""
+                    SELECT
+                        tm.parent
+                    FROM
+                        `tabTags MultiSelect` as tm
+                    WHERE
+                        tm.tag = '{sort_by}'
+                    """,
+                    as_dict=True,
+                )
+                tag_records = [item_name.parent for item_name in tag_data]
+                if kwargs.get('item'):
+                    item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
+                    tag_records.append(item_value)
+                filter_args["name"] = ['in', tag_records]  
             
             filters = get_filter_listing(filter_args)
             type = 'brand-product' if check_brand_exist(filters) else 'product'
@@ -66,17 +83,20 @@ def get_list(kwargs):
                     order_by = 'sequence {}'.format(sort_order)
                     del filters['sequence']
             debug = kwargs.get("debug_query", 0)
-            count, data = get_list_data(order_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
-        else:
+            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
+        else:   
             type = 'product'
             global_items = search(search_text, doctype='Item')
-            count, data = get_list_data(None, {}, price_range, global_items, page_no, limit)
+            count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
         translated_item_fields = translate_result(result)
         if internal_call:
             return translated_item_fields
-        translated_item_fields = sort_item_by_price(translated_item_fields, price_range)
+        if sort_by == "low_to_high" or sort_by == "high_to_low":
+            translated_item_fields = sort_item_by_price(translated_item_fields, sort_by)
+        else:
+            translated_item_fields = sort_item_by_price(translated_item_fields, price_range)
         return {'msg': 'success', 'data': translated_item_fields, 'total_count': total_count}
     except Exception as e:
         frappe.logger('product').exception(e)
@@ -232,7 +252,7 @@ def get_top_categories(kwargs):
 	return success_response(res)
 
 
-def get_list_data(order_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
+def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
         offset = int(page_no) * int(limit)
@@ -252,6 +272,10 @@ def get_list_data(order_by, filters, price_range, global_items, page_no, limit, 
 
     if not order_by:
         order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
+        if sort_by == "oldest":
+            order_by = "modified asc"
+        elif sort_by == "latest":
+            order_by = "modified desc"
     else:
         order_by = order_by
     data = frappe.get_list('Item',
