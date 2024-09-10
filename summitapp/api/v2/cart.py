@@ -392,11 +392,11 @@ def request_for_quotation(kwargs):
 	quot_id = kwargs.get('quotation_id')
 	if not quot_id:
 		return error_response("Quotation id is required")
-	doc = frappe.get_doc("Quotation",quot_id)
-	new_doc = frappe.get_doc(doc.as_dict().copy()).insert(ignore_permissions=1)
-	doc.send_quotation = 1
-	doc.flags.ignore_permissions=1
-	doc.submit()
+	new_doc = frappe.get_doc("Quotation",quot_id)
+	# new_doc = frappe.get_doc(doc.as_dict().copy()).insert(ignore_permissions=1)
+	# doc.send_quotation = 1
+	# doc.flags.ignore_permissions=1
+	# doc.submit()
 	return success_response(data={"quotation_id":new_doc.name,"print_url": get_pdf_link("Quotation",new_doc.name)})
 
 
