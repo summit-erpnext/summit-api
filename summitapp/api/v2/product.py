@@ -489,7 +489,7 @@ def get_tagged_product_limit(user_role, customer_id):
     elif customer_id:
         grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
         if grp:
-            apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_product_limit")
+            apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
 
             if apply_customer_group_limit:
                 return apply_customer_group_limit
