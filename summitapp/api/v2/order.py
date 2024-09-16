@@ -17,13 +17,13 @@ def get_list(kwargs):
 	try:
 		order_id = kwargs.get('order_id')
 		date_range = kwargs.get('date_range')
-		is_cancelled = kwargs.get('is_cancelled')
+		status = kwargs.get('status')
 		session_id = kwargs.get('session_id')
 		email = frappe.session.user
-		# if email == "Guest":
-		# 	return error_response('Please Login As A Customer')
+		if email == "Guest":
+			return error_response('Please Login As A Customer')
 		customer = frappe.get_value("Customer",{'email':email})
-		result, order_count = get_listing_details(customer, order_id, date_range, is_cancelled,session_id)
+		result, order_count = get_listing_details(customer, order_id, date_range, status,session_id)
 		return {'msg': 'success', 'data': result, 'order_count': order_count}
 	except Exception as e:
 		frappe.logger('product').exception(e)
@@ -185,22 +185,25 @@ def get_charges_from_table(doc,table=[]):
 	charges['tax'] = charges.get("total",0) - charges.get("gateway_charge",0) - charges.get("shipping",0) - charges.get("assembly",0)
 	return charges
 
-def get_listing_details(customer, order_id, date_range, is_cancelled, session_id):
-    filters = []
-    if customer:
-        filters.append(["Sales Order", "customer", "=", customer])
-    if order_id:
-        filters.append(["Sales Order", "name", "=", order_id])
-    if is_cancelled:
-        filters.append(["Sales Order", "status", "=", "Cancelled"])
-    if date_range:
-        filters = get_date_range_filter(filters, date_range)
-    if session_id:
-        filters.append(["Sales Order", "custom_session_id", "=", session_id])
-
-    orders = frappe.get_all("Sales Order", filters=filters, fields="*")
-    charges_fields = get_processed_order(orders, customer)
-    return charges_fields, len(charges_fields)
+def get_listing_details(customer, order_id, date_range, status, session_id):
+	filters = []
+	if customer:
+		filters.append(["Sales Order", "customer", "=", customer])
+	if order_id:
+		filters.append(["Sales Order", "name", "=", order_id])
+	if status == "Cancelled":
+		filters.append(["Sales Order", "status", "=", "Cancelled"])
+	elif status == "Completed":
+		filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+	else:
+		filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+	if date_range:
+		filters = get_date_range_filter(filters, date_range)
+	if session_id:
+		filters.append(["Sales Order", "custom_session_id", "=", session_id])
+	orders = frappe.get_all("Sales Order", filters=filters, fields="*")
+	charges_fields = get_processed_order(orders, customer)
+	return charges_fields, len(charges_fields)
 
 
 
