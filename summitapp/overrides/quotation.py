@@ -50,12 +50,12 @@ def on_payment_authorized(self, *args, **kwargs):
 			from summitapp.api.v2.order import razorpay_place_order
 			fil_lst = {'order_id': self.name}
 			party_name = {"party_name":self.party_name}
-			razorpay_place_order(fil_lst['order_id'], party_name=party_name['party_name'])
+			order = razorpay_place_order(fil_lst['order_id'], party_name=party_name['party_name'])
 			# if sales_order:
 			# 	make_payment_entry(sales_order)
 			# frappe.local.response['type'] = 'redirect'
 			# frappe.local.response['location'] = "http://localhost:3000/thankyou/SAL-ORD-2022-00525"
-			return "thankyou"
+			return f"thank-you/{order}"
 		else:
 			return 'failed'
 	except Exception as e:
