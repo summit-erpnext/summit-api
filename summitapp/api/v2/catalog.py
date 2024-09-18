@@ -127,7 +127,7 @@ def create_catalog(catalog_name, catalog_access_level):
     catalog_doc = frappe.new_doc('Catalog')
     catalog_doc.name1 = catalog_name
     catalog_doc.access_level = catalog_access_level
-    catalog_doc.sequence = last_sequence + 1
+    catalog_doc.sequence = int(last_sequence) + 1
     catalog_doc.save(ignore_permissions=True)
     
     return f'Catalog {catalog_name} Created'

@@ -44,7 +44,7 @@
   },
   {
    "fieldname": "sequence",
-   "fieldtype": "Data",
+   "fieldtype": "Int",
    "label": "Sequence"
   },
   {
@@ -55,7 +55,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 14:04:10.019433",
+ "modified": "2024-09-18 13:01:22.225521",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Catalog",
