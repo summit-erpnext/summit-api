@@ -627,3 +627,13 @@ def get_item_varient_attribute(item_code):
     for item in item_varient_details:
          item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
     return item_varient_details
+
+
+def quick_order(kwargs):
+    try:
+        filter = json.loads(kwargs.get('item'))
+        quick_order = frappe.db.get_value('Item', filter, ['*'],as_dict=True)
+        return {'msg': 'success', 'data': quick_order}
+    except Exception as e:
+        frappe.logger('product').exception(e)
+        return error_response(str(e))
