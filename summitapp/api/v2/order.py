@@ -191,12 +191,13 @@ def get_listing_details(customer, order_id, date_range, status, session_id):
 		filters.append(["Sales Order", "customer", "=", customer])
 	if order_id:
 		filters.append(["Sales Order", "name", "=", order_id])
-	if status == "Cancelled":
-		filters.append(["Sales Order", "status", "=", "Cancelled"])
-	elif status == "Completed":
-		filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
 	else:
-		filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+		if status == "Cancelled":
+			filters.append(["Sales Order", "status", "=", "Cancelled"])
+		elif status == "Completed":
+			filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+		else:
+			filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
 	if date_range:
 		filters = get_date_range_filter(filters, date_range)
 	if session_id:
@@ -215,7 +216,7 @@ def get_processed_order(orders, customer):
         try:
             sales_invoice = frappe.get_doc("Sales Invoice", {'sales_order': order.name}, "*")
             if sales_invoice:
-                print_url = get_pdf_link("Sales Invoice", sales_invoice.name)
+                print_url =get_pdf_link ("Sales Invoice", sales_invoice.name)
             else:
                 print_url = ""
         except frappe.DoesNotExistError as e:
@@ -451,7 +452,7 @@ def get_order_details(kwargs):
 			"tax": tax,
 			"shipping": shipping,
 			"coupon": doc.get("coupon_code"),
-			"print_url": get_pdf_link("Sales Invoice", sales_invoice[0].name)
+			"print_url": get_sales_invoice_print_url(sales_invoice)
 		}
 		products = []
 		for row in doc.items:
@@ -499,7 +500,13 @@ def recently_bought(kwargs):
 		return error_response(e)
 
 
-def get_pdf_link(voucher_type, voucher_no, print_format ="GST-Tax Invoice"):
+def get_pdf_link(voucher_type, voucher_no, print_format ="GST Tax Invoice"):
 	if print_format:
 		return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype={voucher_type}&name={voucher_no}&format={print_format}&no_letterhead=1&letterhead=No Letterhead&lang=en"
 	return "#"		
+
+def get_sales_invoice_print_url(sales_invoice):
+    if sales_invoice:
+        return get_pdf_link("Sales Invoice", sales_invoice[0].name)
+    else:
+        return "#"
