@@ -64,12 +64,10 @@ def put_items(kwargs):
 
             catalog_name = kwargs.get('catalog_name')
             item = kwargs.get('item')
-            if not frappe.db.exists('Catalog', catalog_name):
+            if not frappe.db.exists('Catalog', {"slug": catalog_name}):
                 return error_response(f'catalog {catalog_name} does not exists')
-
             if not frappe.db.exists('Item', item):
                 return error_response(f'Item {item} does not exists')
-
             result = add_item(catalog_name, item)
             return success_response(data = result)      
     except Exception as e:
@@ -134,7 +132,7 @@ def create_catalog(catalog_name, catalog_access_level):
 
 
 def add_item(catalog_name, item):
-    cat_doc = frappe.get_doc('Catalog', catalog_name)
+    cat_doc = frappe.get_doc("Catalog", {"slug": "hot-deal11"})
     item_doc = frappe.get_doc('Item', item)
     if item_doc.name in get_item(cat_doc.name):
         return 'Item already Present In Catalog'
