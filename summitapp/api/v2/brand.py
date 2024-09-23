@@ -4,7 +4,7 @@ from summitapp.utils import error_response, success_response, get_allowed_brands
 from summitapp.api.v2.product import get_list, get_details
 from summitapp.api.v2.utils import get_field_names
 from werkzeug.wrappers import Response
-
+import json
 def get(kwargs):
     filters = {"publish":1}
     if brands:=get_allowed_brands():
