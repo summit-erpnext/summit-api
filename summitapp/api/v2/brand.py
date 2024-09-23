@@ -3,6 +3,7 @@ import frappe
 from summitapp.utils import error_response, success_response, get_allowed_brands
 from summitapp.api.v2.product import get_list, get_details
 from summitapp.api.v2.utils import get_field_names
+from werkzeug.wrappers import Response
 
 def get(kwargs):
     filters = {"publish":1}
@@ -21,7 +22,9 @@ def get(kwargs):
         transformed_brand = get_brand_json(brand)
         transformed_brand['url'] = f"/brand/{brand.get('slug')}"
         transformed_brand_list.append(transformed_brand)
-    return success_response(data=transformed_brand_list)
+    brand_data_list = success_response(data=transformed_brand_list)
+    return custom_response(brand_data_list)
+    # return success_response(data=transformed_brand_list)
 
 
 def get_brand_json(brand):
@@ -47,3 +50,9 @@ def get_product_details(kwargs):
     except Exception as e:
         frappe.logger('brand').exception(e)
         return error_response(e)
+def custom_response(data, headers=None):
+    response = Response()
+    response.mimetype = "application/json"
+    response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
+    response.headers["Cache-Control"] = "max-age=450000"
+    return response
