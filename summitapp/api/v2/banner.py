@@ -114,6 +114,6 @@ def custom_response(data, headers=None):
     response = Response()
     response.mimetype = "application/json"
     response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
-    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Cache-Control"] = "max-age=450000"
     return response
 
