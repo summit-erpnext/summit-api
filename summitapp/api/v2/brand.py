@@ -5,6 +5,7 @@ from summitapp.api.v2.product import get_list, get_details
 from summitapp.api.v2.utils import get_field_names
 from werkzeug.wrappers import Response
 import json
+import datetime
 def get(kwargs):
     filters = {"publish":1}
     if brands:=get_allowed_brands():
@@ -50,6 +51,12 @@ def get_product_details(kwargs):
     except Exception as e:
         frappe.logger('brand').exception(e)
         return error_response(e)
+
+def json_handler(obj):
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError("Type %s not serializable" % type(obj))
+
 def custom_response(data, headers=None):
     response = Response()
     response.mimetype = "application/json"
