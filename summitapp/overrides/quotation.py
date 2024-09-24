@@ -55,7 +55,7 @@ def on_payment_authorized(self, *args, **kwargs):
 			# 	make_payment_entry(sales_order)
 			# frappe.local.response['type'] = 'redirect'
 			# frappe.local.response['location'] = "http://localhost:3000/thankyou/SAL-ORD-2022-00525"
-			return f"thank-you/{order}"
+			return f"my-orders/{order}"
 		else:
 			return 'failed'
 	except Exception as e:
