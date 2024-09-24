@@ -12,6 +12,8 @@ from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filt
 									   get_field_names, create_user_tracking,
 									   get_default_variant, variant_thumbnail_reqd,
                                     	get_list_product_limit,get_customer_id)
+from werkzeug.wrappers import Response
+import datetime
 
 @frappe.whitelist()
 def get_list(kwargs):
@@ -210,12 +212,14 @@ def get_details(kwargs):
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
 def get_cyu_categories(kwargs):
-	ignore_permissions = frappe.session.user == "Guest"
-	return frappe.get_list('CYU Categories',
-							   filters={},
-							   fields=['name as product_category', 'heading','label','image as product_img', 'slug', 'url as category_url', 'description','offer','range_start_from'],
-							   order_by='sequence',
-							   ignore_permissions=ignore_permissions)
+    ignore_permissions = frappe.session.user == "Guest"
+    data = frappe.get_list('CYU Categories',
+                           filters={},
+                           fields=['name as product_category', 'heading', 'label', 'image as product_img', 'slug', 'url as category_url', 'description', 'offer', 'range_start_from'],
+                           order_by='sequence',
+                           ignore_permissions=ignore_permissions)   
+    return custom_response(data)
+
 
 @frappe.whitelist(allow_guest=True)
 def get_categories(kwargs):
@@ -637,3 +641,15 @@ def quick_order(kwargs):
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
+
+def json_handler(obj):
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError("Type %s not serializable" % type(obj))
+
+def custom_response(data, headers=None):
+    response = Response()
+    response.mimetype = "application/json"
+    response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
+    response.headers["Cache-Control"] = "max-age=450000"
+    return response
