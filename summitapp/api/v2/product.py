@@ -217,8 +217,9 @@ def get_cyu_categories(kwargs):
                            filters={},
                            fields=['name as product_category', 'heading', 'label', 'image as product_img', 'slug', 'url as category_url', 'description', 'offer', 'range_start_from'],
                            order_by='sequence',
-                           ignore_permissions=ignore_permissions)   
-    return custom_response(data)
+                           ignore_permissions=ignore_permissions) 
+    data_list = success_response(data=data)
+    return custom_response(data_list)  
 
 
 @frappe.whitelist(allow_guest=True)
