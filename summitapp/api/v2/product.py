@@ -643,6 +643,7 @@ def quick_order(kwargs):
         filter = json.loads(kwargs.get('item'))
         data = [frappe.db.get_value('Item', filter, ['*'],as_dict=True)]
         if result := get_processed_list(currency, data, customer_id):
+            frappe.log_error({'msg': 'success', 'data': result[0]})
             return {'msg': 'success', 'data': result[0]}
         else:
             return {'msg': 'success', 'data': []}
