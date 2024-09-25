@@ -636,9 +636,12 @@ def get_item_varient_attribute(item_code):
 
 def quick_order(kwargs):
     try:
+        currency = kwargs.get('currency')
+        customer_id = get_customer_id(kwargs)
         filter = json.loads(kwargs.get('item'))
-        quick_order = frappe.db.get_value('Item', filter, ['*'],as_dict=True)
-        return {'msg': 'success', 'data': quick_order}
+        data = [frappe.db.get_value('Item', filter, ['*'],as_dict=True)]
+        result = get_processed_list(currency, data, customer_id)
+        return {'msg': 'success', 'data': result}
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
