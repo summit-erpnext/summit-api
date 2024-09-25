@@ -638,10 +638,14 @@ def quick_order(kwargs):
     try:
         currency = kwargs.get('currency')
         customer_id = get_customer_id(kwargs)
+        if not kwargs.get('item'):
+            return error_response('Item filter not provided')
         filter = json.loads(kwargs.get('item'))
         data = [frappe.db.get_value('Item', filter, ['*'],as_dict=True)]
-        result = get_processed_list(currency, data, customer_id)
-        return {'msg': 'success', 'data': result}
+        if result := get_processed_list(currency, data, customer_id):
+            return {'msg': 'success', 'data': result[0]}
+        else:
+            return {'msg': 'success', 'data': []}
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
