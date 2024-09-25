@@ -11,12 +11,12 @@ def get_meta_tags(kwargs):
     return success_response(data = meta)
 
 """
-product - product-category/categorySlug/subCategorySlug/subSubCategorySlug
-product detail - product/categorySlug/subCategorySlug/subSubCategorySlug/productDetailSlug
+product category- product-category/categorySlug/subCategorySlug/subSubCategorySlug
+product - product/categorySlug/subCategorySlug/subSubCategorySlug/productDetailSlug
 catalog - catalog/catalog-slug
 catalog product - catalog-product/catalog-slug/catalog-product-slug
 brand - brand/brandSlug
-brand prod detail - brand-product/brandSlug/brandProductDetailSlug 
+brand prod - brand-product/brandSlug/brandProductDetailSlug 
 """
 
 def get_site_map(kwargs):
