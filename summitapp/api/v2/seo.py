@@ -99,27 +99,6 @@ def generate_urls(path_elements):
     filtered_path_elements = [element for element in path_elements if element is not None]
     return '/' + '/'.join(filtered_path_elements)
 
-
-
-
-# def get_parent_categories(category, is_name = False, excluded = [], name_only = False):
-# 	filters = category if is_name else {"slug":category}
-# 	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
-# 	if not (cat and category):
-# 		return []
-# 	excluded_cat = "', '".join(excluded)
-# 	parent_categories = frappe.db.sql(
-# 		f"""select name, slug, parent_category from `tabCategory`
-# 		where lft <= %s and rgt >= %s
-# 		and enable_category='Yes' and name not in ('{excluded_cat}')
-# 		order by lft asc""",
-# 		(cat.lft, cat.rgt),
-# 		as_dict=True,
-# 	)
-# 	if name_only:
-# 		return [row.name for row in parent_categories] if parent_categories else []
-# 	return parent_categories
-
 def product_urls():
     try:
         categories = frappe.get_list("Category", {"is_group":0,"enable_category":"yes"},pluck="slug")
@@ -134,7 +113,6 @@ def product_urls():
     except Exception as e:
         frappe.logger('utils').exception(e)
         return error_response(e)
-
 
 def product_page_urls():
     try:
