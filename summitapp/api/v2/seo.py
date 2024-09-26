@@ -34,31 +34,47 @@ def get_site_map(kwargs):
         return product_page_urls()
 
 def brand_product_urls():
-    brands = frappe.get_all("Brand", {"slug":["is","set"]},["slug","name"])
-    BRANDS = {row.name: row.slug for row in brands}
-    items = frappe.get_all("Item", {"slug":["is","set"],"published_in_website":1, "brand":["is","set"]},["slug", "brand"])
-    result = [generate_urls(["brand-product",BRANDS.get(item.brand), item.slug]) for item in items]
-    return result
-
+    try:
+        brands = frappe.get_all("Brand", {"slug":["is","set"]},["slug","name"])
+        BRANDS = {row.name: row.slug for row in brands}
+        items = frappe.get_all("Item", {"slug":["is","set"],"published_in_website":1, "brand":["is","set"]},["slug", "brand"])
+        result = [generate_urls(["brand-product",BRANDS.get(item.brand), item.slug]) for item in items]
+        return success_response(data = result)
+    except Exception as e:
+        frappe.logger('utils').exception(e)
+        return error_response(e)
+    
 def brand_urls(with_product=False):
-    brands = frappe.get_all("Brand", {"slug":["is","set"]},["slug","name"])
-    BRANDS = {row.name: row.slug for row in brands}
-    result = [generate_urls(["brand",brand]) for brand in BRANDS.values()]
-    return result
+    try:
+        brands = frappe.get_all("Brand", {"slug":["is","set"]},["slug","name"])
+        BRANDS = {row.name: row.slug for row in brands}
+        result = [generate_urls(["brand",brand]) for brand in BRANDS.values()]
+        return success_response(data = result)
+    except Exception as e:
+        frappe.logger('utils').exception(e)
+        return error_response(e)
     
 def catalog_product_urls():
-    catalogs = frappe.get_all("Catalog", {"slug":["is","set"]},["slug","name"])
-    CATALOGS = {row.name: row.slug for row in catalogs}
-    items = frappe.get_all("Item Child",fields=["parent", "item_slug"])
-    result = [generate_urls(["catalog-product",CATALOGS.get(item.parent), item.item_slug]) for item in items]
-    return result
-
+    try:
+        catalogs = frappe.get_all("Catalog", {"slug":["is","set"]},["slug","name"])
+        CATALOGS = {row.name: row.slug for row in catalogs}
+        items = frappe.get_all("Item Child",fields=["parent", "item_slug"])
+        result = [generate_urls(["catalog-product",CATALOGS.get(item.parent), item.item_slug]) for item in items]
+        return success_response(data = result)
+    except Exception as e:
+        frappe.logger('utils').exception(e)
+        return error_response(e)
+    
 def catalog_urls(with_product=False):
-    catalogs = frappe.get_all("Catalog", {"slug":["is","set"]},["slug","name"])
-    CATALOGS = {row.name: row.slug for row in catalogs}
-    result = [generate_urls(["catalog",catalog]) for catalog in CATALOGS.values()]
-    return result
-
+    try:
+        catalogs = frappe.get_all("Catalog", {"slug":["is","set"]},["slug","name"])
+        CATALOGS = {row.name: row.slug for row in catalogs}
+        result = [generate_urls(["catalog",catalog]) for catalog in CATALOGS.values()]
+        return success_response(data = result)
+    except Exception as e:
+        frappe.logger('utils').exception(e)
+        return error_response(e)
+    
 # def product_urls():
 #     categories = frappe.get_all("Category", {"slug":["is","set"]},["slug","name"])
 #     CATEGORIES = {row.name: row.slug for row in categories}
