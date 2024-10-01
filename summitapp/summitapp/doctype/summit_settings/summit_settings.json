@@ -22,9 +22,11 @@
    "label": " Enable User Based Menu"
   },
   {
+   "depends_on": "eval: doc.show_variant_on_product_card == 1",
    "fieldname": "variant_attribute_on_product_card",
    "fieldtype": "Link",
    "label": "Variant Attribute on Product Card",
+   "mandatory_depends_on": "eval: doc.show_variant_on_product_card == 1",
    "options": "Item Attribute"
   },
   {
@@ -37,7 +39,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-01 12:30:43.699969",
+ "modified": "2024-10-01 15:23:02.733354",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
