@@ -6,7 +6,9 @@
  "engine": "InnoDB",
  "field_order": [
   "section_break_eahv",
-  "enable_user_based_menu"
+  "enable_user_based_menu",
+  "show_variant_on_product_card",
+  "variant_attribute_on_product_card"
  ],
  "fields": [
   {
@@ -18,12 +20,24 @@
    "fieldname": "enable_user_based_menu",
    "fieldtype": "Check",
    "label": " Enable User Based Menu"
+  },
+  {
+   "fieldname": "variant_attribute_on_product_card",
+   "fieldtype": "Link",
+   "label": "Variant Attribute on Product Card",
+   "options": "Item Attribute"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_variant_on_product_card",
+   "fieldtype": "Check",
+   "label": "Show Variant on Product Card"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-04 17:21:54.427847",
+ "modified": "2024-10-01 12:30:43.699969",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",

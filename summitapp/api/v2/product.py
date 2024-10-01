@@ -349,6 +349,8 @@ def get_variant_info(variant_list):
         item_varient_attribute = get_item_varient_attribute(item.name)
         for attribute in item_varient_attribute:
             varient_info[attribute['attribute']] = attribute['abbr']
+            create_attr_colour = attribute['attribute'].lower() + "_attr_colour"
+            varient_info[create_attr_colour] = attribute['attr_colour']
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
         varient_info['image'] = get_slide_images(item.name, False)
         varient_info_list.append(varient_info)
@@ -630,7 +632,8 @@ def get_item_varient_attribute(item_code):
     item_varient_details = frappe.get_all('Item Variant Attribute',
 							{'parent': item_code}, ['attribute', 'attribute_value'])
     for item in item_varient_details:
-         item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
+        item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
+        item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
     return item_varient_details
 
 
