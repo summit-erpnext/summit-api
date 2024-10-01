@@ -634,7 +634,6 @@ def get_item_varient_attribute(item_code):
     for item in item_varient_details:
         item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
         item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
-    print(item_varient_details)
     return item_varient_details
 
 
