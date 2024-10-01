@@ -114,7 +114,6 @@ def get_variants(kwargs):
         filters = {'item_code': item_code}
         variant_list = get_variant_details(filters)
         variant_info = get_variant_info(variant_list)
-
         attributes = []
         for varient in variant_info:
             varient_attribute = get_item_varient_attribute(varient['variant_code'])
@@ -133,10 +132,18 @@ def get_variants(kwargs):
                 "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
             })
         stock_len = len([var.get('stock') for var in variant_info if var.get('stock')])
-        attr_dict = {'item_code': item_code,
-                        'variants': get_variant_info(variant_list),
-                        'attributes': attributes_list}
-        return success_response(data=attr_dict)
+        summit_setting =  frappe.get_doc("Summit Settings","show_variant_on_product_card")
+        if summit_setting.show_variant_on_product_card == 1:
+            variant_attribute_on_product_card = summit_setting.variant_attribute_on_product_card
+            attr_dict = {'item_code': item_code,
+                            'variants': get_variant_info_limited(variant_list,variant_attribute_on_product_card),
+                            'attributes': attributes_list}
+            return success_response(data=attr_dict)
+        else:
+            attr_dict = {'item_code': item_code,
+                            'variants': get_variant_info(variant_list),
+                            'attributes': attributes_list}
+            return success_response(data=attr_dict)
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(e)
@@ -349,12 +356,30 @@ def get_variant_info(variant_list):
         item_varient_attribute = get_item_varient_attribute(item.name)
         for attribute in item_varient_attribute:
             varient_info[attribute['attribute']] = attribute['abbr']
-            create_attr_colour = attribute['attribute'].lower() + "_attr_colour"
-            varient_info[create_attr_colour] = attribute['attr_colour']
+            attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
+            varient_info[attr_colour_key] = attribute['attr_colour']
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
         varient_info['image'] = get_slide_images(item.name, False)
         varient_info_list.append(varient_info)
         
+    return varient_info_list
+
+def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
+    varient_info_list = []
+    for item in variant_list:
+        variant_info = {
+            'variant_code': item.name,
+            'slug': get_variant_slug(item.name),
+            }
+        item_variant_attribute = get_item_varient_attribute(item.name)
+        for attribute in item_variant_attribute:
+            if attribute['attribute'] == variant_attribute_on_product_card:
+                variant_info[attribute['attribute']] = attribute['abbr']
+                attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
+                variant_info[attr_colour_key] = attribute['attr_colour']
+        variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
+        variant_info['image'] = get_slide_images(item.name, False)
+        varient_info_list.append(variant_info)
     return varient_info_list
 
 def append_applied_filters(filters, filter_list):
