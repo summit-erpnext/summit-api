@@ -7,7 +7,7 @@ from summitapp.api.v2.utils import (get_price_list,get_field_names,get_guest_use
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from frappe.utils import flt, getdate
 import json
-from summitapp.api.v2.translation import translate_result
+from summitapp.api.v2.product import translate_result
 
 @frappe.whitelist(allow_guest=True)
 def get_list(kwargs):

@@ -5,7 +5,6 @@ from frappe import _
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils.global_search import search
 from frappe.utils import flt, cint, today, add_days
-from summitapp.api.v2.translation import translate_result
 from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
                                        get_slide_images, get_stock_info, 
 									   get_processed_list, get_item_field_values, 
@@ -107,9 +106,10 @@ def get_list(kwargs):
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
-def get_variants(kwargs):
+def get_variants(**kwargs):
     try:
-        slug = kwargs.get('item')
+        slug = kwargs.get("item")
+        show_variant_on_product_card = kwargs.get("show_variant_on_product_card")
         item_code = frappe.get_value('Item', {'slug': slug})
         filters = {'item_code': item_code}
         variant_list = get_variant_details(filters)
@@ -121,32 +121,45 @@ def get_variants(kwargs):
                 if att.get('attribute') not in attributes:
                     attributes.append(att.get('attribute'))
         attributes_list = []
-        for attribute in attributes:
-            attr = list({var.get(attribute) for var in variant_info if var.get(attribute)})
-            sorted_attr = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='abbr', order_by="idx asc")
-            attributes_list.append({
-                "field_name": attribute, 
-                "label": f"Select {attribute}", 
-                "values": sorted_attr, 
-                "default_value": get_default_variant(item_code, attribute), 
-                "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
-            })
-        stock_len = len([var.get('stock') for var in variant_info if var.get('stock')])
         summit_setting =  frappe.get_doc("Summit Settings","show_variant_on_product_card")
-        if summit_setting.show_variant_on_product_card == 1:
-            variant_attribute_on_product_card = summit_setting.variant_attribute_on_product_card
-            attr_dict = {'item_code': item_code,
-                            'variants': get_variant_info_limited(variant_list,variant_attribute_on_product_card),
-                            'attributes': attributes_list}
-            return success_response(data=attr_dict)
+        if show_variant_on_product_card == True:
+            if summit_setting.show_variant_on_product_card == 1:
+                attribute = summit_setting.variant_attribute_on_product_card
+                add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
+            else:
+                for attribute in attributes:
+                    add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
         else:
-            attr_dict = {'item_code': item_code,
-                            'variants': get_variant_info(variant_list),
-                            'attributes': attributes_list}
-            return success_response(data=attr_dict)
+            for attribute in attributes:
+                add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
+
+        stock_len = len([var.get('stock') for var in variant_info if var.get('stock')])
+        if show_variant_on_product_card == True:
+            if summit_setting.show_variant_on_product_card == 1:
+                variant_attribute_on_product_card = summit_setting.variant_attribute_on_product_card
+                attr_dict = {'item_code': item_code,
+                                'variants': get_variant_info_limited(variant_list,variant_attribute_on_product_card),
+                                'attributes': attributes_list}
+                return success_response(data=attr_dict)
+
+        attr_dict = {'item_code': item_code,
+                        'variants': get_variant_info(variant_list),
+                        'attributes': attributes_list}
+        return success_response(attr_dict)
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(e)
+    
+def add_attribute_to_list(attribute, variant_info, item_code, attributes_list):
+    attr = list({var.get(attribute) for var in variant_info if var.get(attribute)})
+    sorted_attr = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='abbr', order_by="idx asc")
+    attributes_list.append({
+        "field_name": attribute, 
+        "label": f"Select {attribute}", 
+        "values": sorted_attr, 
+        "default_value": get_default_variant(item_code, attribute), 
+        "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
+    })
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
@@ -364,23 +377,26 @@ def get_variant_info(variant_list):
         
     return varient_info_list
 
-def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
-    varient_info_list = []
+def get_variant_info_limited(variant_list, variant_attribute_on_product_card):
+    variant_info_list = []
+    processed_colours = set()
     for item in variant_list:
         variant_info = {
             'variant_code': item.name,
             'slug': get_variant_slug(item.name),
-            }
+        }
         item_variant_attribute = get_item_varient_attribute(item.name)
         for attribute in item_variant_attribute:
             if attribute['attribute'] == variant_attribute_on_product_card:
-                variant_info[attribute['attribute']] = attribute['abbr']
-                attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
-                variant_info[attr_colour_key] = attribute['attr_colour']
-        variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        variant_info['image'] = get_slide_images(item.name, False)
-        varient_info_list.append(variant_info)
-    return varient_info_list
+                if attribute['abbr'] not in processed_colours:
+                    variant_info[attribute['attribute']] = attribute['abbr']
+                    attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
+                    variant_info[attr_colour_key] = attribute['attr_colour']
+                    variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
+                    variant_info['image'] = get_slide_images(item.name, False)
+                    processed_colours.add(attribute['abbr'])
+                    variant_info_list.append(variant_info)
+    return variant_info_list
 
 def append_applied_filters(filters, filter_list):
     section_list = filter_list.get('sections')
@@ -689,3 +705,18 @@ def custom_response(data, headers=None):
     response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
     # response.headers["Cache-Control"] = "max-age=450000"
     return response
+
+def translate_result(result):
+    translated_result = []
+    for item in result:
+        translated_item = {}
+        for fieldname, value in item.items():
+            translated_item[fieldname] = _(value)
+            if fieldname == "variant_of":
+                # print("..............",value)
+                data = get_variants(item=value,show_variant_on_product_card=True)
+                translated_item["variant"] = data['data']['variants']
+                translated_item["attributes"] = data['data']['attributes']
+            translated_item["variants"] = []
+        translated_result.append(translated_item)
+    return translated_result
