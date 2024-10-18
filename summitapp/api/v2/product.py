@@ -27,6 +27,8 @@ def get_list(kwargs):
         product_limit = get_list_product_limit(user_role, customer_id)
         if product_limit != 0:
             limit = product_limit
+        elif kwargs.get('limit') == "get_all_products":
+            limit = None
         else:
             limit = kwargs.get('limit', 20)
         filter_list = kwargs.get('filter')
@@ -86,7 +88,7 @@ def get_list(kwargs):
                     del filters['sequence']
             debug = kwargs.get("debug_query", 0)
             count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
-        else:   
+        else:  
             type = 'product'
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
@@ -267,10 +269,13 @@ def get_top_categories(kwargs):
 def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
-        offset = int(page_no) * int(limit)
+        if limit is None:
+            limit  = 0
+            offset = int(page_no) * int(limit)
+        else:
+            offset = int(page_no) * int(limit)
     if 'access_level' not in filters:
         filters['access_level'] = 0
-
     if categories := get_allowed_categories(filters.get("category")):
         filters["category"] = ["in", categories]
     if brands := get_allowed_brands():
