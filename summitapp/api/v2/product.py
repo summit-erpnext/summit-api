@@ -271,9 +271,7 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     if page_no is not None:
         if limit is None:
             limit  = 0
-            offset = int(page_no) * int(limit)
-        else:
-            offset = int(page_no) * int(limit)
+        offset = int(page_no) * int(limit)
     if 'access_level' not in filters:
         filters['access_level'] = 0
     if categories := get_allowed_categories(filters.get("category")):
