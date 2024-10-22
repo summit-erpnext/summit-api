@@ -31,14 +31,91 @@ def get_list(kwargs):
 
 
 
+# @frappe.whitelist(allow_guest=True)
+# def put_products(kwargs):  
+# 	try:
+# 		print("put products")
+# 		access_token = None
+# 		email = None
+# 		if not frappe.request.headers.get('Authorization'):
+# 			access_token,email = create_access_token(kwargs)
+# 		items = kwargs.get('item_list')
+# 		if isinstance(items,str):
+# 			items = json.loads(items)
+# 		item_list = []
+# 		if not items:
+# 			return error_response('Please Specify item list')
+
+# 		allow_items_not_in_stock = frappe.db.get_single_value("Web Settings", "allow_items_not_in_stock")
+# 		for row in items:
+# 			kwargs.update({"item_only":1,"item_code":row.get("item_code"), "ptype":"Mandatory"})
+# 			recommendations = get_recommendation(kwargs)
+# 			if recommendations:
+# 				for item in recommendations:
+# 					if not item:
+# 						continue
+# 					item_list.append({"item_code": item, "quantity": row.get("quantity"),"size": row.get("size"),"purity": row.get("purity"),"wastage": row.get("wastage"),"colour": row.get("colour"),"remark": row.get("remark")})
+# 			else:
+# 				item_list.append({"item_code": row.get("item_code"), "quantity": row.get("quantity"),"size": row.get("size"),"purity": row.get("purity"),"wastage": row.get("wastage"),"colour": row.get("colour"),"remark": row.get("remark")})
+
+# 		in_stock_status = True
+# 		for item in item_list:
+# 			quantity = item.get('quantity') or 1
+# 			if product_bundle:=frappe.db.exists("Product Bundle", {'new_item_code': item.get("item_code")}):
+# 				item_bundle_list = frappe.get_list("Product Bundle Item",{'parent':product_bundle},['item_code','qty'], ignore_permissions=1)
+# 				for i in item_bundle_list:
+# 					if int(get_stock_info(i.item_code, 'stock_qty')) < int(quantity) * flt(i.qty):
+# 						in_stock_status = False
+# 						break
+# 			else:
+# 				if int(get_stock_info(item.get("item_code"), 'stock_qty')) < int(quantity):
+# 					in_stock_status = False
+# 			if (not in_stock_status) and (not allow_items_not_in_stock): return error_response('Stock Not Available!')
+		
+# 		fields = {}
+# 		if cust_name:=kwargs.get("cust_name"):
+# 			fields["cust_name"] = cust_name
+# 		if purity:=kwargs.get("purity"):
+# 			fields["purity"] = purity
+# 		if party_name:=kwargs.get("party_name"):
+# 			fields["party_name"] = party_name	
+# 		added_to_cart = add_item_to_cart(item_list, access_token, kwargs.get("currency"),fields)
+# 		if added_to_cart == "Currency cannot be changed for the same cart.":
+# 			return error_response(added_to_cart)
+# 		elif added_to_cart != "Currency cannot be changed for the same cart.":
+# 			response_data = {
+# 				"access_token": access_token,
+# 				"email":email,
+# 				"data": added_to_cart,  
+# 			}
+# 			return success_response(data = response_data)
+# 	except Exception as e:
+# 		frappe.logger('cart').exception(e)
+# 		return error_response(e)
+
 @frappe.whitelist(allow_guest=True)
 def put_products(kwargs):  
 	try:
 		print("put products")
 		access_token = None
 		email = None
-		if not frappe.request.headers.get('Authorization'):
-			access_token,email = create_access_token(kwargs)
+
+		auth_header = frappe.request.headers.get('Authorization')
+		if not auth_header:
+			access_token, email = create_access_token(kwargs)
+		else:
+			if ':' in auth_header:
+				access_token = auth_header
+				email = get_logged_user() 
+			else:
+				session_id = auth_header 
+				access_token = session_id 
+
+			quotation_id = frappe.db.exists("Quotation", {"session_id": session_id, "status": "Draft"})
+			if not quotation_id:
+				return error_response("Invalid session ID or no matching Quotation found")
+			quotation = frappe.get_doc("Quotation", quotation_id)
+
 		items = kwargs.get('item_list')
 		if isinstance(items,str):
 			items = json.loads(items)
@@ -92,7 +169,6 @@ def put_products(kwargs):
 	except Exception as e:
 		frappe.logger('cart').exception(e)
 		return error_response(e)
-
 
 @frappe.whitelist(allow_guest=True)
 def delete_products(kwargs):  
