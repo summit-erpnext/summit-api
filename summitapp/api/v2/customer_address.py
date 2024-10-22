@@ -1,5 +1,6 @@
 import frappe
 from summitapp.utils import success_response,error_response, update_customer
+from summitapp.api.v2.registration import customer_signup
 
 def get(kwargs):
 	try:
@@ -57,6 +58,36 @@ def put(kwargs):
 	except Exception as e:
 		frappe.logger("erpnext").exception(e)
 		return error_response(e)
+
+def put_customer(kwargs):
+	try:
+		session_id = kwargs.get("session_id")
+		session_id_list = frappe.get_all(
+			"Quotation", filters={"session_id": session_id}, pluck="session_id"
+		)
+		if session_id not in session_id_list:
+			return error_response("Invalid session ID")
+		if frappe.session.user == "Guest":
+			customer_signup(kwargs)
+			quot_name = frappe.db.exists(
+				"Quotation", {
+					"status": "Draft",
+					"session_id": session_id,
+					"party_name": ["is", "null"]
+				}
+			)
+			party_name = frappe.get_all("Customer", filters={"customer_name": kwargs.get("name")}, pluck="customer_name")
+			if quot_name:
+				if party_name:
+					frappe.db.set_value("Quotation", quot_name, "party_name", party_name[0])
+
+			return success_response(data={"access_token": session_id})
+		else:
+			print("outtt")
+			return error_response("User is not a guest")
+	except Exception as e:
+		frappe.logger("erpnext").exception(e)
+		return error_response(str(e))
 
 def update_quotation(docname):
 	doc = frappe.get_doc("Quotation", docname)
