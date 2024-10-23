@@ -54,7 +54,7 @@ class V2():
             "cart": ['get_list', 'put_products', 'delete_products', 'clear_cart','request_for_quotation','get_quotation_history'],
             "catalog": ['get', 'get_items','put','put_items','delete','delete_items'],
             "coupon_code": ['put', 'delete'],
-            "customer_address": ['get', 'put','put_customer'],
+            "customer_address": ['get', 'put','create_guest_to_customer'],
             "dealer": ['get_dealer'],
             "profile": ['get_profile','customer_inquiry', 'ageing_report', 'get_transporters'],
             "filter": ['get_filters'],
