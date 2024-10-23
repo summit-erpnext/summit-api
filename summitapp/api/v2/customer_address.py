@@ -62,7 +62,6 @@ def put(kwargs):
 def put_customer(kwargs):
 	try:
 		session_id = kwargs.get("session_id")
-		print("session_id",session_id)
 		session_id_list = frappe.db.get_value(
 			"Quotation",{"session_id": session_id},["session_id"]
 		)
@@ -72,7 +71,7 @@ def put_customer(kwargs):
 			if frappe.session.user == "Guest":
 				signup_response = customer_signup(kwargs)
 				if signup_response.get("msg") == "error":
-					frappe.throw(signup_response.get("error"), frappe.exceptions.DuplicateEntryError)
+					return error_response(err_msg=signup_response.get("error"))
 				quot_name = frappe.db.exists(
 					"Quotation", {
 						"status": "Draft",
@@ -83,8 +82,11 @@ def put_customer(kwargs):
 				if quot_name:
 					if party_name := frappe.db.get_value("Customer",{"customer_name": kwargs.get("name")},["customer_name"]):
 						frappe.db.set_value("Quotation", quot_name, "party_name", party_name)
-
-				return success_response(data={"access_token": session_id})
+				response_data = {
+					"access_token" : f"token {signup_response.get('data').get('api_key')}:{signup_response.get('data').get('api_secret')}",
+					"party_name": signup_response.get("data").get('data')
+				}
+				return success_response(data = response_data)
 			else:
 				return error_response("User is not a guest")
 	except Exception as e:

@@ -11,14 +11,19 @@ def customer_signup(kwargs):
 		if frappe.db.exists('User', kwargs.get('usr') or kwargs.get('email')):
 			return error_response('Customer Already Exists')
 		frappe.local.login_manager.login_as('Administrator')
-		create_user(kwargs)
+		api_key,api_secret = create_user(kwargs)
 		customer_doc = create_customer(kwargs)
 		if not kwargs.get('via_google', False):
 			create_address(kwargs,customer_doc.name) # for billing
 			kwargs['address_type'] = "Shipping"
 			create_address(kwargs, customer_doc.name) # for shipping
 		frappe.local.login_manager.login_as(kwargs.get('usr') or kwargs.get('email'))
-		return success_response(data = customer_doc.name)
+		response_data = {
+			"data":customer_doc.name,
+			"api_key":api_key,
+			"api_secret":api_secret
+		}
+		return success_response(data = response_data)
 	except Exception as e:
 		frappe.logger("registration").exception(e) 
 		# delete_documents(kwargs,customer_doc.name)
@@ -94,7 +99,11 @@ def create_user(kwargs):
 		"api_key" : frappe.generate_hash(length=15),  
 		"api_secret" : frappe.generate_hash(length=15) 
 	})
+	api_key = user_doc.get("api_key")
+	api_secret = user_doc.get("api_secret")
 	user_doc.insert(ignore_permissions=True)
+	print("user",api_key,api_secret)
+	return api_key,api_secret
 
 def create_customer(kwargs):
 	# create customer document
