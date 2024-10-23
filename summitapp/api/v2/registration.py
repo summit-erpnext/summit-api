@@ -94,7 +94,10 @@ def create_user(kwargs):
 		"api_key" : frappe.generate_hash(length=15),  
 		"api_secret" : frappe.generate_hash(length=15) 
 	})
+	api_key = user_doc.get("api_key")
+	api_secret = user_doc.get("api_secret")
 	user_doc.insert(ignore_permissions=True)
+	return api_key,api_secret
 
 def create_customer(kwargs):
 	# create customer document

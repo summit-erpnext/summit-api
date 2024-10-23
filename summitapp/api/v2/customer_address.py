@@ -1,6 +1,7 @@
 import frappe
 from summitapp.utils import success_response,error_response, update_customer
 from summitapp.api.v2.registration import customer_signup
+from summitapp.api.v2.registration import create_user,create_customer,create_address
 
 def get(kwargs):
 	try:
@@ -59,10 +60,9 @@ def put(kwargs):
 		frappe.logger("erpnext").exception(e)
 		return error_response(e)
 
-def put_customer(kwargs):
+def create_guest_to_customer(kwargs):
 	try:
 		session_id = kwargs.get("session_id")
-		print("session_id",session_id)
 		session_id_list = frappe.db.get_value(
 			"Quotation",{"session_id": session_id},["session_id"]
 		)
@@ -70,9 +70,9 @@ def put_customer(kwargs):
 			return error_response("Invalid session ID")
 		if session_id in session_id_list:
 			if frappe.session.user == "Guest":
-				signup_response = customer_signup(kwargs)
+				signup_response = create_guest_to_customer(kwargs)
 				if signup_response.get("msg") == "error":
-					frappe.throw(signup_response.get("error"), frappe.exceptions.DuplicateEntryError)
+					return error_response(err_msg=signup_response.get("error"))
 				quot_name = frappe.db.exists(
 					"Quotation", {
 						"status": "Draft",
@@ -83,14 +83,44 @@ def put_customer(kwargs):
 				if quot_name:
 					if party_name := frappe.db.get_value("Customer",{"customer_name": kwargs.get("name")},["customer_name"]):
 						frappe.db.set_value("Quotation", quot_name, "party_name", party_name)
-
-				return success_response(data={"access_token": session_id})
+				response_data = {
+					"access_token" : f"token {signup_response.get('data').get('api_key')}:{signup_response.get('data').get('api_secret')}",
+					"party_name": signup_response.get("data").get('data')
+				}
+				return success_response(data = response_data)
 			else:
 				return error_response("User is not a guest")
 	except Exception as e:
 		frappe.logger("erpnext").exception(e)
 		return error_response(str(e))
-
+	
+def create_customer(kwargs):
+	try:
+		"""
+			Creates required documents when a customer registers
+			In case of any errors, it will delete the created documents
+		"""
+		if frappe.db.exists('User', kwargs.get('usr') or kwargs.get('email')):
+			return error_response('Customer Already Exists')
+		frappe.local.login_manager.login_as('Administrator')
+		api_key,api_secret = create_user(kwargs)
+		customer_doc = create_customer(kwargs)
+		if not kwargs.get('via_google', False):
+			create_address(kwargs,customer_doc.name) # for billing
+			kwargs['address_type'] = "Shipping"
+			create_address(kwargs, customer_doc.name) # for shipping
+		frappe.local.login_manager.login_as(kwargs.get('usr') or kwargs.get('email'))
+		response_data = {
+			"data":customer_doc.name,
+			"api_key":api_key,
+			"api_secret":api_secret
+		}
+		return success_response(data = response_data)
+	except Exception as e:
+		frappe.logger("registration").exception(e) 
+		# delete_documents(kwargs,customer_doc.name)
+		return error_response(e)
+	
 def update_quotation(docname):
 	doc = frappe.get_doc("Quotation", docname)
 	doc.save(ignore_permissions=True)
