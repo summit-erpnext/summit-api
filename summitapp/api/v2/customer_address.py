@@ -70,7 +70,7 @@ def create_guest_to_customer(kwargs):
 			return error_response("Invalid session ID")
 		if session_id in session_id_list:
 			if frappe.session.user == "Guest":
-				signup_response = create_guest_to_customer(kwargs)
+				signup_response = customer_signup_for_guest(kwargs)
 				if signup_response.get("msg") == "error":
 					return error_response(err_msg=signup_response.get("error"))
 				quot_name = frappe.db.exists(
@@ -94,7 +94,7 @@ def create_guest_to_customer(kwargs):
 		frappe.logger("erpnext").exception(e)
 		return error_response(str(e))
 	
-def create_customer(kwargs):
+def customer_signup_for_guest(kwargs):
 	try:
 		"""
 			Creates required documents when a customer registers
