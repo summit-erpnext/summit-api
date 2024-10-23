@@ -96,21 +96,16 @@ def get_list(kwargs):
 @frappe.whitelist(allow_guest=True)
 def put_products(kwargs):  
 	try:
-		print("put products")
 		access_token = None
 		email = None
-
+		session_id = None
 		auth_header = frappe.request.headers.get('Authorization')
 		if not auth_header:
 			access_token, email = create_access_token(kwargs)
-		else:
-			if ':' in auth_header:
-				access_token = auth_header
-				email = get_logged_user() 
-			else:
-				session_id = auth_header 
-				access_token = session_id 
-
+		elif "token" not in auth_header:
+			session_id = auth_header 
+			access_token = auth_header 
+		if session_id:
 			quotation_id = frappe.db.exists("Quotation", {"session_id": session_id, "status": "Draft"})
 			if not quotation_id:
 				return error_response("Invalid session ID or no matching Quotation found")
