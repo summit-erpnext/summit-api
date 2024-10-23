@@ -97,7 +97,6 @@ def create_user(kwargs):
 	api_key = user_doc.get("api_key")
 	api_secret = user_doc.get("api_secret")
 	user_doc.insert(ignore_permissions=True)
-	print("user",api_key,api_secret)
 	return api_key,api_secret
 
 def create_customer(kwargs):
