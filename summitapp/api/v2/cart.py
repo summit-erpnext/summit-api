@@ -163,7 +163,8 @@ def put_products(kwargs):
 			response_data = {
 				"access_token": access_token,
 				"email":email,
-				"data": added_to_cart,  
+				"data": added_to_cart,
+				"notification":"Item has been added to cart"
 			}
 			return success_response(data = response_data)
 	except Exception as e:
