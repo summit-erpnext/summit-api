@@ -103,14 +103,20 @@ def put_products(kwargs):
 		if not auth_header:
 			access_token, email = create_access_token(kwargs)
 		elif "token" not in auth_header:
-			session_id = auth_header 
-			access_token = auth_header 
+			if not frappe.db.exists("Quotation",{"session_id":auth_header}):
+				if frappe.db.exists("Access Token",{"token":auth_header}):
+					access_token = frappe.get_value("Access Token",{"token":auth_header},["token"])
+					email = frappe.get_value("Access Token",{"token":auth_header},["email"])
+				else:
+					return error_response("Incorrect Access Token")
+			else:
+				session_id = auth_header 
+				access_token = auth_header
 		if session_id:
 			quotation_id = frappe.db.exists("Quotation", {"session_id": session_id, "status": "Draft"})
 			if not quotation_id:
 				return error_response("Invalid session ID or no matching Quotation found")
 			quotation = frappe.get_doc("Quotation", quotation_id)
-
 		items = kwargs.get('item_list')
 		if isinstance(items,str):
 			items = json.loads(items)
@@ -129,7 +135,6 @@ def put_products(kwargs):
 					item_list.append({"item_code": item, "quantity": row.get("quantity"),"size": row.get("size"),"purity": row.get("purity"),"wastage": row.get("wastage"),"colour": row.get("colour"),"remark": row.get("remark")})
 			else:
 				item_list.append({"item_code": row.get("item_code"), "quantity": row.get("quantity"),"size": row.get("size"),"purity": row.get("purity"),"wastage": row.get("wastage"),"colour": row.get("colour"),"remark": row.get("remark")})
-
 		in_stock_status = True
 		for item in item_list:
 			quantity = item.get('quantity') or 1
@@ -150,7 +155,7 @@ def put_products(kwargs):
 		if purity:=kwargs.get("purity"):
 			fields["purity"] = purity
 		if party_name:=kwargs.get("party_name"):
-			fields["party_name"] = party_name	
+			fields["party_name"] = party_name
 		added_to_cart = add_item_to_cart(item_list, access_token, kwargs.get("currency"),fields)
 		if added_to_cart == "Currency cannot be changed for the same cart.":
 			return error_response(added_to_cart)
