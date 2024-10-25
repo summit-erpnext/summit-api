@@ -82,7 +82,7 @@ def create_guest_to_customer(kwargs):
 				)
 				if quot_name:
 					if party_name := frappe.db.get_value("Customer",{"customer_name": kwargs.get("name")},["customer_name"]):
-						frappe.db.set_value("Quotation", quot_name, "party_name", party_name)
+						frappe.db.set_value("Quotation", quot_name, {"party_name": party_name, "customer_name": party_name})						
 				response_data = {
 					"access_token" : f"token {signup_response.get('data').get('api_key')}:{signup_response.get('data').get('api_secret')}",
 					"party_name": signup_response.get("data").get('data')
