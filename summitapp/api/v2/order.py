@@ -398,39 +398,71 @@ def get_date_range_filter(filters, date_range):
 
 @frappe.whitelist()
 def return_replace_item(kwargs):
-    try:
-        email = get_logged_user()  
-        customer = frappe.get_list("Customer", filters={"email": email})
-        if frappe.request.data:
-            request_data = json.loads(frappe.request.data)
-            if not request_data.get('order_id'): 
-                return error_response('Please Specify Order ID')
-            if not request_data.get('product_id'): 
-                return error_response('Please Specify Product ID')
-            
-            rr_doc = frappe.new_doc('Return Replacement Request')
-            rr_doc.type = kwargs.get('type')
-            rr_doc.reason = kwargs.get('reason')
-            rr_doc.order_id = request_data.get('order_id')
-            rr_doc.product_id = request_data.get('product_id')
-            rr_doc.customer = customer[0].name if customer else None  # Accessing the first customer if exists
-            rr_doc.date = datetime.now()
-            rr_doc.customer_email = email
-            images = request_data.get("images", [])
-            for i in images:
-                image = i.get('image')
-                rr_doc.append(
-                    "return_replacement_image",
-                    {
-                        "doctype": "Return Replacement Image",
-                        "image": image
-                    },
-                )
-            rr_doc.save(ignore_permissions=True)
-            return success_response(data={'docname': rr_doc.name, 'doctype': rr_doc.doctype})
-    except Exception as e:
-        frappe.logger("rr").exception(e)
-        return error_response(str(e))
+	try:
+		email = get_logged_user()  
+		customer = frappe.get_list("Customer", filters={"email": email})
+		
+		if frappe.request.data:
+			request_data = json.loads(frappe.request.data)
+			if not request_data.get('order_id'): 
+				return error_response('Please Specify Order ID')
+			if not request_data.get('product_id'): 
+				return error_response('Please Specify Product ID')
+			
+			# Create Return Replacement Request document
+			rr_doc = frappe.new_doc('Return Replacement Request')
+			rr_doc.type = kwargs.get('type')
+			rr_doc.reason = kwargs.get('reason')
+			rr_doc.order_id = request_data.get('order_id')
+			rr_doc.product_id = request_data.get('product_id')
+			rr_doc.customer = customer[0].name if customer else None  # Accessing the first customer if exists
+			rr_doc.date = datetime.now()
+			rr_doc.customer_email = email
+			
+			# Add images to the document
+			images = request_data.get("images", [])
+			for i in images:
+				image = i.get('image')
+				rr_doc.append(
+					"return_replacement_image",
+					{
+						"doctype": "Return Replacement Image",
+						"image": image
+					},
+				)
+			rr_doc.save(ignore_permissions=True)
+
+			sales_order = frappe.get_doc("Sales Order", rr_doc.order_id)
+			frappe.db.set_value(
+				"Sales Order", sales_order.name,
+				{
+					"is_replacement": 1,
+					"returrn_replacement_request": sales_order.name,
+					"workflow_state": "Replacement"
+				}
+			)
+
+			new_sales_order = frappe.new_doc("Sales Order")
+			new_sales_order.update({
+				"customer": sales_order.customer,
+				"transaction_date": datetime.now(),
+				"delivery_date":sales_order.delivery_date.strftime('%Y-%m-%d'),
+				"returrn_replacement_request": "", 
+				"items": []
+			})
+			for item in sales_order.items:
+				new_sales_order.append("items", {
+					"item_code": item.item_code,
+					"qty": item.qty,
+					"rate": item.rate,
+					"amount": item.amount
+				})
+			new_sales_order.insert(ignore_permissions=True)
+
+			return success_response(data={'docname': rr_doc.name, 'doctype': rr_doc.doctype,"new_sales_order":new_sales_order.name})
+	except Exception as e:
+		frappe.logger("rr").exception(e)
+		return error_response(str(e))
 
 def get_order_details(kwargs):
 	if not kwargs.get('order_id'):
