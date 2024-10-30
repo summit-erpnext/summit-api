@@ -37,7 +37,10 @@ doc_events = {
 	},
 	"Sales Order": {
 		"on_payment_authorized": "summitapp.overrides.sales_order.on_payment_authorized",
-		"on_submit": "summitapp.overrides.sales_order.on_submit"
+		"on_submit": "summitapp.overrides.sales_order.on_submit",
+        "on_cancel": "summitapp.overrides.sales_order.on_cancel",
+        "validate": "summitapp.overrides.sales_order.validate" ,
+        "on_update_after_submit": "summitapp.overrides.sales_order.on_update_after_submit"       
 	},
 	"*": {
 		"validate": "summitapp.utils.autofill_slug"

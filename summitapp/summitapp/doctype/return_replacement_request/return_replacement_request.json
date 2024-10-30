@@ -9,12 +9,13 @@
  "field_order": [
   "type",
   "status",
+  "outstanding_amount",
   "column_break_3",
-  "product_id",
   "order_id",
+  "product_id",
+  "quantity",
   "new_invoice",
   "new_order_id",
-  "outstanding_amount",
   "section_break_4",
   "reason",
   "return_replacement_image"
@@ -83,11 +84,16 @@
    "label": "New Order Id",
    "options": "Sales Order",
    "read_only": 1
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "label": "Quantity"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 13:52:46.835542",
+ "modified": "2024-10-30 11:51:39.740846",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Return Replacement Request",
