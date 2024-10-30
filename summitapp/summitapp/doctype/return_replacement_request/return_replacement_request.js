@@ -10,5 +10,17 @@ frappe.ui.form.on('Return Replacement Request', {
 				}
 			}
 		})
-	}
+	},
+	order_id: function(frm){
+		if (frm.doc.order_id){
+			frm.set_query("product_id", function() {
+				return {
+					query: "summitapp.summitapp.doctype.return_replacement_request.return_replacement_request.get_items_from_sales",
+					filters: {
+						"sales_order": frm.doc.order_id
+					}
+				}
+			})
+		}
+	},
 });

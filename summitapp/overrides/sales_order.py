@@ -33,6 +33,8 @@ def on_submit(self, method=None):
         doc.save()
         doc.submit()
         frappe.db.set_value("Customer",self.customer,'balance_amount', balance - self.store_credit_used)
+    if self.workflow_state == "Approved":
+        frappe.db.set_value("Sales Order",self.name, "order_status","Approved")
 
 def on_payment_authorized(self, *args, **kwargs):
 	try:
@@ -46,3 +48,22 @@ def on_payment_authorized(self, *args, **kwargs):
 	except Exception as e:
 		frappe.logger('utils').exception(e)
 
+def on_cancel(self, method=None):
+    if self.workflow_state == "Cancelled":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Cancelled")
+
+def validate(self, method=None):
+    if self.workflow_state == "Order Placed":
+        print("Pending for Approval")
+        frappe.db.set_value("Sales Order",self.name,"order_status","Pending for Approval")
+
+def on_update_after_submit(self, method=None):
+    if self.workflow_state == "Billed":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Billed")
+    elif self.workflow_state == "Delivery":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Out For Delivery")
+    elif self.workflow_state == "Submitted":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Order Delivered")    
+
+        
+    
