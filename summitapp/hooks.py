@@ -40,7 +40,8 @@ doc_events = {
 		"on_submit": "summitapp.overrides.sales_order.on_submit",
         "on_cancel": "summitapp.overrides.sales_order.on_cancel",
         "validate": "summitapp.overrides.sales_order.validate" ,
-        "on_update_after_submit": "summitapp.overrides.sales_order.on_update_after_submit"       
+        "on_update_after_submit": "summitapp.overrides.sales_order.on_update_after_submit",
+        "autoname":"summitapp.overrides.sales_order.autoname"
 	},
 	"*": {
 		"validate": "summitapp.utils.autofill_slug"

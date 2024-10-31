@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "format: {type}-{order_id}-{product_id}",
- "creation": "2022-11-01 13:40:58.234694",
+ "creation": "2024-10-30 13:03:29.731287",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -18,7 +18,8 @@
   "new_order_id",
   "section_break_4",
   "reason",
-  "return_replacement_image"
+  "return_replacement_image",
+  "amended_from"
  ],
  "fields": [
   {
@@ -26,6 +27,58 @@
    "fieldtype": "Select",
    "label": "Type",
    "options": "Return\nReplacement"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nResolved\nReturned"
+  },
+  {
+   "fetch_from": "new_invoice.outstanding_amount",
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "order_id",
+   "fieldtype": "Link",
+   "label": "Order Id",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "product_id",
+   "fieldtype": "Link",
+   "label": "Product Id",
+   "options": "Item"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Int",
+   "label": "Quantity"
+  },
+  {
+   "depends_on": "eval:doc.order_id",
+   "fieldname": "new_invoice",
+   "fieldtype": "Link",
+   "label": "New Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fetch_from": "new_invoice.sales_order",
+   "fieldname": "new_order_id",
+   "fieldtype": "Link",
+   "label": "New Order Id",
+   "options": "Sales Order",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "reason",
@@ -39,61 +92,20 @@
    "options": "Return Replacement Image"
   },
   {
-   "fieldname": "product_id",
+   "fieldname": "amended_from",
    "fieldtype": "Link",
-   "label": "Product Id",
-   "options": "Item"
-  },
-  {
-   "fieldname": "order_id",
-   "fieldtype": "Link",
-   "label": "Order Id",
-   "options": "Sales Order"
-  },
-  {
-   "fieldname": "section_break_4",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Status",
-   "options": "Pending\nResolved\nReturned"
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.order_id",
-   "fieldname": "new_invoice",
-   "fieldtype": "Link",
-   "label": "New Invoice",
-   "options": "Sales Invoice"
-  },
-  {
-   "fetch_from": "new_invoice.outstanding_amount",
-   "fieldname": "outstanding_amount",
-   "fieldtype": "Currency",
-   "label": "Outstanding Amount"
-  },
-  {
-   "fetch_from": "new_invoice.sales_order",
-   "fieldname": "new_order_id",
-   "fieldtype": "Link",
-   "label": "New Order Id",
-   "options": "Sales Order",
-   "read_only": 1
-  },
-  {
-   "fieldname": "quantity",
-   "fieldtype": "Int",
-   "label": "Quantity"
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Return Replacement Request",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2024-10-30 11:51:39.740846",
+ "modified": "2024-10-30 13:03:29.731287",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Return Replacement Request",

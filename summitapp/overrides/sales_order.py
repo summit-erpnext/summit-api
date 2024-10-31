@@ -54,8 +54,7 @@ def on_cancel(self, method=None):
 
 def validate(self, method=None):
     if self.workflow_state == "Order Placed":
-        print("Pending for Approval")
-        frappe.db.set_value("Sales Order",self.name,"order_status","Pending for Approval")
+        self.order_status = "Pending for Approval"
 
 def on_update_after_submit(self, method=None):
     if self.workflow_state == "Billed":
@@ -65,5 +64,12 @@ def on_update_after_submit(self, method=None):
     elif self.workflow_state == "Submitted":
         frappe.db.set_value("Sales Order",self.name,"order_status","Order Delivered")    
 
-        
-    
+def autoname(self,method=None):
+    if self.is_replacement:
+        return_replacement_request_sales_order = frappe.db.get_value(
+            "Return Replacement Request",
+            self.returrn_replacement_request,
+            "order_id"
+        )
+        self.name = return_replacement_request_sales_order + "-Replacement"
+        frappe.msgprint("Your order has been processed for replacement.")
