@@ -1,8 +1,9 @@
-# Copyright (c) 2022, 8848Digital LLP and Contributors
+# Copyright (c) 2024, 8848 Digital LLP and Contributors
 # See license.txt
 
 # import frappe
-import unittest
+from frappe.tests.utils import FrappeTestCase
 
-class TestReturnReplacementRequest(unittest.TestCase):
+
+class TestReturnReplacementRequest(FrappeTestCase):
 	pass
