@@ -102,5 +102,10 @@ fixtures = [
         [
             "module", "=", "SummitApp"
         ]
+    ]},
+    {"dt": "Property Setter", "filters": [
+        [
+            "name", "=", "Sales Order-main-links_order"
+        ]
     ]}
 ]
