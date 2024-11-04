@@ -564,3 +564,18 @@ def get_sales_invoice_print_url(sales_invoice):
         return get_pdf_link("Sales Invoice", sales_invoice[0].name)
     else:
         return "#"
+
+def cancel_order(kwargs):
+	try:
+		sales_order = kwargs.get("order_id")
+		if frappe.db.exists("Sales Order", {"name": sales_order, "workflow_state": ["!=", "Cancelled"]}):
+			frappe.db.set_value("Sales Order",sales_order,
+					   {"workflow_state": "Cancelled",
+		 				"order_status":"Cancelled",
+						"docstatus":2
+						})
+			return success_response(data = f"{sales_order} is been Cancelled Successful")
+		return error_response(f"{sales_order} doesn't exist")
+	except Exception as e:
+			frappe.logger("order").exception(e)
+			return error_response(e)
