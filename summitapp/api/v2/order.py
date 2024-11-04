@@ -193,11 +193,14 @@ def get_listing_details(customer, order_id, date_range, status, session_id):
 		filters.append(["Sales Order", "name", "=", order_id])
 	else:
 		if status == "Cancelled":
-			filters.append(["Sales Order", "status", "=", "Cancelled"])
+			filters.append(["Sales Order", "order_status", "=", "Cancelled"])
+		elif status == "Replacement":
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
+			filters.append(["Sales Order", "is_replacement", "=", "1"])
 		elif status == "Completed":
-			filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
 		else:
-			filters.append(["Sales Order", "status", "=", "To Deliver and Bill"])
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
 	if date_range:
 		filters = get_date_range_filter(filters, date_range)
 	if session_id:
