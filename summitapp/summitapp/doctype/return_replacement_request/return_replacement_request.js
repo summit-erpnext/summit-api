@@ -9,7 +9,14 @@ frappe.ui.form.on("Return Replacement Request", {
 					"customer": frm.doc.customer
 				}
 			}
-		})
+		}),
+		frm.set_query('order_id', function() {
+			return {
+				filters: {
+					workflow_state: 'Submitted'
+				}
+			};
+		});
 	},
 	order_id: function(frm){
 		if (frm.doc.order_id){
@@ -22,5 +29,5 @@ frappe.ui.form.on("Return Replacement Request", {
 				}
 			})
 		}
-	},
+	}
 });
