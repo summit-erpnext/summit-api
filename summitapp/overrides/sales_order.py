@@ -66,10 +66,15 @@ def on_update_after_submit(self, method=None):
 
 def autoname(self,method=None):
     if self.is_replacement:
+        replacement_sales_order = len(frappe.db.get_all("Sales Order", filters={"parent_sales_order": self.parent_sales_order}, pluck="parent_sales_order"))
         return_replacement_request_sales_order = frappe.db.get_value(
             "Return Replacement Request",
             self.returrn_replacement_request,
             "order_id"
         )
-        self.name = return_replacement_request_sales_order + "-Replacement"
-        frappe.msgprint("Your order has been processed for replacement.")
+        if replacement_sales_order == 0:
+            sales_order_naming = f"{self.parent_sales_order}-Replacement"
+            self.name = sales_order_naming
+        else:
+            sales_order_naming = f"{self.parent_sales_order}-Replacement-{replacement_sales_order}"
+            self.name = sales_order_naming

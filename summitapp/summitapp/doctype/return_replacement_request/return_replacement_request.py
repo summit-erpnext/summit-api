@@ -11,25 +11,32 @@ class ReturnReplacementRequest(Document):
         def update_field(source, target,source_parent):
             target.is_replacement=1
             target.returrn_replacement_request = self.name
-            # target.workflow_state = "Approved"
+            # if replacement_sales_order == 0:
+            #     target.name = f"{sales_order.name}-Replacement"
+            #     # print("iffffffffffffffffffff111",sales_order_naming)
+            # else:
+            #     target.name = f"{sales_order.name}-Replacement-{replacement_sales_order}"
+            #     # print("elseeeeeeee222",sales_order_naming)
         def update_qty(source, target, source_parent):
             target.qty=self.get("quantity")
             target.discount_percentage = 100
        
         sales_order = frappe.get_doc("Sales Order", self.order_id)
+        # replacement_sales_order = len(frappe.db.get_all("Sales Order", filters={"parent_sales_order": sales_order.name}, pluck="parent_sales_order"))
+             
         new_sales_order = get_mapped_doc(
             "Sales Order",
             self.order_id,
             {
                 "Sales Order": {
                     "doctype": "Sales Order",
-                    "name": f"{sales_order.name}-Replacement",
                     "is_replacement": 1,
                     "transaction_date": datetime.now(),
                     "delivery_date": datetime.now() + timedelta(days=15),
                     "selling_price_list": "Replacement",
                     "returrn_replacement_request":self.name,
                     "postprocess":update_field, 
+                    "parent_sales_order":sales_order.name,
                 },
                 "Sales Order Item": {
 				"doctype": "Sales Order Item",
@@ -46,6 +53,7 @@ class ReturnReplacementRequest(Document):
         )
 
         new_sales_order.insert(ignore_permissions=True)
+        frappe.db.set_value("Sales Order",new_sales_order.name,"workflow_state","Approved")
         print(f"New Sales Order Created: {new_sales_order.name}")
 
 @frappe.whitelist()
