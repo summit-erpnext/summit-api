@@ -11,12 +11,6 @@ class ReturnReplacementRequest(Document):
         def update_field(source, target,source_parent):
             target.is_replacement=1
             target.returrn_replacement_request = self.name
-            # if replacement_sales_order == 0:
-            #     target.name = f"{sales_order.name}-Replacement"
-            #     # print("iffffffffffffffffffff111",sales_order_naming)
-            # else:
-            #     target.name = f"{sales_order.name}-Replacement-{replacement_sales_order}"
-            #     # print("elseeeeeeee222",sales_order_naming)
         def update_qty(source, target, source_parent):
             target.qty=self.get("quantity")
             target.discount_percentage = 100
