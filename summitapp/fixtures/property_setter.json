@@ -7,7 +7,7 @@
   "doctype_or_field": "DocType",
   "field_name": null,
   "is_system_generated": 0,
-  "modified": "2024-11-04 10:52:18.723247",
+  "modified": "2024-11-05 15:56:54.509270",
   "module": null,
   "name": "Sales Order-main-links_order",
   "property": "links_order",
