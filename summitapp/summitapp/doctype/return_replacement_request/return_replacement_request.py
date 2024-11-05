@@ -16,6 +16,7 @@ class ReturnReplacementRequest(Document):
             target.discount_percentage = 100
        
         sales_order = frappe.get_doc("Sales Order", self.order_id)
+        print("sssssssssssssss",sales_order)
         # replacement_sales_order = len(frappe.db.get_all("Sales Order", filters={"parent_sales_order": sales_order.name}, pluck="parent_sales_order"))
              
         new_sales_order = get_mapped_doc(
@@ -47,10 +48,10 @@ class ReturnReplacementRequest(Document):
         )
 
         new_sales_order.insert(ignore_permissions=True)
-        frappe.db.set_value("Sales Order",sales_order,"replacement_done","1")
         frappe.db.set_value("Sales Order",new_sales_order.name,"workflow_state","Approved")
         frappe.db.set_value("Sales Order",new_sales_order.name,"order_status","Approved")
         frappe.db.set_value("Sales Order",new_sales_order.name,"docstatus","1")
+        frappe.db.set_value("Sales Order",sales_order.name,"request_for_replacement","1")
         print(f"New Sales Order Created: {new_sales_order.name}")
 
 @frappe.whitelist()
