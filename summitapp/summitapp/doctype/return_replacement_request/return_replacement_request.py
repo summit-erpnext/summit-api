@@ -48,6 +48,8 @@ class ReturnReplacementRequest(Document):
 
         new_sales_order.insert(ignore_permissions=True)
         frappe.db.set_value("Sales Order",new_sales_order.name,"workflow_state","Approved")
+        frappe.db.set_value("Sales Order",new_sales_order.name,"order_status","Approved")
+        frappe.db.set_value("Sales Order",new_sales_order.name,"docstatus","1")
         print(f"New Sales Order Created: {new_sales_order.name}")
 
 @frappe.whitelist()
