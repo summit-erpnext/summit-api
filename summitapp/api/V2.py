@@ -73,7 +73,7 @@ class V2():
             "push_notification":["get_notification"],
             "access_token":['auth',"get_access_token","login"],
             "translation":["get_languages",'get_translation_text'],
-            "customer_review":["get_customer_review","create_customer_review"],
+            "customer_review":["get_customer_review","create_customer_review","create_customer_review_and_send_mail"],
             "warranty_claim":["get_warranty_claim","create_warranty_claim",
                               "get_sr_no_list","get_sr_no_details","get_cust_wc_details"]
         }

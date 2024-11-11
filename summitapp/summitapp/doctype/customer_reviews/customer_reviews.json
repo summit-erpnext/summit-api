@@ -28,7 +28,8 @@
   {
    "fieldname": "email",
    "fieldtype": "Data",
-   "label": "Email"
+   "label": "Email",
+   "options": "Email"
   },
   {
    "fieldname": "comment",
@@ -76,7 +77,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 13:40:07.253001",
+ "modified": "2024-11-07 16:28:50.070274",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Customer Reviews",
