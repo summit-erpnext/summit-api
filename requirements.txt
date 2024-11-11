@@ -1,1 +1,4 @@
 # frappe -- https://github.com/frappe/frappe is installed via 'bench init'
+
+name = "better_profanity"
+__version__ = "0.7.0"
