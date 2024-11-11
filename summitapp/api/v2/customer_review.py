@@ -130,10 +130,10 @@ def create_customer_review_and_send_mail(kwargs):
             if comment:
                 data = check_inappropriate_content(comment)
                 if data["contains_inappropriate"] == False:
-                    customer_review_send_email(customer, user,message = f"Your review for the product has been successfully submitted.")
+                    customer_review_send_email(customer, user,message = f"Your review for the product has been successfully submitted.",verified = 0)
                     return success_response(data=len(sales_order_list)) 
                 elif data["contains_inappropriate"] == True:
-                    customer_review_send_email(customer, user, message = f"Your Review has been rejected.",verified = 0)
+                    customer_review_send_email(customer, user, message = f"Your Review has been rejected.")
                     return success_response(data=len(sales_order_list))
             return success_response(data=len(sales_order_list))
         else:
@@ -145,7 +145,7 @@ def create_customer_review_and_send_mail(kwargs):
         return error_response(str(e))
 
 
-def customer_review_send_email(customer, user, message, verified=1):
+def customer_review_send_email(customer, user, message, verified=0):
     try:
         print("Sending email...")
         frappe.sendmail(
