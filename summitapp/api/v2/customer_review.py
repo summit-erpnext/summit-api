@@ -107,12 +107,14 @@ def create_customer_review_and_send_mail(kwargs):
             {"email": user, "item_code": item_name}
         )
         if existing_review:
+            print(customer)
             customer_review_send_email(
                 customer, 
                 user, 
                 message="You cannot add another review for this product as it already exists."
             )
-            return error_response("Duplicate review: You cannot add another review for this product.")
+            return success_response(data="Duplicate review: You cannot add another review for this product.")
+            # return error_response("Duplicate review: You cannot add another review for this product.")
         
         sales_order_list = frappe.db.sql(
             """
@@ -131,7 +133,7 @@ def create_customer_review_and_send_mail(kwargs):
                     customer_review_send_email(customer, user,message = f"Your review for the product has been successfully submitted.")
                     return success_response(data=len(sales_order_list)) 
                 elif data["contains_inappropriate"] == True:
-                    customer_review_send_email(customer, user, message = f"Your Review has been rejected.")
+                    customer_review_send_email(customer, user, message = f"Your Review has been rejected.",verified = 0)
                     return success_response(data=len(sales_order_list))
             return success_response(data=len(sales_order_list))
         else:
@@ -143,7 +145,7 @@ def create_customer_review_and_send_mail(kwargs):
         return error_response(str(e))
 
 
-def customer_review_send_email(customer, user, message):
+def customer_review_send_email(customer, user, message, verified=1):
     try:
         print("Sending email...")
         frappe.sendmail(
@@ -156,13 +158,13 @@ def customer_review_send_email(customer, user, message):
         print("Request Data:", request_data)
         # Create a new Customer Reviews document
         cr_doc = frappe.new_doc('Customer Reviews')
-        cr_doc.customer = customer
+        cr_doc.name1 = customer
         cr_doc.email = user
         cr_doc.comment = request_data.get('comment')
         cr_doc.item_code = request_data.get('item_code')
         cr_doc.item_name = request_data.get('item_name')
         cr_doc.rating = request_data.get('rating')
-        cr_doc.verified = request_data.get('verified')
+        cr_doc.verified = verified
         cr_doc.date = datetime.now()
 
         images = request_data.get("images", [])
