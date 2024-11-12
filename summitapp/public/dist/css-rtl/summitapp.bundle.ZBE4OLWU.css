@@ -1,0 +1,186 @@
+/* ../../../../../tmp/tmp-5430-jaCEDggEY7aA/summitapp/summitapp/public/scss/summitapp.bundle.css */
+.chat-icon {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #007bff;
+  border-radius: 50%;
+  padding: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-icon i {
+  font-size: 1.2rem;
+  color: white;
+}
+.chat-icon {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #007bff;
+  border-radius: 50%;
+  padding: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-icon i {
+  font-size: 1.2rem;
+  color: white;
+}
+.chat-popup {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  width: 21.875rem;
+  height: 28.125rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  flex-direction: column;
+  background-color: #000;
+}
+.chat-header {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #d3d3d3;
+}
+.chat-header .user-icon {
+  width: 30px;
+  margin-left: 10px;
+}
+.chat-content {
+  padding: 10px;
+  height: 320px;
+  overflow-y: auto;
+}
+.message-input {
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
+  background-color: #ececec;
+}
+.chat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+}
+#fileInput {
+  display: none;
+}
+.upload-link {
+  font-size: 1.2rem;
+  color: #fff;
+}
+.chat-footer input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 18px;
+  background-color: #f1f1f1;
+  margin: 0px 8px;
+}
+.chat-footer button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 18px;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.chat-popup {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  width: 21.875rem;
+  height: 28.125rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  flex-direction: column;
+}
+.chat-header {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid #d3d3d3;
+}
+.chat-header .user-icon {
+  width: 30px;
+  margin-left: 10px;
+}
+.chat-content {
+  padding: 10px;
+  height: 320px;
+  overflow-y: auto;
+}
+.message-input {
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
+  background-color: #ececec;
+}
+.chat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+}
+#fileInput {
+  display: none;
+}
+.upload-link {
+  font-size: 1.2rem;
+}
+.chat-footer input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 18px;
+  background-color: #f1f1f1;
+  margin: 0px 8px;
+}
+.chat-footer button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 18px;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+h4 {
+  color: #fff;
+  margin-top: 20px;
+}
+/*# sourceMappingURL=summitapp.bundle.ZBE4OLWU.css.map */
