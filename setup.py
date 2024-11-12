@@ -11,7 +11,7 @@ setup(
 	version=version,
 	description="Customizated APIs for Ecommerce",
 	author="8848 Digital LLP",
-	author_email="deepak@8848digital.com",
+	author_email="support@8848digital.com",
 	packages=find_packages(),
 	zip_safe=False,
 	include_package_data=True,
