@@ -1,8 +1,8 @@
-/* ../../../../../tmp/tmp-5430-mfLA7Jv12cy9/summitapp/summitapp/public/scss/summitapp.bundle.css */
+/* ../../../../../tmp/tmp-6942-HvvS0O0C63aa/summitapp/summitapp/public/scss/summitapp.bundle.css */
 .chat-icon {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   background-color: #007bff;
   border-radius: 50%;
   padding: 15px;
@@ -19,7 +19,7 @@
 .chat-icon {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   background-color: #007bff;
   border-radius: 50%;
   padding: 15px;
@@ -37,7 +37,7 @@
   display: none;
   position: fixed;
   bottom: 80px;
-  right: 20px;
+  left: 20px;
   width: 21.875rem;
   height: 28.125rem;
   border-radius: 8px;
@@ -54,7 +54,7 @@
 }
 .chat-header .user-icon {
   width: 30px;
-  margin-right: 10px;
+  margin-left: 10px;
 }
 .chat-content {
   padding: 10px;
@@ -111,7 +111,7 @@
   display: none;
   position: fixed;
   bottom: 80px;
-  right: 20px;
+  left: 20px;
   width: 21.875rem;
   height: 28.125rem;
   border-radius: 8px;
@@ -127,7 +127,7 @@
 }
 .chat-header .user-icon {
   width: 30px;
-  margin-right: 10px;
+  margin-left: 10px;
 }
 .chat-content {
   padding: 10px;
@@ -183,4 +183,4 @@ h4 {
   color: #fff;
   margin-top: 20px;
 }
-/*# sourceMappingURL=summitapp.bundle.E76MYL2I.css.map */
+/*# sourceMappingURL=summitapp.bundle.36UYJ6VM.css.map */

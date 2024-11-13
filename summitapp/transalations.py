@@ -1,7 +1,6 @@
 import frappe
 
 def create_translations():
-    print("create_translations")
     translations = [
         {"source": "Tag", "translated": "Featured Collection"},
     ]

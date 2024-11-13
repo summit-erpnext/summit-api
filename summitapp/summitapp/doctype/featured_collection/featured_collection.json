@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "Prompt",
+ "creation": "2024-11-12 13:48:00.055055",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_x2dl",
+  "description",
+  "tag_image",
+  "product_limit"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_x2dl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Description"
+  },
+  {
+   "fieldname": "tag_image",
+   "fieldtype": "Attach Image",
+   "label": "Tag Image"
+  },
+  {
+   "fieldname": "product_limit",
+   "fieldtype": "Int",
+   "label": "Product Limit"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-12 13:49:47.540204",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Featured Collection",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
