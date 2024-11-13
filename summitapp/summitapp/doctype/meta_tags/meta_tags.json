@@ -7,10 +7,25 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "site_details_tab",
   "page_name",
   "meta_title",
   "robots",
-  "description"
+  "description",
+  "open_graph_tab",
+  "title",
+  "type",
+  "url",
+  "open_graph_col_break_column",
+  "image",
+  "open_graph_description",
+  "twitter_tab",
+  "twitter_title",
+  "site",
+  "card",
+  "column_break_ehrm",
+  "twitter_image",
+  "twitter_description"
  ],
  "fields": [
   {
@@ -36,11 +51,85 @@
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
+  },
+  {
+   "fieldname": "site_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Site Details"
+  },
+  {
+   "fieldname": "open_graph_tab",
+   "fieldtype": "Tab Break",
+   "label": "Open Graph"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "\nWebsite\nArticle\nVideo\nMusic"
+  },
+  {
+   "fieldname": "url",
+   "fieldtype": "Data",
+   "label": "Url"
+  },
+  {
+   "fieldname": "open_graph_col_break_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "open_graph_description",
+   "fieldtype": "Small Text",
+   "label": "Open Graph Description"
+  },
+  {
+   "fieldname": "twitter_tab",
+   "fieldtype": "Tab Break",
+   "label": "Twitter"
+  },
+  {
+   "fieldname": "twitter_title",
+   "fieldtype": "Data",
+   "label": "Twitter Title"
+  },
+  {
+   "fieldname": "site",
+   "fieldtype": "Data",
+   "label": "Site"
+  },
+  {
+   "fieldname": "card",
+   "fieldtype": "Data",
+   "label": "Card"
+  },
+  {
+   "fieldname": "column_break_ehrm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "twitter_image",
+   "fieldtype": "Attach Image",
+   "label": "Twitter Image"
+  },
+  {
+   "fieldname": "twitter_description",
+   "fieldtype": "Small Text",
+   "label": "Twitter Description"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-03-09 15:47:35.357970",
+ "modified": "2024-11-13 11:53:57.890798",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Meta Tags",
