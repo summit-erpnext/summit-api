@@ -475,7 +475,7 @@ def get_tagged_products(kwargs):
 
         tag = kwargs.get('tag')
         # Fetching the product limit from Tags MultiSelect
-        tag_doc = frappe.get_doc("Tag", tag)
+        tag_doc = frappe.get_doc("Featured Collection", tag)
         product_limit = tag_doc.set_product_limit
         side_banner_image = tag_doc.tag_image
         items = frappe.get_list("Tags MultiSelect", {"tag": tag}, pluck='parent', ignore_permissions=True)

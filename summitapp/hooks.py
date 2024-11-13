@@ -4,8 +4,11 @@ app_name = "summitapp"
 app_title = "SummitApp"
 app_publisher = "8848 Digital LLP"
 app_description = "Customizated APIs for Ecommerce"
-app_email = "deepak@8848digital.com"
+app_email = "support@8848digital.com"
 app_license = "MIT"
+
+app_include_js = ["summitapp.bundle.js"]        #Chat Popup
+app_include_css = ["summitapp.bundle.css"]      #Chat Popup
 
 # include js in doctype views
 doctype_js = {"Sales Order" : "public/js/sales_order.js"}
@@ -109,3 +112,5 @@ fixtures = [
         ]
     ]}
 ]
+
+# after_migrate = "summitapp.transalations.create_translations"
