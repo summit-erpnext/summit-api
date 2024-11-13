@@ -9,7 +9,7 @@
   "section_break_x2dl",
   "description",
   "tag_image",
-  "product_limit"
+  "set_product_limit"
  ],
  "fields": [
   {
@@ -28,14 +28,14 @@
    "label": "Tag Image"
   },
   {
-   "fieldname": "product_limit",
+   "fieldname": "set_product_limit",
    "fieldtype": "Int",
-   "label": "Product Limit"
+   "label": "Set Product Limit"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-12 13:49:47.540204",
+ "modified": "2024-11-13 13:01:12.347829",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Featured Collection",
