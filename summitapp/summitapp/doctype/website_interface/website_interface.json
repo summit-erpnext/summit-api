@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-19 13:43:23.730296",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_vkgf",
+  "interface_name",
+  "column_break_8wrw",
+  "publish",
+  "section_break_ylgx",
+  "from_date",
+  "column_break_kqko",
+  "to_date",
+  "section_break_ldst",
+  "associated_component"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_vkgf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "interface_name",
+   "fieldtype": "Data",
+   "label": "Interface Name"
+  },
+  {
+   "fieldname": "column_break_8wrw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "publish",
+   "fieldtype": "Check",
+   "label": "Publish"
+  },
+  {
+   "fieldname": "section_break_ylgx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "column_break_kqko",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date"
+  },
+  {
+   "fieldname": "section_break_ldst",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "associated_component",
+   "fieldtype": "Table",
+   "label": "Associated Component",
+   "options": "Associated Components"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-19 13:46:20.818869",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Website Interface",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
