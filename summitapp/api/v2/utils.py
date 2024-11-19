@@ -306,20 +306,26 @@ def get_web_item_qty_in_stock(item_code, item_warehouse_field, warehouse=None):
 	
 
 def get_slide_images(item, tile_image):
-	img = None if tile_image else []
-	imgs = get_slideshow_value(item)
-	if imgs:
-		if slideshow := imgs.get("slideshow"):
-			ss_doc = frappe.get_all('Website Slideshow Item', {
-									 "parent": slideshow}, "*", order_by='idx asc')
-			ss_images = [image.image for image in ss_doc]
-			if ss_images:
-				img = ss_images[0] if tile_image else ss_images
-				return img
-		if imgs.get('website_image'):
-			img = imgs.get('website_image') if tile_image else [
-				imgs.get('website_image')]
-	return img
+    img = None if tile_image else []
+    imgs = get_slideshow_value(item)
+    if imgs:
+        if slideshow := imgs.get("slideshow"):
+            ss_doc = frappe.get_all('Website Slideshow Item', {
+                                        "parent": slideshow}, "*", order_by='idx asc')
+            ss_images = [image.image for image in ss_doc]
+            if ss_images:
+                img = ss_images[0] if tile_image else ss_images
+                return img
+        if imgs.get('website_image'):
+            img = imgs.get('website_image') if tile_image else [
+                imgs.get('website_image')]
+        elif not imgs.get("slideshow") and not imgs.get("website_image"):
+            img = frappe.db.get_value("Item", item, "image")
+            if img:
+                return img
+            else:
+                return ""        
+    return img
 
 def get_default_slide_images(item_doc, tile_image, attribute):
     if images := get_slide_images(item_doc.name, tile_image):
