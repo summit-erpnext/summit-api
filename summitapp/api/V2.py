@@ -43,7 +43,7 @@ import summitapp.api.v2.access_token as access_token
 import summitapp.api.v2.translation as translation
 import summitapp.api.v2.customer_review as customer_review
 import summitapp.api.v2.warranty_claim as warranty_claim
-
+import summitapp.api.v2.website_interface as website_interface
 
 class V2():
     def __init__(self):
@@ -75,7 +75,8 @@ class V2():
             "translation":["get_languages",'get_translation_text'],
             "customer_review":["get_customer_review","create_customer_review","create_customer_review_and_send_mail"],
             "warranty_claim":["get_warranty_claim","create_warranty_claim",
-                              "get_sr_no_list","get_sr_no_details","get_cust_wc_details"]
+                              "get_sr_no_list","get_sr_no_details","get_cust_wc_details"],
+            "website_interface":["publish_website_interface"]
         }
 
     def class_map(self, kwargs):

@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:interface_name",
  "creation": "2024-11-19 13:43:23.730296",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -24,7 +25,8 @@
   {
    "fieldname": "interface_name",
    "fieldtype": "Data",
-   "label": "Interface Name"
+   "label": "Interface Name",
+   "unique": 1
   },
   {
    "fieldname": "column_break_8wrw",
@@ -67,10 +69,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 13:46:20.818869",
+ "modified": "2024-11-21 13:14:33.342488",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
