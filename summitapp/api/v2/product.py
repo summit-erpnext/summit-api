@@ -599,6 +599,7 @@ def check_availability(kwargs):
                     "available_on": add_days(row.get("date"), lead_days)  
                 })
             return success_response(data=res)
+        return success_response(data = "Data Not Found" )
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(e)
