@@ -10,7 +10,8 @@
   "section_break_5phq",
   "component_name",
   "page_name",
-  "image"
+  "image",
+  "section_name"
  ],
  "fields": [
   {
@@ -31,12 +32,17 @@
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "label": "Image"
+  },
+  {
+   "fieldname": "section_name",
+   "fieldtype": "Data",
+   "label": "Section Name"
   }
  ],
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-19 13:38:40.855246",
+ "modified": "2024-11-21 12:56:05.477928",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Component",
