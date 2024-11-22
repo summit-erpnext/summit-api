@@ -27,6 +27,7 @@ def publish_website_interface(kwargs):
                 Component.image
             )
             .where(WebsiteInterface.publish == 1)
+            .orderby(AssociatedComponents.idx) 
             .run(as_dict=True)
         )
         return success_response(data = data)
