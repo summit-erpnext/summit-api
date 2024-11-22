@@ -22,6 +22,7 @@ def publish_website_interface(kwargs):
             .select(
                 WebsiteInterface.name,
                 AssociatedComponents.component,
+                Component.component_name,
                 Component.page_name,
                 Component.section_name,
                 Component.image
