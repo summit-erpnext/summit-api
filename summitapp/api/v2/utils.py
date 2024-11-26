@@ -322,9 +322,9 @@ def get_slide_images(item, tile_image):
         elif not imgs.get("slideshow") and not imgs.get("website_image"):
             img = frappe.db.get_value("Item", item, "image")
             if img:
-                return img
+                return img if tile_image else [img]
             else:
-                return ""        
+                return "" if tile_image else []     
     return img
 
 def get_default_slide_images(item_doc, tile_image, attribute):
