@@ -23,6 +23,7 @@ def get_list(kwargs):
         customer_id = get_customer_id(kwargs)
         user_role = frappe.session.user
         product_limit = get_list_product_limit(user_role, customer_id)
+        
         if product_limit != 0:
             limit = product_limit
         elif kwargs.get('limit') == "get_all_products":
