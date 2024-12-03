@@ -511,7 +511,6 @@ def get_detailed_item_list(currency, items, customer_id=None, filters={}, produc
                 break
             limited_data.append(item)
         data = limited_data
-
     result = get_processed_list(currency, data, customer_id, "product")
     translated_item_fields = translate_results(result)
     return translated_item_fields
