@@ -513,7 +513,8 @@ def get_detailed_item_list(currency, items, customer_id=None, filters={}, produc
         data = limited_data
 
     result = get_processed_list(currency, data, customer_id, "product")
-    return result
+    translated_item_fields = translate_results(result)
+    return translated_item_fields
 
 
 def get_tagged_product_limit(user_role, customer_id):
