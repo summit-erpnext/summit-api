@@ -126,10 +126,12 @@ def get_variants(kwargs):
         for attribute in attributes:
             attr = list({var.get(attribute) for var in variant_info if var.get(attribute)})
             sorted_attr = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='abbr', order_by="idx asc")
+            sorted_attribute = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='attribute_colour', order_by="idx asc")
             attributes_list.append({
                 "field_name": attribute, 
                 "label": f"Select {attribute}", 
                 "values": sorted_attr, 
+                "hex_value": sorted_attribute,
                 "default_value": get_default_variant(item_code, attribute), 
                 "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
             })
