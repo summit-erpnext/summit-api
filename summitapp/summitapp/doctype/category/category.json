@@ -83,7 +83,8 @@
    "in_list_view": 1,
    "label": "Enable category",
    "options": "Yes\nNo",
-   "reqd": 1
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "url",
@@ -120,7 +121,8 @@
    "hidden": 1,
    "label": "Left",
    "no_copy": 1,
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "rgt",
@@ -128,7 +130,8 @@
    "hidden": 1,
    "label": "Right",
    "no_copy": 1,
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "default": "0",
@@ -170,7 +173,7 @@
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2023-12-28 15:28:04.069009",
+ "modified": "2024-12-05 18:26:40.719036",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
