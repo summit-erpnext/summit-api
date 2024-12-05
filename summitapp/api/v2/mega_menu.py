@@ -73,7 +73,7 @@ def breadcrums(kwargs):
 def get_sub_cat(cat, allowed_categories = None):
 	filters = {'parent_category': cat['name']}
 	if allowed_categories:
-		filters.update({"name": ["in", allowed_categories]})
+		filters["name"] = ["in", allowed_categories]
 	sub_cat_list = get_item_list('Category', filters=filters)
 	sub_cat_list = [{
 						'url': prepare_url("product-category", sub_cat['slug'], parent = None), 
