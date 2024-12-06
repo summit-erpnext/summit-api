@@ -6,9 +6,9 @@ from summitapp.utils import error_response, success_response, get_allowed_catego
 def get(kwargs):
 	try:
 		summit_settings =  frappe.get_doc("Summit Settings")
-		enable_user_based_menu = summit_settings.enable_user_based_menu 
+		# enable_user_based_menu = summit_settings.enable_user_based_menu 
 		filters = {'parent_category':['is','not set']}
-		categories = get_allowed_categories(enable_user_based_menu = enable_user_based_menu)
+		categories = get_allowed_categories(enable_user_based_menu = summit_settings.enable_user_based_menu )
 		if categories:
 			filters.update({"name": ["in", categories]})
 		category_list = get_item_list('Category', filters)
