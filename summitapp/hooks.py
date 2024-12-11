@@ -8,7 +8,8 @@ app_email = "deepak@8848digital.com"
 app_license = "MIT"
 
 # include js in doctype views
-doctype_js = {"Sales Order" : "public/js/sales_order.js"}
+doctype_js = {"Sales Order" : "public/js/sales_order.js",
+              "Item" : "public/js/item.js"}
 
 doc_events = {
 	"Quotation": {
