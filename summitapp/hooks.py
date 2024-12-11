@@ -11,7 +11,8 @@ app_include_js = ["summitapp.bundle.js"]        #Chat Popup
 app_include_css = ["summitapp.bundle.css"]      #Chat Popup
 
 # include js in doctype views
-doctype_js = {"Sales Order" : "public/js/sales_order.js"}
+doctype_js = {"Sales Order" : "public/js/sales_order.js",
+              "Item" : "public/js/item.js"}
 
 doc_events = {
 	"Quotation": {
