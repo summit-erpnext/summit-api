@@ -117,7 +117,7 @@ def get_item_field_values(currency,item, customer_id, url_type,field_names):
 		'e_commerce_platforms':lambda: {'e_commerce_platforms':get_ecommerce_platforms(item)},
         'brand_video_url': lambda: {'brand_video_url': frappe.get_value('Brand', item.get('brand'), ['brand_video_link']) or None},
 		'size_chart': lambda: {'size_chart': frappe.get_value('Size Chart', item.get('size_chart'), 'chart')},
-		'slide_img': lambda: {'slide_img': get_default_slide_images(item, False,"size")},
+		'slide_img': lambda: {'slide_img': get_item_images(item)},
 		'features': lambda: {'features': get_features(item.key_features) if item.key_features else []},
 		'why_to_buy': lambda: {'why_to_buy': frappe.db.get_value('Why To Buy', item.get("select_why_to_buy"), "name1")},
 		'prod_specifications': lambda: {'prod_specifications': get_specifications(item)},
@@ -685,3 +685,57 @@ def get_home_page(kwargs):
     except Exception as e:
         frappe.logger("utils").exception(e)
         return error_response(str(e))   
+
+
+def get_item_images(item_code):
+    """
+    Function to retrieve images for an item based on whether it is a template or a variant.
+
+    :param item_code: Item code to fetch images for.
+    :return: Dictionary with "slide_img" containing the list of image URLs.
+    """
+    try:
+        # Fetch the item details
+        item = frappe.get_doc("Item", item_code)
+
+        slide_images = []
+
+        # Add the main item image if it exists
+        if item.image:
+            slide_images.append(item.image)
+
+        # Add images from the item's child table "Item Images"
+        child_images = frappe.get_all(
+            "Item Images",
+            filters={"parent": item_code},
+            fields=["upload_image"]
+        )
+        slide_images.extend([ci["upload_image"] for ci in child_images if ci["upload_image"]])
+
+        if item.has_variants:
+            # If the item is a template, we only return its own images
+            return {"slide_img": slide_images}
+
+        elif item.variant_of:
+            # If the item is a variant, fetch images of the template item as well
+            template_item = frappe.get_doc("Item", item.variant_of)
+
+            # Add the template's main image if it exists
+            if template_item.image:
+                slide_images.append(template_item.image)
+
+            # Add images from the template item's child table "Item Images"
+            template_child_images = frappe.get_all(
+                "Item Images",
+                filters={"parent": template_item.name},
+                fields=["upload_image"]
+            )
+            slide_images.extend([tci["upload_image"] for tci in template_child_images if tci["upload_image"]])
+
+        # Ensure unique URLs and remove empty entries
+        slide_images = list(set(filter(None, slide_images)))
+        return {"slide_img": slide_images}
+
+    except Exception as e:
+        frappe.logger('product').exception(e)
+        return error_response(e)

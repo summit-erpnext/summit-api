@@ -197,7 +197,7 @@ def get_details(kwargs):
                 thumbnail_images.append({ 
                                             "field_name": "Colour",
                                             "Colour": translated_item_fields['product_attributes']["Colour"],
-                                            "image": translated_item_fields.get("slide_img")[0]
+                                            # "image": translated_item_fields.get("slide_img")[0]
                                          })
                 colours.append(translated_item_fields['product_attributes']["Colour"])
             
