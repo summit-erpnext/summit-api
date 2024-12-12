@@ -714,7 +714,7 @@ def get_item_images(item_code):
 
         if item.has_variants:
             # If the item is a template, we only return its own images
-            return {"slide_img": slide_images}
+            return slide_images
 
         elif item.variant_of:
             # If the item is a variant, fetch images of the template item as well
@@ -734,7 +734,7 @@ def get_item_images(item_code):
 
         # Ensure unique URLs and remove empty entries
         slide_images = list(set(filter(None, slide_images)))
-        return {"slide_img": slide_images}
+        return slide_images
 
     except Exception as e:
         frappe.logger('product').exception(e)
