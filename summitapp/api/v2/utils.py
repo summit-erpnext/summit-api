@@ -718,7 +718,7 @@ def get_item_images(item_code):
 
         elif item.variant_of:
             # If the item is a variant, fetch images of the template item as well
-            template_item = frappe.get_doc("Item", item.variant_of)
+            template_item = frappe.get_doc("Item", item.item_code)
 
             # Add the template's main image if it exists
             if template_item.image:
