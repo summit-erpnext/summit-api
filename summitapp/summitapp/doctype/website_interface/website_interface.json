@@ -1,27 +1,32 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:interface_name",
+ "autoname": "format:{interface_name}",
  "creation": "2024-11-19 13:43:23.730296",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_vkgf",
   "interface_name",
-  "column_break_8wrw",
   "publish",
-  "section_break_ylgx",
+  "home_page_tab",
+  "components_for_home_page",
   "from_date",
-  "column_break_kqko",
+  "column_break_8wrw",
   "to_date",
   "section_break_ldst",
-  "associated_component"
+  "associated_component",
+  "listing_page_tab",
+  "components_for_listing_page",
+  "layout",
+  "list_page_component",
+  "detail_page_tab",
+  "components_for_detail_page",
+  "detail_page_component",
+  "cart_page_tab",
+  "components_for_cart_page",
+  "cart_page_component"
  ],
  "fields": [
-  {
-   "fieldname": "section_break_vkgf",
-   "fieldtype": "Section Break"
-  },
   {
    "fieldname": "interface_name",
    "fieldtype": "Data",
@@ -39,19 +44,13 @@
    "label": "Publish"
   },
   {
-   "fieldname": "section_break_ylgx",
-   "fieldtype": "Section Break"
-  },
-  {
+   "depends_on": "eval: doc.components_for_home_page == 1;",
    "fieldname": "from_date",
    "fieldtype": "Date",
    "label": "From Date"
   },
   {
-   "fieldname": "column_break_kqko",
-   "fieldtype": "Column Break"
-  },
-  {
+   "depends_on": "eval: doc.components_for_home_page == 1;",
    "fieldname": "to_date",
    "fieldtype": "Date",
    "label": "To Date"
@@ -61,19 +60,92 @@
    "fieldtype": "Section Break"
   },
   {
+   "depends_on": "eval: doc.components_for_home_page == 1;",
    "fieldname": "associated_component",
    "fieldtype": "Table",
    "label": "Associated Component",
    "options": "Associated Components"
+  },
+  {
+   "fieldname": "home_page_tab",
+   "fieldtype": "Tab Break",
+   "label": "Home Page"
+  },
+  {
+   "default": "0",
+   "fieldname": "components_for_home_page",
+   "fieldtype": "Check",
+   "label": "Components for Home Page"
+  },
+  {
+   "fieldname": "listing_page_tab",
+   "fieldtype": "Tab Break",
+   "label": "Listing Page"
+  },
+  {
+   "default": "0",
+   "fieldname": "components_for_listing_page",
+   "fieldtype": "Check",
+   "label": "Components for Listing Page"
+  },
+  {
+   "fieldname": "detail_page_tab",
+   "fieldtype": "Tab Break",
+   "label": "Detail Page"
+  },
+  {
+   "default": "0",
+   "fieldname": "components_for_detail_page",
+   "fieldtype": "Check",
+   "label": "Components for Detail Page"
+  },
+  {
+   "fieldname": "cart_page_tab",
+   "fieldtype": "Tab Break",
+   "label": "Cart Page"
+  },
+  {
+   "default": "0",
+   "fieldname": "components_for_cart_page",
+   "fieldtype": "Check",
+   "label": "Components for Cart Page"
+  },
+  {
+   "depends_on": "eval: doc.components_for_listing_page ==1;",
+   "fieldname": "list_page_component",
+   "fieldtype": "Table",
+   "label": "List Page Component",
+   "options": "Listing Page Components"
+  },
+  {
+   "depends_on": "eval: doc.components_for_detail_page ==1;",
+   "fieldname": "detail_page_component",
+   "fieldtype": "Table",
+   "label": "Detail Page Component",
+   "options": "Detail Page Components"
+  },
+  {
+   "depends_on": "eval: doc.components_for_cart_page ==1;",
+   "fieldname": "cart_page_component",
+   "fieldtype": "Table",
+   "label": "Cart Page Component",
+   "options": "Cart Page Components"
+  },
+  {
+   "depends_on": "eval: doc.components_for_listing_page ==1;",
+   "fieldname": "layout",
+   "fieldtype": "Link",
+   "label": "Layout",
+   "options": "Layout"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-21 13:14:33.342488",
+ "modified": "2024-12-12 19:39:01.860694",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
