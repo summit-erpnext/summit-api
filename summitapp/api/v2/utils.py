@@ -67,7 +67,6 @@ def get_filter_listing(kwargs):
     for key, val in kwargs.items():
         if val:
             filters.update({key: val})
-
     return filters
 
 def get_filter_list(kwargs):
