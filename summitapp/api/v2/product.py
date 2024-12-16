@@ -364,7 +364,7 @@ def get_variant_info(variant_list):
             attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
             varient_info[attr_colour_key] = attribute['attr_colour']
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        varient_info['image'] = get_item_images(item.name, False)
+        varient_info['image'] = get_item_images(item.name)
         varient_info_list.append(varient_info)
         
     return varient_info_list
@@ -383,7 +383,7 @@ def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
                 attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
                 variant_info[attr_colour_key] = attribute['attr_colour']
         variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        variant_info['image'] = get_item_images(item.name, False)
+        variant_info['image'] = get_item_images(item.name)
         varient_info_list.append(variant_info)
     return varient_info_list
 
