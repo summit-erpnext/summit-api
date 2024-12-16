@@ -15,8 +15,6 @@ def check_user_exists_mobile(mobile):
 	"""
 	Check if a user with the provied mobile number.
 	"""
-	print("111",frappe.db.get_list('User', filters={"mobile_no":mobile},
-			fields=['email','new_password','api_key','api_secret']))
 	return frappe.db.get_list('User', filters={"mobile_no":mobile},
 			fields=['email','new_password','api_key','api_secret'])
 
@@ -295,13 +293,10 @@ def make_payment_entry(sales_order):
 
 def get_parent_categories(category, is_name = False, excluded = [], name_only = False):
 	filters = category if is_name else {"slug":category} 
-	# print("parent filetr",filters)
 	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
-	print("parent cat",cat)
 	if not (cat and category):
 		return []
 	excluded_cat = "', '".join(excluded)
-	# print("exclude cat",excluded_cat)
 	parent_categories = frappe.db.sql(
 		f"""select name, slug, parent_category from `tabCategory`
 		where lft <= %s and rgt >= %s
@@ -310,7 +305,6 @@ def get_parent_categories(category, is_name = False, excluded = [], name_only = 
 		(cat.lft, cat.rgt),
 		as_dict=True,
 	)
-	# print("parent cat",parent_categories)
 	if name_only:
 		return [row.name for row in parent_categories] if parent_categories else []
 	return parent_categories
@@ -329,9 +323,7 @@ def get_child_categories(category, is_name = False, with_parent = False):
 		(cat.lft, cat.rgt),
 		as_dict=True,
 	)
-	# print("child cat",child_categories)
 	category_list = [child.name for child in child_categories]
-	# print("category list",category_list)
 	if category_list and with_parent:
 		for category in category_list:
 			category_list += get_parent_categories(category, True, category_list, True)
