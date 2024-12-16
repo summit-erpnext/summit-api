@@ -7,7 +7,7 @@ from frappe.utils.global_search import search
 from frappe.utils import flt, cint, today, add_days
 from summitapp.api.v2.translation import translate_result
 from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
-                                       get_slide_images, get_stock_info, 
+                                       get_item_images, get_stock_info, 
 									   get_processed_list, get_item_field_values, 
 									   get_field_names, create_user_tracking,
 									   get_default_variant, variant_thumbnail_reqd,
@@ -364,7 +364,7 @@ def get_variant_info(variant_list):
             attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
             varient_info[attr_colour_key] = attribute['attr_colour']
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        varient_info['image'] = get_slide_images(item.name, False)
+        varient_info['image'] = get_item_images(item.name, False)
         varient_info_list.append(varient_info)
         
     return varient_info_list
@@ -383,7 +383,7 @@ def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
                 attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
                 variant_info[attr_colour_key] = attribute['attr_colour']
         variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
-        variant_info['image'] = get_slide_images(item.name, False)
+        variant_info['image'] = get_item_images(item.name, False)
         varient_info_list.append(variant_info)
     return varient_info_list
 
