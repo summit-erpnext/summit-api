@@ -15,7 +15,7 @@ from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filt
 from werkzeug.wrappers import Response
 import datetime
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_list(kwargs):
     try:
         create_user_tracking(kwargs, "Product Listing")
@@ -24,6 +24,7 @@ def get_list(kwargs):
         page_no = cint(kwargs.get('page_no', 1)) - 1
         customer_id = get_customer_id(kwargs)
         user_role = frappe.session.user
+        print("USER",user_role)
         product_limit = get_list_product_limit(user_role, customer_id)
         if product_limit != 0:
             limit = product_limit
@@ -39,6 +40,7 @@ def get_list(kwargs):
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
         access_level = get_access_level(customer_id)
+        print("ACCESS",access_level)
         if not search_text:
             order_by = None
             filter_args = {"access_level": access_level}
@@ -68,6 +70,7 @@ def get_list(kwargs):
                 filter_args["name"] = ['in', tag_records]  
             
             filters = get_filter_listing(filter_args)
+            print("FILTER",filters)
             type = 'brand-product' if check_brand_exist(filters) else 'product'
             if field_filters:
                 field_filters = json.loads(field_filters)
@@ -87,11 +90,15 @@ def get_list(kwargs):
                     order_by = 'sequence {}'.format(sort_order)
                     del filters['sequence']
             debug = kwargs.get("debug_query", 0)
+            print("DEBUG",debug)
             count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
+            print("COUNT DATA",count,data)
         else:  
             type = 'product'
             global_items = search(search_text, doctype='Item')
+            print("GLOBAL ITEMS",global_items)
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
+            print("CPUNT",count,data)
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
         translated_item_fields = translate_results(result)
@@ -105,7 +112,6 @@ def get_list(kwargs):
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
-
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
@@ -304,6 +310,7 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
                            order_by=order_by,
                            ignore_permissions=ignore_permissions,
                            debug=debug)
+    print("DATA",data)                       
     count = get_count("Item", filters=filters, or_filters=or_filters,
                       ignore_permissions=ignore_permissions)
 
