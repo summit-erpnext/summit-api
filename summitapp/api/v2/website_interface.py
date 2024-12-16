@@ -78,6 +78,7 @@ def publish_website_interface(kwargs):
             .on(Component.name == ListingPageComponents.component)
             .select(
                 WebsiteInterface.name,
+                WebsiteInterface.layout,  # Adding the layout field
                 ListingPageComponents.component,
                 Component.component_name,
                 Component.section_name,
@@ -129,10 +130,15 @@ def publish_website_interface(kwargs):
         # Formatting output
         formatted_output = [
             {"page_name": "home-page", "component_list": home_page_data},
-            {"page_name": "listing-page", "component_list": listing_page_data},
+            {
+                "page_name": "listing-page",
+                "layout": listing_page_data[0]["layout"] if listing_page_data else None,
+                "component_list": listing_page_data,
+            },
             {"page_name": "detail-page", "component_list": detail_page_data},
-            {"page_name": "cart-page", "component_list": cart_page_data}
+            {"page_name": "cart-page", "component_list": cart_page_data},
         ]
+
 
         return success_response(data=formatted_output)
 
