@@ -261,7 +261,7 @@ def get_processed_cart(quot_doc):
             'tax': lambda: {'tax': flt(get_item_wise_tax(quot_doc.taxes).get(item_doc.name, {}).get('tax_amount', 0), 2)},
             'product_url': lambda: {'product_url': get_product_url(item_doc)},
             'in_stock_status': lambda: {"in_stock_status": True if get_stock_info(item_doc.name, 'stock_qty') != 0 else False},
-            'image_url': lambda: {"image_url": get_item_images(row.item_code, True)},
+            'image_url': lambda: {"image_url": get_item_images(row.item_code)},
             'details': lambda: {"details": get_item_details(item_doc, row)},
 	    	'currency':lambda:{'currency':get_currency(quot_doc.currency)},
 			'currency_symbol':lambda:{'currency_symbol':get_currency_symbol(quot_doc.currency)},
