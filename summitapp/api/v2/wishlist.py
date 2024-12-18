@@ -15,16 +15,15 @@ def add_to_wishlist(kwargs):
 		return success_response("Item already exist")
 
 	web_item_data = frappe.db.get_value(
-		"Website Item",
+		"Item",
 		{"item_code": item_code},
 		[
-			"website_image",
+			"image",
 			"website_warehouse",
 			"name",
-			"web_item_name",
 			"item_name",
 			"item_group",
-			"route",
+			"description"
 		],
 		as_dict=1,
 	)
@@ -33,11 +32,9 @@ def add_to_wishlist(kwargs):
 		"item_code": item_code,
 		"item_name": web_item_data.get("item_name"),
 		"item_group": web_item_data.get("item_group"),
-		"website_item": web_item_data.get("name"),
-		"web_item_name": web_item_data.get("web_item_name"),
-		"image": web_item_data.get("website_image"),
+		"image": web_item_data.get("image"),
 		"warehouse": web_item_data.get("website_warehouse"),
-		"route": web_item_data.get("route"),
+		"description": web_item_data.get("web_item_data"),
 		"url": kwargs.get("url","/")
 	}
 
