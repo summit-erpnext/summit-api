@@ -738,3 +738,8 @@ def get_item_images(item_code):
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(e)
+
+
+def get_variant_attributes(item):
+    variant_attribute = frappe.get_all("Item Variant Attribute", filters={"parent":item.get("name")},fields=["attribute","attribute_value"])
+    return variant_attribute

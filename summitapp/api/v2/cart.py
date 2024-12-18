@@ -3,11 +3,12 @@ from summitapp.utils import (error_response, success_response, create_temp_user,
 			     get_company_address, check_guest_user, get_parent_categories,create_access_token)
 from summitapp.api.v2.product import get_stock_info, get_item_images, get_recommendation, get_product_url
 from summitapp.api.v2.utils import (get_price_list,get_field_names,get_guest_user,
-				    get_currency,get_currency_symbol,get_logged_user)
+				    get_currency,get_currency_symbol,get_logged_user,get_variant_attributes)
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from frappe.utils import flt, getdate
 import json
 from summitapp.api.v2.translation import translate_result
+
 
 @frappe.whitelist(allow_guest=True)
 def get_list(kwargs):
@@ -253,6 +254,7 @@ def get_processed_cart(quot_doc):
     for row in quot_doc.items:
         item_doc = frappe.db.get_value("Item", row.item_code, "*")
         computed_fields = {
+			"variant_attributes": lambda: {"variant_attributes":get_variant_attributes(item_doc)},
             'min_order_qty': lambda: {'min_order_qty': item_doc.get("min_order_qty")},
 			'weight_per_unit':lambda:{"weight_per_unit":item_doc.get("weight_per_unit")},
 			'total_weight':lambda:{"total_weight":row.get("total_weight")},
@@ -261,7 +263,7 @@ def get_processed_cart(quot_doc):
             'tax': lambda: {'tax': flt(get_item_wise_tax(quot_doc.taxes).get(item_doc.name, {}).get('tax_amount', 0), 2)},
             'product_url': lambda: {'product_url': get_product_url(item_doc)},
             'in_stock_status': lambda: {"in_stock_status": True if get_stock_info(item_doc.name, 'stock_qty') != 0 else False},
-            'image_url': lambda: {"image_url": get_item_images(row.item_code)},
+            'image_url': lambda: {"image_url": item_doc.get("image")},
             'details': lambda: {"details": get_item_details(item_doc, row)},
 	    	'currency':lambda:{'currency':get_currency(quot_doc.currency)},
 			'currency_symbol':lambda:{'currency_symbol':get_currency_symbol(quot_doc.currency)},
