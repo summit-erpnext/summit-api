@@ -21,6 +21,7 @@ def on_update(self, method=None):
 
 def validate(self, method=None):
 	set_custom_colour_and_size(self)
+	set_parent_category(self)
 	specs_desc = ''
 	for row in (self.get("item_filters") or []):
 		specs_desc += f'{row.field_name} : {str(row.get("field_value"))}\n'
@@ -126,3 +127,10 @@ def set_custom_colour_and_size(doc):
     # Set the read-only fields
     doc.custom_colour = colour
     doc.custom_size = size
+
+def set_parent_category(doc):
+	if doc.category:
+		parent = frappe.db.get_value("Category", doc.category, "parent_category")
+		if parent:
+			doc.custom_parent_category = parent
+		
