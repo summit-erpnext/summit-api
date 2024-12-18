@@ -16,9 +16,11 @@
   "section_break_ldst",
   "associated_component",
   "listing_page_tab",
+  "column_break_mwjl",
   "components_for_listing_page",
-  "layout",
   "list_page_component",
+  "layout",
+  "layout_component",
   "detail_page_tab",
   "components_for_detail_page",
   "detail_page_component",
@@ -137,11 +139,23 @@
    "fieldtype": "Link",
    "label": "Layout",
    "options": "Layout"
+  },
+  {
+   "depends_on": "eval: doc.components_for_listing_page ==1;",
+   "fieldname": "layout_component",
+   "fieldtype": "Table",
+   "label": "Layout Component",
+   "options": "Layout Components"
+  },
+  {
+   "depends_on": "eval: doc.components_for_listing_page ==1;",
+   "fieldname": "column_break_mwjl",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-12 19:39:01.860694",
+ "modified": "2024-12-18 15:54:40.555751",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",

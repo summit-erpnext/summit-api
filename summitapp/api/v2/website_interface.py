@@ -46,6 +46,7 @@ def publish_website_interface(kwargs):
         WebsiteInterface = qb.DocType("Website Interface")
         AssociatedComponents = qb.DocType("Associated Components")
         ListingPageComponents = qb.DocType("Listing Page Components")
+        LayoutComponents = qb.DocType("Layout Components")
         DetailPageComponents = qb.DocType("Detail Page Components")
         CartPageComponents = qb.DocType("Cart Page Components")
         Component = qb.DocType("Component")
@@ -78,7 +79,6 @@ def publish_website_interface(kwargs):
             .on(Component.name == ListingPageComponents.component)
             .select(
                 WebsiteInterface.name,
-                WebsiteInterface.layout,  # Adding the layout field
                 ListingPageComponents.component,
                 Component.component_name,
                 Component.section_name,
@@ -86,6 +86,26 @@ def publish_website_interface(kwargs):
             )
             .where(WebsiteInterface.publish == 1)
             .orderby(ListingPageComponents.idx)
+            .run(as_dict=True)
+        )
+
+        # Fetching layout component data
+        layout_components_data = (
+            qb.from_(WebsiteInterface)
+            .left_join(LayoutComponents)
+            .on(WebsiteInterface.name == LayoutComponents.parent)
+            .left_join(Component)
+            .on(Component.name == LayoutComponents.component)
+            .select(
+                WebsiteInterface.name,
+                WebsiteInterface.layout,  # Adding the layout field
+                LayoutComponents.component,
+                Component.component_name,
+                Component.section_name,
+                Component.image
+            )
+            .where(WebsiteInterface.publish == 1)
+            .orderby(LayoutComponents.idx)
             .run(as_dict=True)
         )
 
@@ -132,8 +152,10 @@ def publish_website_interface(kwargs):
             {"page_name": "home-page", "component_list": home_page_data},
             {
                 "page_name": "listing-page",
-                "layout": listing_page_data[0]["layout"] if listing_page_data else None,
                 "component_list": listing_page_data,
+                "layout": layout_components_data[0]["layout"] if layout_components_data else None,
+                "layout_component_list": layout_components_data
+
             },
             {"page_name": "detail-page", "component_list": detail_page_data},
             {"page_name": "cart-page", "component_list": cart_page_data},

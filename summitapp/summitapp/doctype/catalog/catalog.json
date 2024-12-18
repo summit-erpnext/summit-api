@@ -9,11 +9,12 @@
  "field_order": [
   "name1",
   "access_level",
-  "items",
-  "column_break_tnhc",
   "image",
+  "user",
+  "column_break_tnhc",
   "sequence",
-  "slug"
+  "slug",
+  "items"
  ],
  "fields": [
   {
@@ -51,11 +52,17 @@
    "fieldname": "slug",
    "fieldtype": "Data",
    "label": "Slug"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-18 13:01:22.225521",
+ "modified": "2024-12-18 15:26:08.667023",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Catalog",
