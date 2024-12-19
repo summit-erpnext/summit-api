@@ -2,7 +2,7 @@ import contextlib
 import frappe
 from frappe.utils import flt
 from summitapp.utils import error_response, success_response
-from summitapp.api.v2.product import get_item_images, get_product_url, get_detailed_item_list
+from summitapp.api.v2.product import get_product_url, get_detailed_item_list
 from summitapp.api.v2.customer_address import get_details as get_address_details
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 from datetime import datetime, timedelta
@@ -277,7 +277,7 @@ def get_item_details(item_code, item_row, transaction_date):
 	return {
 			'name': item.name,
 			'item_name': item.item_name,
-			'img': get_item_images(item.name, True),
+			'img': item.image,
 			'brand': item.get('brand'),
 			'brand_img': frappe.get_value('Brand', {'name': item.get('brand')}, 'image'),
 			'prod_info': get_item_info(item, item_row),
