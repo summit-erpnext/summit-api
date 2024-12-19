@@ -1,7 +1,7 @@
 import frappe
 from summitapp.utils import (error_response, success_response, create_temp_user,
 			     get_company_address, check_guest_user, get_parent_categories,create_access_token)
-from summitapp.api.v2.product import get_stock_info, get_item_images, get_recommendation, get_product_url
+from summitapp.api.v2.product import get_stock_info, get_recommendation, get_product_url
 from summitapp.api.v2.utils import (get_price_list,get_field_names,get_guest_user,
 				    get_currency,get_currency_symbol,get_logged_user,get_variant_attributes)
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
