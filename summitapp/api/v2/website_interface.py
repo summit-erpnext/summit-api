@@ -1,166 +1,91 @@
 import frappe
-from summitapp.utils import error_response, success_response, get_access_level, get_allowed_categories, get_allowed_brands, get_child_categories
-import json
-from frappe import _
+from summitapp.utils import error_response, success_response
 from frappe import qb
-
-# def publish_website_interface(kwargs):
-#     try:
-#         len_of_publish_data = frappe.get_list("Website Interface", filters={"publish": 1},fields=["name"], pluck="name")
-#         if len(len_of_publish_data) > 1:
-#             return error_response(str("You cannot have multiple home pages publish at once."))
-        
-#         WebsiteInterface = qb.DocType("Website Interface")
-#         AssociatedComponents = qb.DocType("Associated Components")
-#         Component = qb.DocType("Component")
-#         data = (
-#             qb.from_(WebsiteInterface)
-#             .left_join(AssociatedComponents)
-#             .on(WebsiteInterface.name == AssociatedComponents.parent)
-#             .left_join(Component)
-#             .on(Component.name == AssociatedComponents.component)
-#             .select(
-#                 WebsiteInterface.name,
-#                 AssociatedComponents.component,
-#                 Component.component_name,
-#                 Component.page_name,
-#                 Component.section_name,
-#                 Component.image
-#             )
-#             .where(WebsiteInterface.publish == 1)
-#             .orderby(AssociatedComponents.idx) 
-#             .run(as_dict=True)
-#         )
-#         return success_response(data = data)
-#     except Exception as e:
-#         frappe.logger('product').exception(e)
-#         return error_response(str(e))
-
 
 def publish_website_interface(kwargs):
     try:
-        len_of_publish_data = frappe.get_list("Website Interface", filters={"publish": 1}, fields=["name"], pluck="name")
-        if len(len_of_publish_data) > 1:
+        # Ensure only one home page is published
+        published_pages = frappe.get_list(
+            "Website Interface", filters={"publish": 1}, fields=["name"], pluck="name"
+        )
+        if len(published_pages) > 1:
             return error_response("You cannot have multiple home pages published at once.")
 
-        WebsiteInterface = qb.DocType("Website Interface")
-        AssociatedComponents = qb.DocType("Associated Components")
-        ListingPageComponents = qb.DocType("Listing Page Components")
-        LayoutComponents = qb.DocType("Layout Components")
-        DetailPageComponents = qb.DocType("Detail Page Components")
-        CartPageComponents = qb.DocType("Cart Page Components")
-        Component = qb.DocType("Component")
+        # Define the doctypes
+        doctypes = {
+            "home_page": ("Associated Components", "component"),
+            "listing_page": ("Listing Page Components", "component"),
+            "layout_components": ("Layout Components", "component"),
+            "detail_page": ("Detail Page Components", "component"),
+            "cart_page": ("Cart Page Components", "component"),
+        }
 
-        # Fetching data for Home Page
-        home_page_data = (
-            qb.from_(WebsiteInterface)
-            .left_join(AssociatedComponents)
-            .on(WebsiteInterface.name == AssociatedComponents.parent)
-            .left_join(Component)
-            .on(Component.name == AssociatedComponents.component)
-            .select(
-                WebsiteInterface.name,
-                AssociatedComponents.component,
-                Component.component_name,
-                Component.section_name,
-                Component.image
+        # Function to fetch component data
+        def fetch_component_data(parent_doctype, child_doctype, component_field):
+            Component = qb.DocType("Component")
+            Parent = qb.DocType(parent_doctype)
+            Child = qb.DocType(child_doctype)
+
+            return (
+                qb.from_(Parent)
+                .left_join(Child)
+                .on(Parent.name == Child.parent)
+                .left_join(Component)
+                .on(Component.name == getattr(Child, component_field))
+                .select(
+                    Parent.name,
+                    Child[component_field],
+                    Component.component_name,
+                    Component.section_name,
+                    Component.image,
+                    getattr(Parent, "layout", None).as_("layout")
+                )
+                .where(Parent.publish == 1)
+                .orderby(Child.idx)
+                .run(as_dict=True)
             )
-            .where(WebsiteInterface.publish == 1)
-            .orderby(AssociatedComponents.idx)
-            .run(as_dict=True)
-        )
 
-        # Fetching data for Listing Page
-        listing_page_data = (
-            qb.from_(WebsiteInterface)
-            .left_join(ListingPageComponents)
-            .on(WebsiteInterface.name == ListingPageComponents.parent)
-            .left_join(Component)
-            .on(Component.name == ListingPageComponents.component)
-            .select(
-                WebsiteInterface.name,
-                ListingPageComponents.component,
-                Component.component_name,
-                Component.section_name,
-                Component.image
-            )
-            .where(WebsiteInterface.publish == 1)
-            .orderby(ListingPageComponents.idx)
-            .run(as_dict=True)
-        )
+        # Fetch data for all page types
+        page_data = {
+            "home_page": fetch_component_data("Website Interface", "Associated Components", "component"),
+            "listing_page": fetch_component_data("Website Interface", "Listing Page Components", "component"),
+            "layout_components": fetch_component_data("Website Interface", "Layout Components", "component"),
+            "detail_page": fetch_component_data("Website Interface", "Detail Page Components", "component"),
+            "cart_page": fetch_component_data("Website Interface", "Cart Page Components", "component"),
+        }
 
-        # Fetching layout component data
-        layout_components_data = (
-            qb.from_(WebsiteInterface)
-            .left_join(LayoutComponents)
-            .on(WebsiteInterface.name == LayoutComponents.parent)
-            .left_join(Component)
-            .on(Component.name == LayoutComponents.component)
-            .select(
-                WebsiteInterface.name,
-                WebsiteInterface.layout,  # Adding the layout field
-                LayoutComponents.component,
-                Component.component_name,
-                Component.section_name,
-                Component.image
-            )
-            .where(WebsiteInterface.publish == 1)
-            .orderby(LayoutComponents.idx)
-            .run(as_dict=True)
-        )
+        # Filter out invalid components
+        def filter_invalid_components(components):
+            return [
+                component
+                for component in components
+                if any(
+                    value is not None for key, value in component.items()
+                    if key not in ["name", "layout"]  # Ignore certain fields when checking for `None`
+                )
+            ]
 
-        # Fetching data for Detail Page
-        detail_page_data = (
-            qb.from_(WebsiteInterface)
-            .left_join(DetailPageComponents)
-            .on(WebsiteInterface.name == DetailPageComponents.parent)
-            .left_join(Component)
-            .on(Component.name == DetailPageComponents.component)
-            .select(
-                WebsiteInterface.name,
-                DetailPageComponents.component,
-                Component.component_name,
-                Component.section_name,
-                Component.image
-            )
-            .where(WebsiteInterface.publish == 1)
-            .orderby(DetailPageComponents.idx)
-            .run(as_dict=True)
-        )
-
-        # Fetching data for Cart Page
-        cart_page_data = (
-            qb.from_(WebsiteInterface)
-            .left_join(CartPageComponents)
-            .on(WebsiteInterface.name == CartPageComponents.parent)
-            .left_join(Component)
-            .on(Component.name == CartPageComponents.component)
-            .select(
-                WebsiteInterface.name,
-                CartPageComponents.component,
-                Component.component_name,
-                Component.section_name,
-                Component.image
-            )
-            .where(WebsiteInterface.publish == 1)
-            .orderby(CartPageComponents.idx)
-            .run(as_dict=True)
-        )
-
-        # Formatting output
+        # Format the output
         formatted_output = [
-            {"page_name": "home-page", "component_list": home_page_data},
+            {
+                "page_name": "home-page",
+                "component_list": filter_invalid_components(page_data["home_page"]),
+            },
             {
                 "page_name": "listing-page",
-                "component_list": listing_page_data,
-                "layout": layout_components_data[0]["layout"] if layout_components_data else None,
-                "layout_component_list": layout_components_data
-
+                "component_list": filter_invalid_components(page_data["listing_page"]),
+                "layout": page_data["layout_components"][0]["layout"] if page_data["layout_components"] else None,
+                "layout_component_list": filter_invalid_components(page_data["layout_components"]),
             },
-            {"page_name": "detail-page", "component_list": detail_page_data},
-            {"page_name": "cart-page", "component_list": cart_page_data},
+            {
+                "page_name": "detail-page",
+                "component_list": filter_invalid_components(page_data["detail_page"]),
+            },
+            {
+                "page_name": "cart-page",
+                "component_list": filter_invalid_components(page_data["cart_page"]),
+            },
         ]
-
 
         return success_response(data=formatted_output)
 
