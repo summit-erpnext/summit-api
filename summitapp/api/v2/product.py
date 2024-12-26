@@ -96,7 +96,8 @@ def get_list(kwargs):
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
-        translated_item_fields = translate_results(result)
+        translated_item_fields = translate_result(result)
+        # translated_item_fields = translate_results(result)
         if internal_call:
             return translated_item_fields
         if sort_by == "low_to_high" or sort_by == "high_to_low":
@@ -715,7 +716,7 @@ def get_variants_for_listing(**kwargs):
                 if att.get('attribute') not in attributes:
                     attributes.append(att.get('attribute'))
         attributes_list = []
-        summit_setting =  frappe.get_doc("Summit Settings","show_variant_on_product_card")
+        summit_setting =  frappe.get_value("Summit Settings","show_variant_on_product_card", as_dict=1)
         if show_variant_on_product_card == True:
             if summit_setting.show_variant_on_product_card == 1:
                 attribute = summit_setting.variant_attribute_on_product_card
@@ -755,6 +756,15 @@ def add_attribute_to_list(attribute, variant_info, item_code, attributes_list):
         "hex_value": sorted_attribute,
         "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
     })
+
+def translate_result(result):
+    translated_result = []
+    for item in result:
+        translated_item = {}
+        for fieldname, value in item.items():
+            translated_item[fieldname] = _(value)
+        translated_result.append(translated_item)
+    return translated_result
 
 def translate_results(result):
     translated_result = []

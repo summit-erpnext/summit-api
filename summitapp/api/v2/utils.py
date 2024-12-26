@@ -462,9 +462,11 @@ def get_list_product_limit(user_role, customer_id):
     elif customer_id:
         grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
         if grp:
-            customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
-            apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
-            
+            # customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
+            # apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
+            customer_group_details = frappe.get_value("Customer Group", grp, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
+            customer_group_limit = customer_group_details.get("customer_group_limit")
+            apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
             if customer_group_limit is not None and apply_customer_group_limit == 1:
                 return customer_group_limit
     return 0
@@ -480,6 +482,7 @@ def get_customer_id(kwargs):
     
     if not customer_id and frappe.request.headers:
         email = get_logged_user()
+        # email = frappe.session.user
         customer_id = frappe.db.get_value("Customer", {"email": email}, 'name')
     return customer_id
 
