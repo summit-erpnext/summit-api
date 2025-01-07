@@ -5,16 +5,13 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "section_break_eahv",
   "enable_user_based_menu",
+  "variant_type",
+  "column_break_px7d",
   "show_variant_on_product_card",
   "variant_attribute_on_product_card"
  ],
  "fields": [
-  {
-   "fieldname": "section_break_eahv",
-   "fieldtype": "Section Break"
-  },
   {
    "default": "0",
    "fieldname": "enable_user_based_menu",
@@ -34,12 +31,22 @@
    "fieldname": "show_variant_on_product_card",
    "fieldtype": "Check",
    "label": "Show Variant on Product Card"
+  },
+  {
+   "fieldname": "variant_type",
+   "fieldtype": "Select",
+   "label": "Variant Type",
+   "options": "Text\nImage\nColour"
+  },
+  {
+   "fieldname": "column_break_px7d",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-01 15:23:02.733354",
+ "modified": "2025-01-07 11:48:59.990184",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
