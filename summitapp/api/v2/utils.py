@@ -7,6 +7,7 @@ from frappe.utils import nowdate
 import requests
 from frappe.utils.data import get_url
 
+
 def validate_pincode(kwargs):
 	pincode = True if frappe.db.exists(
 		'Pin Code', kwargs.get('pincode')) else False
@@ -95,6 +96,7 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     return processed_items
 
 def get_item_field_values(currency,item, customer_id, url_type,field_names):
+    variant_list = get_variant_details(item)
     try:
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True,"size")},
@@ -108,7 +110,7 @@ def get_item_field_values(currency,item, customer_id, url_type,field_names):
             'display_tag': lambda: {'display_tag': item.get('display_tag') or frappe.get_list("Tags MultiSelect", {"parent": item.name}, pluck='tag', ignore_permissions=True)},
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            'variant': lambda: {'variant':get_variant_details(item.get('variant_of'))},
+            'variant': lambda: {'variant':get_variant_info(variant_list)},
             'variant_of': lambda: {'variant_of':item.get('variant_of')},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
@@ -437,22 +439,22 @@ def create_user_tracking(kwargs, page):
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-def get_variant_details(item_code):
-	if not item_code:
-		return []
-	item = frappe.db.get_all('Item', filters={'variant_of': item_code}, fields=['name as item_code'])
-	for i in item:
-		item_doc = frappe.get_doc('Item', i)
-		i['attr'] = {}
-		for attr in item_doc.attributes:
-			if attr.attribute == "Category":
-				attr_abbr = frappe.db.get_value('Item Attribute Value', {'parent': attr.attribute, 'attribute_value': attr.attribute_value}, "abbr")
-			else:
-				attr_abbr = attr.attribute_value
-			i['attr'][attr.attribute] = attr_abbr
-		for key, val in i['attr'].items():
-			i[key] = val
-	return item	
+# def get_variant_details(item_code):
+# 	if not item_code:
+# 		return []
+# 	item = frappe.db.get_all('Item', filters={'variant_of': item_code}, fields=['name as item_code'])
+# 	for i in item:
+# 		item_doc = frappe.get_doc('Item', i)
+# 		i['attr'] = {}
+# 		for attr in item_doc.attributes:
+# 			if attr.attribute == "Category":
+# 				attr_abbr = frappe.db.get_value('Item Attribute Value', {'parent': attr.attribute, 'attribute_value': attr.attribute_value}, "abbr")
+# 			else:
+# 				attr_abbr = attr.attribute_value
+# 			i['attr'][attr.attribute] = attr_abbr
+# 		for key, val in i['attr'].items():
+# 			i[key] = val
+# 	return item	
 
 def get_list_product_limit(user_role, customer_id):
     if user_role == "Guest":
@@ -746,3 +748,38 @@ def get_item_images(item_code):
 def get_variant_attributes(item):
     variant_attribute = frappe.get_all("Item Variant Attribute", filters={"parent":item.get("name")},fields=["attribute","attribute_value"])
     return variant_attribute
+
+def get_variant_details(filters):
+	ignore_perm = frappe.session.user == "Guest"
+	return frappe.get_list('Item', {'variant_of': filters.get('item_code')}, ignore_permissions=ignore_perm)
+	
+
+def get_variant_info(variant_list):
+    varient_info_list = []
+    for item in variant_list:
+        varient_info = {
+            'variant_code': item.name,
+            'slug': get_variant_slug(item.name),
+            }
+        item_varient_attribute = get_item_varient_attribute(item.name)
+        for attribute in item_varient_attribute:
+            varient_info[attribute['attribute']] = attribute['abbr']
+            attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
+            varient_info[attr_colour_key] = attribute['attr_colour']
+        varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
+        varient_info['image'] = get_item_images(item.name)
+        varient_info_list.append(varient_info)
+        
+    return varient_info_list
+
+def get_variant_slug(item_code):
+	return frappe.get_value('Item',{'item_code':item_code},'slug')
+
+
+def get_item_varient_attribute(item_code):
+    item_varient_details = frappe.get_all('Item Variant Attribute',
+							{'parent': item_code}, ['attribute', 'attribute_value'])
+    for item in item_varient_details:
+        item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
+        item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
+    return item_varient_details
