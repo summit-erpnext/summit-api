@@ -95,48 +95,67 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
         processed_items.append(item_fields)
     return processed_items
 
-def get_item_field_values(currency,item, customer_id, url_type,field_names):
-    variant_list = get_variant_details(item)
+def get_item_field_values(currency, item, customer_id, url_type, field_names):
+    filters = {'item_code':item.get('variant_of')}
+    variant_list = get_variant_details(filters)
+    variant_info = get_variant_info(variant_list)
+    # summit_setting =  frappe.get_value("Summit Settings","show_variant_on_product_card", as_dict=1)
+    # attribute = None 
+    # if summit_setting.show_variant_on_product_card == 1:
+    #     attribute = summit_setting.variant_attribute_on_product_card
     try:
         computed_fields = {
-            'image_url': lambda: {'image_url': get_default_slide_images(item, True,"size")},
+            'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
             'status': lambda: {'status': 'template' if item.get('has_variants') else 'published'},
-            'in_stock_status': lambda: {'in_stock_status': True if get_stock_info(item.get('name'), 'stock_qty') != 0 else False},
+            'in_stock_status': lambda: {'in_stock_status': get_stock_info(item.get('name'), 'stock_qty') != 0},
             'brand_img': lambda: {'brand_img': frappe.get_value('Brand', item.get('brand'), ['image']) or None},
-            'mrp_price': lambda: {'mrp_price': get_item_price(currency,item.get("name"), customer_id, get_price_list(customer_id))[1]},
-            'price': lambda: {'price': get_item_price(currency,item.get("name"), customer_id, get_price_list(customer_id))[0]},
-            'currency':lambda:{'currency':get_currency(currency)},
-            'currency_symbol':lambda:{'currency_symbol':get_currency_symbol(currency)},
-            'display_tag': lambda: {'display_tag': item.get('display_tag') or frappe.get_list("Tags MultiSelect", {"parent": item.name}, pluck='tag', ignore_permissions=True)},
+            'mrp_price': lambda: {'mrp_price': get_item_price(currency, item.get("name"), customer_id, get_price_list(customer_id))[1]},
+            'price': lambda: {'price': get_item_price(currency, item.get("name"), customer_id, get_price_list(customer_id))[0]},
+            'currency': lambda: {'currency': get_currency(currency)},
+            'currency_symbol': lambda: {'currency_symbol': get_currency_symbol(currency)},
+            'display_tag': lambda: {
+                'display_tag': item.get('display_tag') or frappe.get_list("Tags MultiSelect", {"parent": item.name}, pluck='tag', ignore_permissions=True)
+            },
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            'variant': lambda: {'variant':get_variant_info(variant_list)},
-            'variant_of': lambda: {'variant_of':item.get('variant_of')},
+            'variant': lambda: {'variant': variant_info},
+            'variant_of': lambda: {'variant_of': item.get('variant_of')},
+            # 'attributes': lambda: {'attributes':add_attribute_to_list(attribute,variant_list,item.get('item_code'),[])},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
             'suggested': lambda: {'suggested': bool(item.get('suggested') == '1')},
-            'e_commerce_platforms':lambda: {'e_commerce_platforms':get_ecommerce_platforms(item)},
+            'e_commerce_platforms': lambda: {'e_commerce_platforms': get_ecommerce_platforms(item)},
             'brand_video_url': lambda: {'brand_video_url': frappe.get_value('Brand', item.get('brand'), ['brand_video_link']) or None},
             'size_chart': lambda: {'size_chart': frappe.get_value('Size Chart', item.get('size_chart'), 'chart')},
             'slide_img': lambda: {'slide_img': get_item_images(item.get("name"))},
             'features': lambda: {'features': get_features(item.key_features) if item.key_features else []},
             'why_to_buy': lambda: {'why_to_buy': frappe.db.get_value('Why To Buy', item.get("select_why_to_buy"), "name1")},
             'prod_specifications': lambda: {'prod_specifications': get_specifications(item)},
-            'item_pdf_url':lambda:{'item_pdf_url':get_pdf_attachments("Item",item.get("name"))},
+            'item_pdf_url': lambda: {'item_pdf_url': get_pdf_attachments("Item", item.get("name"))},
             'store_pick_up_available': lambda: {'store_pick_up_available': item.get('store_pick_up_available') == 'Yes'},
             'home_delivery_available': lambda: {'home_delivery_available': item.get('home_delivery_available') == 'Yes'}
         }
+
         item_fields = {}
+
         for field_name in field_names:
-            if field_name in computed_fields.keys():
-                item_fields.update(computed_fields.get(field_name)())
+            if field_name == "variant_of":
+                variant_data = get_variants_for_listing(item=item.get('variant_of'), show_variant_on_product_card=True)
+                item_fields.update({
+                    "attributes": variant_data['data']['attributes']
+                })
+            if field_name in computed_fields:
+                item_fields.update(computed_fields[field_name]())
             else:
                 item_fields.update({field_name: item.get(field_name)})
+
         return item_fields
+
     except Exception as e:
-        frappe.logger('product').exception(e)
-        return error_response(str(e))    
+        frappe.logger('product').exception("Error in get_item_field_values")
+        return error_response(f"An error occurred: {str(e)}")
+  
 
 def get_category_slug(item_detail):
 	if not item_detail:
@@ -751,7 +770,7 @@ def get_variant_attributes(item):
 
 def get_variant_details(filters):
 	ignore_perm = frappe.session.user == "Guest"
-	return frappe.get_list('Item', {'variant_of': filters.get('item_code')}, ignore_permissions=ignore_perm)
+	return frappe.get_list('Item', {'variant_of': filters.get('item_code'),"show_on_website":1}, ignore_permissions=ignore_perm)
 	
 
 def get_variant_info(variant_list):
@@ -769,7 +788,7 @@ def get_variant_info(variant_list):
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
         varient_info['image'] = get_item_images(item.name)
         varient_info_list.append(varient_info)
-        
+    print("VARIA",varient_info_list)
     return varient_info_list
 
 def get_variant_slug(item_code):
@@ -783,3 +802,82 @@ def get_item_varient_attribute(item_code):
         item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
         item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
     return item_varient_details
+
+
+# Whitelisted Function
+@frappe.whitelist(allow_guest=True)
+def get_variants_for_listing(**kwargs):
+    try:
+        slug = kwargs.get("item")
+        show_variant_on_product_card = kwargs.get("show_variant_on_product_card")
+        item_code = frappe.get_value('Item', {'slug': slug})
+        filters = {'item_code': item_code}
+        variant_list = get_variant_details(filters)
+        variant_info = get_variant_info(variant_list)
+        attributes = []
+        for varient in variant_info:
+            varient_attribute = get_item_varient_attribute(varient['variant_code'])
+            for att in varient_attribute:
+                if att.get('attribute') not in attributes:
+                    attributes.append(att.get('attribute'))
+        attributes_list = []
+        summit_setting =  frappe.get_value("Summit Settings","show_variant_on_product_card", as_dict=1)
+        if show_variant_on_product_card == True:
+            if summit_setting.show_variant_on_product_card == 1:
+                attribute = summit_setting.variant_attribute_on_product_card
+                add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
+            else:
+                for attribute in attributes:
+                    add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
+        else:
+            for attribute in attributes:
+                add_attribute_to_list(attribute, variant_info, item_code, attributes_list)
+
+        stock_len = len([var.get('stock') for var in variant_info if var.get('stock')])
+        if show_variant_on_product_card == True:
+            if summit_setting.show_variant_on_product_card == 1:
+                variant_attribute_on_product_card = summit_setting.variant_attribute_on_product_card
+                attr_dict = {'item_code': item_code,
+                                'variants': get_variant_info_limited(variant_list,variant_attribute_on_product_card),
+                                'attributes': attributes_list}
+                return success_response(data=attr_dict)
+        attr_dict = {'item_code': item_code,
+                        'variants': get_variant_info(variant_list),
+                        'attributes': attributes_list}
+        return success_response(attr_dict)
+    except Exception as e:
+        frappe.logger('product').exception(e)
+        return error_response(e)
+    
+def add_attribute_to_list(attribute, variant_info, item_code, attributes_list):
+    print("111",attribute,variant_info,item_code,attributes_list)
+    attr = list({var.get(attribute) for var in variant_info if var.get(attribute)})
+    sorted_attr = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='abbr', order_by="idx asc")
+    sorted_attribute = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='attribute_colour', order_by="idx asc")
+    attributes_list.append({
+        "field_name": attribute, 
+        "label": f"Select {attribute}", 
+        "values": sorted_attr, 
+        "default_value": get_default_variant(item_code, attribute), 
+        "hex_value": sorted_attribute,
+        "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
+    })
+
+
+def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
+    varient_info_list = []
+    for item in variant_list:
+        variant_info = {
+            'variant_code': item.name,
+            'slug': get_variant_slug(item.name),
+            }
+        item_variant_attribute = get_item_varient_attribute(item.name)
+        for attribute in item_variant_attribute:
+            if attribute['attribute'] == variant_attribute_on_product_card:
+                variant_info[attribute['attribute']] = attribute['abbr']
+                attr_colour_key = f"{attribute['attribute'].lower()}_attr_colour"
+                variant_info[attr_colour_key] = attribute['attr_colour']
+        variant_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
+        variant_info['image'] = get_item_images(item.name)
+        varient_info_list.append(variant_info)
+    return varient_info_list
