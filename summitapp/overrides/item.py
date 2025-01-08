@@ -21,7 +21,7 @@ def on_update(self, method=None):
 
 def validate(self, method=None):
     set_parent_category(self)
-    set_custom_colour_and_size(self)
+    set_custom_attributes(self)
     specs_desc = ''
     for row in (self.get("item_filters") or []):
         specs_desc += f'{row.field_name} : {str(row.get("field_value"))}\n'
@@ -101,33 +101,27 @@ def make_website_item(doc, save=True):
 
 	return [website_item.name, website_item.web_item_name]
 
-def set_custom_colour_and_size(doc):
-    """
-    Set custom_colour and custom_size based on Item Variant Attribute.
-    Fetches Attribute Colour for Colour and Abbreviation for Size from Item Attribute master.
-    """
-    # Initialize variables
+def set_custom_attributes(doc):
     colour = None
     size = None
+    stone = None
 
-    # Iterate through the attributes child table
     for variant in doc.get("attributes") or []:
-        # Fetch the Item Attribute document
         attribute_doc = frappe.get_doc("Item Attribute", variant.attribute)
-        
-        # Check the child table for a matching attribute value
         for value_row in attribute_doc.get("item_attribute_values") or []:
             if value_row.attribute_value == variant.attribute_value:
                 if variant.attribute == "Colour":
-                    # Fetch Attribute Colour for Colour
                     colour = value_row.attribute_colour
                 elif variant.attribute == "Size":
-                    # Fetch Abbreviation for Size
                     size = value_row.abbr
+                elif variant.attribute == "Stone":
+                    stone = value_row.abbr
 
-    # Set the read-only fields
     doc.custom_colour = colour
     doc.custom_size = size
+    doc.custom_stone = stone
+
+
 
 def set_parent_category(doc):
 	if doc.category:
