@@ -63,18 +63,50 @@ def put_items(kwargs):
                 return error_response('please login as a Customer')
 
             catalog_name = kwargs.get('catalog_name')
-            item = kwargs.get('item')
+            items = kwargs.get('item')  # Expecting a list of items as stringified JSON
+
             if not frappe.db.exists('Catalog', catalog_name):
-                return error_response(f'catalog {catalog_name} does not exists')
+                return error_response(f'Catalog {catalog_name} does not exist')
 
-            if not frappe.db.exists('Item', item):
-                return error_response(f'Item {item} does not exists')
+            # Ensure items is parsed into a proper list
+            try:
+                if isinstance(items, str):
+                    items = frappe.parse_json(items)
+                if not isinstance(items, list):
+                    items = [items]
+            except Exception:
+                return error_response('Invalid items format. Expected a JSON array.')
 
-            result = add_item(catalog_name, item)
-            return success_response(data = result)      
+            result = add_items(catalog_name, items)
+            return success_response(data=result)
     except Exception as e:
         frappe.logger('catalog').exception(e)
-        return error_response('error posting catalog')
+        return error_response('Error posting catalog')
+
+
+def add_items(catalog_name, items):
+    cat_doc = frappe.get_doc('Catalog', catalog_name)
+    existing_items = get_item(cat_doc.name)  # Get existing items in catalog
+
+    response_message = ''
+    for item in items:
+        if not frappe.db.exists('Item', item):
+            response_message += f'Item {item} does not exist. '
+            continue
+
+        if item in existing_items:
+            response_message += f'Item {item} already present in catalog. '
+            continue
+
+        # Append item to catalog
+        cat_doc.append('items', {'item': item})
+        response_message += f'Item {item} added to catalog. '
+
+    # Save the catalog only if there are changes
+    if response_message and 'added to catalog' in response_message:
+        cat_doc.save(ignore_permissions=True)
+
+    return response_message.strip()
 
 @frappe.whitelist()
 def delete_items(kwargs):
