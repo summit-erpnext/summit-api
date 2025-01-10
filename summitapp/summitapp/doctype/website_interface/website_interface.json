@@ -7,26 +7,18 @@
  "engine": "InnoDB",
  "field_order": [
   "interface_name",
-  "publish",
-  "home_page_tab",
-  "components_for_home_page",
   "from_date",
-  "column_break_8wrw",
-  "to_date",
-  "section_break_ldst",
+  "page_type",
+  "top_section_components",
   "associated_component",
-  "listing_page_tab",
-  "column_break_mwjl",
-  "components_for_listing_page",
-  "list_page_component",
-  "layout",
-  "layout_component",
-  "detail_page_tab",
-  "components_for_detail_page",
-  "detail_page_component",
-  "cart_page_tab",
-  "components_for_cart_page",
-  "cart_page_component"
+  "bottom_section_components",
+  "publish",
+  "column_break_8wrw",
+  "page_url",
+  "to_date",
+  "product_category_page_layout",
+  "filters_component",
+  "product_card_components"
  ],
  "fields": [
   {
@@ -46,116 +38,74 @@
    "label": "Publish"
   },
   {
-   "depends_on": "eval: doc.components_for_home_page == 1;",
    "fieldname": "from_date",
    "fieldtype": "Date",
    "label": "From Date"
   },
   {
-   "depends_on": "eval: doc.components_for_home_page == 1;",
    "fieldname": "to_date",
    "fieldtype": "Date",
    "label": "To Date"
   },
   {
-   "fieldname": "section_break_ldst",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval: doc.components_for_home_page == 1;",
+   "depends_on": "eval: doc.page_type == 'Home Page' || doc.page_type == 'Cart Page' || doc.page_type == 'Catalog Page' ;\r\n\r\n\r\n\r\n\r\n\r\n",
    "fieldname": "associated_component",
    "fieldtype": "Table",
    "label": "Associated Component",
    "options": "Associated Components"
   },
   {
-   "fieldname": "home_page_tab",
-   "fieldtype": "Tab Break",
-   "label": "Home Page"
+   "fieldname": "page_url",
+   "fieldtype": "Data",
+   "label": "Page URL"
   },
   {
-   "default": "0",
-   "fieldname": "components_for_home_page",
-   "fieldtype": "Check",
-   "label": "Components for Home Page"
+   "fieldname": "page_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Page Type",
+   "options": "\nHome Page\nProduct Category Page\nProduct Page\nCart Page\nCatalog Page",
+   "reqd": 1
   },
   {
-   "fieldname": "listing_page_tab",
-   "fieldtype": "Tab Break",
-   "label": "Listing Page"
+   "depends_on": "eval: doc.page_type=='Product Category Page'",
+   "fieldname": "product_category_page_layout",
+   "fieldtype": "Select",
+   "label": "Product Category Page Layout",
+   "options": "\nDefault Layout\nCollapsible Layout\nTop Filters Layout"
   },
   {
-   "default": "0",
-   "fieldname": "components_for_listing_page",
-   "fieldtype": "Check",
-   "label": "Components for Listing Page"
+   "depends_on": "eval: doc.page_type=='Product Category Page'",
+   "fieldname": "filters_component",
+   "fieldtype": "Select",
+   "label": "Filters Component",
+   "options": "\nStandard Filters"
   },
   {
-   "fieldname": "detail_page_tab",
-   "fieldtype": "Tab Break",
-   "label": "Detail Page"
+   "depends_on": "eval: doc.page_type=='Product Category Page'",
+   "fieldname": "product_card_components",
+   "fieldtype": "Select",
+   "label": "Product Card Components",
+   "options": "\nCard with no Variants\nCard with Variant Images\nCard with Color Variants"
   },
   {
-   "default": "0",
-   "fieldname": "components_for_detail_page",
-   "fieldtype": "Check",
-   "label": "Components for Detail Page"
-  },
-  {
-   "fieldname": "cart_page_tab",
-   "fieldtype": "Tab Break",
-   "label": "Cart Page"
-  },
-  {
-   "default": "0",
-   "fieldname": "components_for_cart_page",
-   "fieldtype": "Check",
-   "label": "Components for Cart Page"
-  },
-  {
-   "depends_on": "eval: doc.components_for_listing_page ==1;",
-   "fieldname": "list_page_component",
+   "depends_on": "eval: doc.page_type == 'Product Category Page' || doc.page_type == 'Product Page' ;",
+   "fieldname": "top_section_components",
    "fieldtype": "Table",
-   "label": "List Page Component",
-   "options": "Listing Page Components"
+   "label": "Top Section Components",
+   "options": "Top Section Components"
   },
   {
-   "depends_on": "eval: doc.components_for_detail_page ==1;",
-   "fieldname": "detail_page_component",
+   "depends_on": "eval: doc.page_type == 'Product Category Page' || doc.page_type == 'Product Page' ;",
+   "fieldname": "bottom_section_components",
    "fieldtype": "Table",
-   "label": "Detail Page Component",
-   "options": "Detail Page Components"
-  },
-  {
-   "depends_on": "eval: doc.components_for_cart_page ==1;",
-   "fieldname": "cart_page_component",
-   "fieldtype": "Table",
-   "label": "Cart Page Component",
-   "options": "Cart Page Components"
-  },
-  {
-   "depends_on": "eval: doc.components_for_listing_page ==1;",
-   "fieldname": "layout",
-   "fieldtype": "Link",
-   "label": "Layout",
-   "options": "Layout"
-  },
-  {
-   "depends_on": "eval: doc.components_for_listing_page ==1;",
-   "fieldname": "layout_component",
-   "fieldtype": "Table",
-   "label": "Layout Component",
-   "options": "Layout Components"
-  },
-  {
-   "depends_on": "eval: doc.components_for_listing_page ==1;",
-   "fieldname": "column_break_mwjl",
-   "fieldtype": "Column Break"
+   "label": "Bottom Section Components",
+   "options": "Bottom Section Components"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-18 15:54:40.555751",
+ "modified": "2025-01-10 16:10:16.325957",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
