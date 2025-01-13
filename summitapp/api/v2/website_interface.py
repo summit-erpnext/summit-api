@@ -102,11 +102,15 @@ def get_page_components(page_type):
             # Extract common fields from the first row
             if not common_fields:
                 common_fields = extract_common_fields(raw_data[0])
-            # Remove common fields from each row
+            # Filter out rows where all component-specific fields are null
             components[table_name] = [
-                {key: value for key, value in row.items() if key not in common_fields}
+                {key: value for key, value in row.items() if key not in common_fields and value is not None}
                 for row in raw_data
+                if any(value is not None for key, value in row.items() if key not in common_fields)
             ]
+        else:
+            # Assign an empty array if no data is found
+            components[table_name] = []
 
     return {
         "page_name": page_type,
