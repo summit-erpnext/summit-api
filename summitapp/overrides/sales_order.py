@@ -33,6 +33,8 @@ def on_submit(self, method=None):
         doc.save()
         doc.submit()
         frappe.db.set_value("Customer",self.customer,'balance_amount', balance - self.store_credit_used)
+    if self.workflow_state == "Approved":
+        frappe.db.set_value("Sales Order",self.name, "order_status","Approved")    
 
 def on_payment_authorized(self, *args, **kwargs):
 	try:
@@ -46,3 +48,33 @@ def on_payment_authorized(self, *args, **kwargs):
 	except Exception as e:
 		frappe.logger('utils').exception(e)
 
+def on_cancel(self, method=None):
+    if self.workflow_state == "Cancelled":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Cancelled")
+
+def validate(self, method=None):
+    if self.workflow_state == "Order Placed":
+        self.order_status = "Pending for Approval"
+
+def on_update_after_submit(self, method=None):
+    if self.workflow_state == "Billed":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Billed")
+    elif self.workflow_state == "Delivery":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Out For Delivery")
+    elif self.workflow_state == "Submitted":
+        frappe.db.set_value("Sales Order",self.name,"order_status","Order Delivered")    
+
+def autoname(self,method=None):
+    if self.is_replacement:
+        replacement_sales_order = len(frappe.db.get_all("Sales Order", filters={"parent_sales_order": self.parent_sales_order}, pluck="parent_sales_order"))
+        return_replacement_request_sales_order = frappe.db.get_value(
+            "Return Replacement Request",
+            self.returrn_replacement_request,
+            "order_id"
+        )
+        if replacement_sales_order == 0:
+            sales_order_naming = f"{self.parent_sales_order}-Replacement"
+            self.name = sales_order_naming
+        else:
+            sales_order_naming = f"{self.parent_sales_order}-Replacement-{replacement_sales_order}"
+            self.name = sales_order_naming

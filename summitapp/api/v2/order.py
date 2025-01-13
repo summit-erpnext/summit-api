@@ -2,7 +2,7 @@ import contextlib
 import frappe
 from frappe.utils import flt
 from summitapp.utils import error_response, success_response
-from summitapp.api.v2.product import get_slide_images, get_product_url, get_detailed_item_list
+from summitapp.api.v2.product import get_product_url, get_detailed_item_list
 from summitapp.api.v2.customer_address import get_details as get_address_details
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 from datetime import datetime, timedelta
@@ -17,13 +17,13 @@ def get_list(kwargs):
 	try:
 		order_id = kwargs.get('order_id')
 		date_range = kwargs.get('date_range')
-		is_cancelled = kwargs.get('is_cancelled')
+		status = kwargs.get('status')
 		session_id = kwargs.get('session_id')
 		email = frappe.session.user
-		# if email == "Guest":
-		# 	return error_response('Please Login As A Customer')
+		if email == "Guest":
+			return error_response('Please Login As A Customer')
 		customer = frappe.get_value("Customer",{'email':email})
-		result, order_count = get_listing_details(customer, order_id, date_range, is_cancelled,session_id)
+		result, order_count = get_listing_details(customer, order_id, date_range, status,session_id)
 		return {'msg': 'success', 'data': result, 'order_count': order_count}
 	except Exception as e:
 		frappe.logger('product').exception(e)
@@ -185,22 +185,31 @@ def get_charges_from_table(doc,table=[]):
 	charges['tax'] = charges.get("total",0) - charges.get("gateway_charge",0) - charges.get("shipping",0) - charges.get("assembly",0)
 	return charges
 
-def get_listing_details(customer, order_id, date_range, is_cancelled, session_id):
-    filters = []
-    if customer:
-        filters.append(["Sales Order", "customer", "=", customer])
-    if order_id:
-        filters.append(["Sales Order", "name", "=", order_id])
-    if is_cancelled:
-        filters.append(["Sales Order", "status", "=", "Cancelled"])
-    if date_range:
-        filters = get_date_range_filter(filters, date_range)
-    if session_id:
-        filters.append(["Sales Order", "custom_session_id", "=", session_id])
-
-    orders = frappe.get_all("Sales Order", filters=filters, fields="*")
-    charges_fields = get_processed_order(orders, customer)
-    return charges_fields, len(charges_fields)
+def get_listing_details(customer, order_id, date_range, status, session_id):
+	filters = []
+	if customer:
+		filters.append(["Sales Order", "customer", "=", customer])
+	if order_id:
+		filters.append(["Sales Order", "name", "=", order_id])
+	else:
+		if status == "Cancelled":
+			filters.append(["Sales Order", "order_status", "=", "Cancelled"])
+		elif status == "Replacement":
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
+			filters.append(["Sales Order", "is_replacement", "=", "1"])
+		elif status == "Completed":
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
+			filters.append(["Sales Order", "is_replacement", "=", "0"])
+		else:
+			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
+			filters.append(["Sales Order", "is_replacement", "=", "0"])
+	if date_range:
+		filters = get_date_range_filter(filters, date_range)
+	if session_id:
+		filters.append(["Sales Order", "custom_session_id", "=", session_id])
+	orders = frappe.get_all("Sales Order", filters=filters, fields="*")
+	charges_fields = get_processed_order(orders, customer)
+	return charges_fields, len(charges_fields)
 
 
 
@@ -212,7 +221,7 @@ def get_processed_order(orders, customer):
         try:
             sales_invoice = frappe.get_doc("Sales Invoice", {'sales_order': order.name}, "*")
             if sales_invoice:
-                print_url = get_pdf_link("Sales Invoice", sales_invoice.name)
+                print_url =get_pdf_link ("Sales Invoice", sales_invoice.name)
             else:
                 print_url = ""
         except frappe.DoesNotExistError as e:
@@ -268,7 +277,7 @@ def get_item_details(item_code, item_row, transaction_date):
 	return {
 			'name': item.name,
 			'item_name': item.item_name,
-			'img': get_slide_images(item.name, True),
+			'img': item.image,
 			'brand': item.get('brand'),
 			'brand_img': frappe.get_value('Brand', {'name': item.get('brand')}, 'image'),
 			'prod_info': get_item_info(item, item_row),
@@ -374,6 +383,28 @@ def get_date_range_filter(filters, date_range):
 		filters.append(["Sales Order","transaction_date","Timespan",date_range.replace("_"," ")])
 	return filters
 
+def return_replace_item(kwargs):
+	try:
+		if not kwargs.get('order_id'): return error_response('Please Sepecify Order')
+		if not kwargs.get('product_id'): return error_response('Please Specify Product')
+		if kwargs.get("product_id") and kwargs.get('order_id'):
+			item_code = frappe.db.get_all("Sales Order Item", {"parent": kwargs.get('order_id')},"item_code",pluck="item_code")
+			if kwargs.get('product_id') not in item_code:
+				return error_response('Product Id Not Present')
+		rr_doc = frappe.new_doc('Return Replacement Request')
+		rr_doc.type = kwargs.get('type')
+		rr_doc.reason = kwargs.get('reason')
+		rr_doc.order_id = kwargs.get('order_id')
+		rr_doc.product_id = kwargs.get('product_id')
+		rr_doc.quantity = kwargs.get('quantity')
+		images = kwargs.get("images",[])
+		for file in images:
+			image = file.get('image')
+			rr_doc.append("return_replacement_image",{"image":image})
+		rr_doc.save(ignore_permissions=True)
+		return success_response(data={'docname':rr_doc.name, 'doctype': rr_doc.doctype})
+	except Exception as e:
+		return error_response(e)
 
 # def return_replace_item(kwargs):
 # 	try:
@@ -392,41 +423,73 @@ def get_date_range_filter(filters, date_range):
 # 	except Exception as e:
 # 		return error_response(e)
 
-@frappe.whitelist()
-def return_replace_item(kwargs):
-    try:
-        email = get_logged_user()  
-        customer = frappe.get_list("Customer", filters={"email": email})
-        if frappe.request.data:
-            request_data = json.loads(frappe.request.data)
-            if not request_data.get('order_id'): 
-                return error_response('Please Specify Order ID')
-            if not request_data.get('product_id'): 
-                return error_response('Please Specify Product ID')
-            
-            rr_doc = frappe.new_doc('Return Replacement Request')
-            rr_doc.type = kwargs.get('type')
-            rr_doc.reason = kwargs.get('reason')
-            rr_doc.order_id = request_data.get('order_id')
-            rr_doc.product_id = request_data.get('product_id')
-            rr_doc.customer = customer[0].name if customer else None  # Accessing the first customer if exists
-            rr_doc.date = datetime.now()
-            rr_doc.customer_email = email
-            images = request_data.get("images", [])
-            for i in images:
-                image = i.get('image')
-                rr_doc.append(
-                    "return_replacement_image",
-                    {
-                        "doctype": "Return Replacement Image",
-                        "image": image
-                    },
-                )
-            rr_doc.save(ignore_permissions=True)
-            return success_response(data={'docname': rr_doc.name, 'doctype': rr_doc.doctype})
-    except Exception as e:
-        frappe.logger("rr").exception(e)
-        return error_response(str(e))
+# @frappe.whitelist()
+# def return_replace_item(kwargs):
+# 	try:
+# 		email = get_logged_user()  
+# 		customer = frappe.get_list("Customer", filters={"email": email})
+		
+# 		if frappe.request.data:
+# 			request_data = json.loads(frappe.request.data)
+# 			if not request_data.get('order_id'): 
+# 				return error_response('Please Specify Order ID')
+# 			if not request_data.get('product_id'): 
+# 				return error_response('Please Specify Product ID')
+			
+# 			# Create Return Replacement Request document
+# 			rr_doc = frappe.new_doc('Return Replacement Request')
+# 			rr_doc.type = kwargs.get('type')
+# 			rr_doc.reason = kwargs.get('reason')
+# 			rr_doc.order_id = request_data.get('order_id')
+# 			rr_doc.product_id = request_data.get('product_id')
+# 			rr_doc.customer = customer[0].name if customer else None  # Accessing the first customer if exists
+# 			rr_doc.date = datetime.now()
+# 			rr_doc.customer_email = email
+			
+# 			# Add images to the document
+# 			images = request_data.get("images", [])
+# 			for i in images:
+# 				image = i.get('image')
+# 				rr_doc.append(
+# 					"return_replacement_image",
+# 					{
+# 						"doctype": "Return Replacement Image",
+# 						"image": image
+# 					},
+# 				)
+# 			rr_doc.save(ignore_permissions=True)
+
+# 			sales_order = frappe.get_doc("Sales Order", rr_doc.order_id)
+# 			frappe.db.set_value(
+# 				"Sales Order", sales_order.name,
+# 				{
+# 					"is_replacement": 1,
+# 					"returrn_replacement_request": sales_order.name,
+# 					"workflow_state": "Replacement"
+# 				}
+# 			)
+
+# 			new_sales_order = frappe.new_doc("Sales Order")
+# 			new_sales_order.update({
+# 				"customer": sales_order.customer,
+# 				"transaction_date": datetime.now(),
+# 				"delivery_date":sales_order.delivery_date.strftime('%Y-%m-%d'),
+# 				"returrn_replacement_request": "", 
+# 				"items": []
+# 			})
+# 			for item in sales_order.items:
+# 				new_sales_order.append("items", {
+# 					"item_code": item.item_code,
+# 					"qty": item.qty,
+# 					"rate": item.rate,
+# 					"amount": item.amount
+# 				})
+# 			new_sales_order.insert(ignore_permissions=True)
+
+# 			return success_response(data={'docname': rr_doc.name, 'doctype': rr_doc.doctype,"new_sales_order":new_sales_order.name})
+# 	except Exception as e:
+# 		frappe.logger("rr").exception(e)
+# 		return error_response(str(e))
 
 def get_order_details(kwargs):
 	if not kwargs.get('order_id'):
@@ -448,7 +511,7 @@ def get_order_details(kwargs):
 			"tax": tax,
 			"shipping": shipping,
 			"coupon": doc.get("coupon_code"),
-			"print_url": get_pdf_link("Sales Invoice", sales_invoice[0].name)
+			"print_url": get_sales_invoice_print_url(sales_invoice)
 		}
 		products = []
 		for row in doc.items:
@@ -496,7 +559,28 @@ def recently_bought(kwargs):
 		return error_response(e)
 
 
-def get_pdf_link(voucher_type, voucher_no, print_format ="GST-Tax Invoice"):
+def get_pdf_link(voucher_type, voucher_no, print_format ="GST Tax Invoice"):
 	if print_format:
 		return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype={voucher_type}&name={voucher_no}&format={print_format}&no_letterhead=1&letterhead=No Letterhead&lang=en"
 	return "#"		
+
+def get_sales_invoice_print_url(sales_invoice):
+    if sales_invoice:
+        return get_pdf_link("Sales Invoice", sales_invoice[0].name)
+    else:
+        return "#"
+
+def cancel_order(kwargs):
+	try:
+		sales_order = kwargs.get("order_id")
+		if frappe.db.exists("Sales Order", {"name": sales_order, "workflow_state": ["!=", "Cancelled"]}):
+			frappe.db.set_value("Sales Order",sales_order,
+					   {"workflow_state": "Cancelled",
+		 				"order_status":"Cancelled",
+						"docstatus":2
+						})
+			return success_response(data = f"{sales_order} is been Cancelled Successful")
+		return error_response(f"{sales_order} doesn't exist")
+	except Exception as e:
+			frappe.logger("order").exception(e)
+			return error_response(e)
