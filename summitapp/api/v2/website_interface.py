@@ -38,24 +38,32 @@ def fetch_component_data(parent_doctype, child_doctype, component_field, page_ty
     Parent = qb.DocType(parent_doctype)
     Child = qb.DocType(child_doctype)
 
+    # Dynamically fetch fields based on the child doctype
+    fields = [
+        Parent.page_url,
+        Parent.from_date,
+        Parent.to_date,
+        Parent.page_type,
+        Parent.product_category_page_layout,
+        Parent.filters_component,
+        Parent.product_card_components,
+        Child[component_field],
+    ]
+    if frappe.db.has_column(child_doctype, "properties"):
+        fields.append(Child.properties)
+
+    fields.extend([
+        Component.component_name,
+        Component.section_name,
+        Component.page_name,
+        Component.image,
+    ])
+
     return (
         qb.from_(Parent)
         .left_join(Child).on(Parent.name == Child.parent)
         .left_join(Component).on(Component.name == getattr(Child, component_field))
-        .select(
-            Parent.page_url,
-            Parent.from_date,
-            Parent.to_date,
-            Parent.page_type,
-            Parent.product_category_page_layout,
-            Parent.filters_component,
-            Parent.product_card_components,
-            Child[component_field],
-            Component.component_name,
-            Component.section_name,
-            Component.page_name,
-            Component.image,
-        )
+        .select(*fields)
         .where((Parent.publish == 1) & (Parent.page_type == page_type))
         .orderby(Child.idx)
         .run(as_dict=True)
@@ -63,7 +71,6 @@ def fetch_component_data(parent_doctype, child_doctype, component_field, page_ty
 
 def get_page_components(page_type):
     """Fetch and structure components data based on page type."""
-    # Mapping of page types to associated doctypes and fields
     page_type_to_component_mapping = {
         "Home Page": ("Website Interface", {"associated_component": "Associated Components"}, "component"),
         "Product Category Page": (
@@ -86,37 +93,39 @@ def get_page_components(page_type):
         "Catalog Page": ("Website Interface", {"associated_component": "Associated Components"}, "component"),
     }
 
-    # Validate page_type
     if page_type not in page_type_to_component_mapping:
         raise ValueError("Invalid page_type specified.")
 
-    # Extract relevant doctypes and child table mappings
     parent_doctype, child_table_mapping, component_field = page_type_to_component_mapping[page_type]
 
-    # Fetch components and extract common fields
     components = {}
     common_fields = {}
     for table_name, child_doctype in child_table_mapping.items():
         raw_data = fetch_component_data(parent_doctype, child_doctype, component_field, page_type)
         if raw_data:
-            # Extract common fields from the first row
             if not common_fields:
                 common_fields = extract_common_fields(raw_data[0])
-            # Filter out rows where all component-specific fields are null
-            components[table_name] = [
-                {key: value for key, value in row.items() if key not in common_fields and value is not None}
-                for row in raw_data
-                if any(value is not None for key, value in row.items() if key not in common_fields)
-            ]
-        else:
-            # Assign an empty array if no data is found
+            
             components[table_name] = []
+            for row in raw_data:
+                component_data = {
+                    key: value for key, value in row.items()
+                    if key not in common_fields and value is not None
+                }
+                # Ensure 'properties' key is always present for Associate Components
+                if table_name == "associated_component":
+                    component_data["properties"] = component_data.get("properties", None)
+                components[table_name].append(component_data)
+        else:
+            # Add an empty properties key for Associate Components even if raw_data is empty
+            components[table_name] = [{"properties": None}] if table_name == "associated_component" else []
 
     return {
         "page_name": page_type,
         **common_fields,
         **components,
     }
+
 
 def extract_common_fields(row):
     """Extract common fields from a row."""
