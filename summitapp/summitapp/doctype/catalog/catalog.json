@@ -9,9 +9,11 @@
  "field_order": [
   "name1",
   "access_level",
+  "image",
   "column_break_69y1p",
   "user",
   "sequence",
+  "slug",
   "section_break_elv3s",
   "items"
  ],
@@ -51,11 +53,21 @@
   {
    "fieldname": "section_break_elv3s",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach",
+   "label": "Image"
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-18 12:42:42.607761",
+ "modified": "2025-01-14 16:44:54.279381",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Catalog",
