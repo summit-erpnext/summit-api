@@ -7,9 +7,11 @@
  "field_order": [
   "enable_user_based_menu",
   "variant_type",
+  "header_component",
   "column_break_px7d",
   "show_variant_on_product_card",
-  "variant_attribute_on_product_card"
+  "variant_attribute_on_product_card",
+  "footer_component"
  ],
  "fields": [
   {
@@ -41,12 +43,24 @@
   {
    "fieldname": "column_break_px7d",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "header_component",
+   "fieldtype": "Link",
+   "label": "Header Component",
+   "options": "Component"
+  },
+  {
+   "fieldname": "footer_component",
+   "fieldtype": "Link",
+   "label": "Footer Component",
+   "options": "Component"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-07 11:48:59.990184",
+ "modified": "2025-01-15 11:29:24.879125",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
