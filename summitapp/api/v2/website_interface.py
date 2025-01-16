@@ -47,6 +47,8 @@ def fetch_component_data(parent_doctype, child_doctype, component_field, page_ty
         Parent.product_category_page_layout,
         Parent.filters_component,
         Parent.product_card_components,
+        Parent.magnified_image_component,
+        Parent.product_information_component,
         Child[component_field],
     ]
     if frappe.db.has_column(child_doctype, "properties"):
@@ -137,4 +139,6 @@ def extract_common_fields(row):
         "product_category_page_layout": row["product_category_page_layout"],
         "filters_component": row["filters_component"],
         "product_card_components": row["product_card_components"],
+        "magnified_image_component": row["magnified_image_component"],
+        "product_information_component": row["product_information_component"]
     }
