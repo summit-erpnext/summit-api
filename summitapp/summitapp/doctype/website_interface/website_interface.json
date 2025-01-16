@@ -18,7 +18,9 @@
   "to_date",
   "product_category_page_layout",
   "filters_component",
-  "product_card_components"
+  "product_card_components",
+  "magnified_image_component",
+  "product_information_component"
  ],
  "fields": [
   {
@@ -101,11 +103,24 @@
    "fieldtype": "Table",
    "label": "Bottom Section Components",
    "options": "Bottom Section Components"
+  },
+  {
+   "fieldname": "magnified_image_component",
+   "fieldtype": "Select",
+   "label": "Magnified Image Component",
+   "options": "\nImage Thumbnails on the Left\nImage Thumbnails on the Right\nImage Thumbnails at the Bottom"
+  },
+  {
+   "depends_on": "eval:doc.page_type=='Product Page'",
+   "fieldname": "product_information_component",
+   "fieldtype": "Select",
+   "label": "Product Information Component",
+   "options": "\nStandard Product Information"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-10 16:10:16.325957",
+ "modified": "2025-01-16 11:38:46.609127",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
