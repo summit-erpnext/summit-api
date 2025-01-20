@@ -109,6 +109,24 @@ def get_list(kwargs):
         frappe.logger('product').exception(e)
         return error_response(str(e))
 
+
+# @frappe.whitelist(allow_guest=True)
+# def get_list(kwargs):
+#     try:
+#         # kwargs_variables = get_kwargs(kwargs)
+#         # print(kwargs_variables.get('category'))
+#         item_list = frappe.get_list("Item", fields=["*"])
+#         items = get_processed_list(None, item_list,None, None)
+#         return items
+#     except Exception as e:
+#         frappe.logger('product').exception(e)
+    
+    
+def get_kwargs(kwargs):
+    kwargs_list=[]
+    category=kwargs_list.append(kwargs.get(category)) 
+    
+    
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
 def get_variants(kwargs):

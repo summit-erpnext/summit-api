@@ -99,10 +99,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
     filters = {'item_code':item.get('variant_of')}
     variant_list = get_variant_details(filters)
     variant_info = get_variant_info(variant_list)
-    # summit_setting =  frappe.get_value("Summit Settings","show_variant_on_product_card", as_dict=1)
-    # attribute = None 
-    # if summit_setting.show_variant_on_product_card == 1:
-    #     attribute = summit_setting.variant_attribute_on_product_card
+    attributes= get_item_varient_attribute(item.name)
     try:
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
@@ -120,7 +117,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
             'variant': lambda: {'variant': variant_info},
             'variant_of': lambda: {'variant_of': item.get('variant_of')},
-            # 'attributes': lambda: {'attributes':add_attribute_to_list(attribute,variant_list,item.get('item_code'),[])},
+            'attributes': lambda: {'attributes':attributes},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
@@ -140,11 +137,6 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
         item_fields = {}
 
         for field_name in field_names:
-            if field_name == "variant_of":
-                variant_data = get_variants_for_listing(item=item.get('variant_of'), show_variant_on_product_card=True)
-                item_fields.update({
-                    "attributes": variant_data['data']['attributes']
-                })
             if field_name in computed_fields:
                 item_fields.update(computed_fields[field_name]())
             else:
@@ -716,52 +708,58 @@ def get_home_page(kwargs):
 
 def get_item_images(item_code):
     """
-    Function to retrieve images for an item based on whether it is a template or a variant.
+    Optimized function to retrieve images for an item based on whether it is a template or a variant.
 
     :param item_code: Item code to fetch images for.
-    :return: Dictionary with "slide_img" containing the list of image URLs.
+    :return: List of unique image URLs.
     """
     try:
-        # Fetch the item details
-        item = frappe.get_doc("Item", item_code)
-        slide_images = []
+        # Fetch only required fields for the main item
+        item = frappe.db.get_value(
+            "Item",
+            {"name": item_code},
+            ["image", "variant_of"],
+            as_dict=True
+        )
+        if not item:
+            return []
 
-        # Add the main item image if it exists
-        if item.image:
-            slide_images.append(item.image)
+        # Initialize image list
+        slide_images = set()
 
-        # Add images from the item's child table "Item Images"
+        # Add main item image
+        if item.get("image"):
+            slide_images.add(item["image"])
+
+        # Fetch child images in one query for the item and its variant/template (if applicable)
+        parents = [item_code]
+        if item.get("variant_of"):
+            parents.append(item["variant_of"])
+
+            # Fetch the template item image in one query if it exists
+            template_image = frappe.db.get_value(
+                "Item",
+                {"name": item["variant_of"]},
+                "image"
+            )
+            if template_image:
+                slide_images.add(template_image)
+
+        # Query all child images for item and its template in a single query
         child_images = frappe.get_all(
             "Item Images",
-            filters={"parent": item_code},
+            filters={"parent": ["in", parents]},
             fields=["upload_image"]
         )
-        slide_images.extend([ci["upload_image"] for ci in child_images if ci["upload_image"]])
+        slide_images.update(ci["upload_image"] for ci in child_images if ci["upload_image"])
 
-        # Check if the item is a variant
-        if item.variant_of:
-            # Fetch the template item
-            template_item = frappe.get_doc("Item", item.variant_of)
-
-            # Add the template's main image if it exists
-            if template_item.image:
-                slide_images.append(template_item.image)
-
-            # Add images from the template item's child table "Item Images"
-            template_child_images = frappe.get_all(
-                "Item Images",
-                filters={"parent": template_item.name},
-                fields=["upload_image"]
-            )
-            slide_images.extend([tci["upload_image"] for tci in template_child_images if tci["upload_image"]])
-
-        # Ensure unique URLs and remove empty entries
-        slide_images = list(set(filter(None, slide_images)))
-        return slide_images
+        # Return sorted list of unique images
+        return sorted(slide_images)
 
     except Exception as e:
         frappe.logger('product').exception(e)
-        return error_response(e)
+        return []
+
 
 
 def get_variant_attributes(item):
@@ -788,7 +786,6 @@ def get_variant_info(variant_list):
         varient_info['stock'] = True if get_stock_info(item.name, 'stock_qty') != 0 else False
         varient_info['image'] = get_item_images(item.name)
         varient_info_list.append(varient_info)
-    print("VARIA",varient_info_list)
     return varient_info_list
 
 def get_variant_slug(item_code):
@@ -850,7 +847,6 @@ def get_variants_for_listing(**kwargs):
         return error_response(e)
     
 def add_attribute_to_list(attribute, variant_info, item_code, attributes_list):
-    print("111",attribute,variant_info,item_code,attributes_list)
     attr = list({var.get(attribute) for var in variant_info if var.get(attribute)})
     sorted_attr = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='abbr', order_by="idx asc")
     sorted_attribute = frappe.get_all("Item Attribute Value",{"abbr":["IN", attr], "parent": attribute},pluck='attribute_colour', order_by="idx asc")
