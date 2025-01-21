@@ -6,6 +6,7 @@ from frappe.model.db_query import DatabaseQuery
 from frappe.utils.global_search import search
 from frappe.utils import flt, cint, today, add_days
 from summitapp.api.v2.translation import translate_result
+from summitapp.api.v2.e_tag import handle_etag, handle_response
 from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
                                        get_item_images, get_stock_info, 
 									   get_processed_list, get_item_field_values, 
@@ -25,12 +26,10 @@ def get_list(kwargs):
         customer_id = get_customer_id(kwargs)
         user_role = frappe.session.user
         product_limit = get_list_product_limit(user_role, customer_id)
-        if product_limit != 0:
-            limit = product_limit
-        elif kwargs.get('limit') == "get_all_products":
+        limit = product_limit if product_limit != 0 else kwargs.get('limit', 20)
+        if kwargs.get('limit') == "get_all_products":
             limit = None
-        else:
-            limit = kwargs.get('limit', 20)
+
         filter_list = kwargs.get('filter')
         field_filters = kwargs.get("field_filters")
         or_filters = kwargs.get("or_filters")
@@ -39,6 +38,7 @@ def get_list(kwargs):
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
         access_level = get_access_level(customer_id)
+
         if not search_text:
             order_by = None
             filter_args = {"access_level": access_level}
@@ -51,7 +51,7 @@ def get_list(kwargs):
                 item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
                 if item_value:
                     filter_args["name"] = item_value
-            if sort_by not in ["low_to_high","high_to_low","oldest","latest"]:
+            if sort_by not in ["low_to_high", "high_to_low", "oldest", "latest"]:
                 tag_data = frappe.db.sql(
                     f"""
                     SELECT
@@ -67,8 +67,8 @@ def get_list(kwargs):
                 if kwargs.get('item'):
                     item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
                     tag_records.append(item_value)
-                    filter_args["name"] = ['in', tag_records]  
-            
+                    filter_args["name"] = ['in', tag_records]
+
             filters = get_filter_listing(filter_args)
             type = 'brand-product' if check_brand_exist(filters) else 'product'
             if field_filters:
@@ -90,24 +90,40 @@ def get_list(kwargs):
                     del filters['sequence']
             debug = kwargs.get("debug_query", 0)
             count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
-        else:  
+        else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
+
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
         translated_item_fields = translate_result(result)
-        # translated_item_fields = translate_results(result)
+        response_data = json.dumps(translated_item_fields, default=json_handler)
+
+        # ETag Logic Integration
+        etag = handle_etag(response_data)
+        if etag is None:
+            return
+
         if internal_call:
-            return translated_item_fields
+            return handle_response(response_data, etag=etag)
+
         if sort_by == "low_to_high" or sort_by == "high_to_low":
             translated_item_fields = sort_item_by_price(translated_item_fields, sort_by)
         else:
             translated_item_fields = sort_item_by_price(translated_item_fields, price_range)
-        return {'msg': 'success', 'data': translated_item_fields, 'total_count': total_count}
+
+        response_body = {
+            'msg': 'success',
+            'data': translated_item_fields,
+            'total_count': total_count
+        }
+        return handle_response(response_body, etag=etag)
+
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
+
 
 
 # @frappe.whitelist(allow_guest=True)
@@ -479,21 +495,30 @@ def get_tagged_products(kwargs):
             return error_response("key missing 'tag'")
 
         tag = kwargs.get('tag')
-        # Fetching the product limit from Tags MultiSelect
         tag_doc = frappe.get_doc("Featured Collection", tag)
         product_limit = tag_doc.set_product_limit
         side_banner_image = tag_doc.tag_image
-        items = frappe.get_list("Tags MultiSelect", {"tag": tag}, pluck='parent', ignore_permissions=True)
+        items = frappe.get_list(
+            "Tags MultiSelect", 
+            {"tag": tag}, 
+            pluck='parent', 
+            ignore_permissions=True
+        )
         customer_id = kwargs.get("customer_id")
         res = get_detailed_item_list(currency, items, customer_id, None, product_limit)
-        # return side_banner_image, res
-        response = {'msg': 'success'}
-        response['side banner'] = side_banner_image
-        response['data'] = res
-        return response
+        response = {
+            "msg": "success",
+            "side_banner": side_banner_image,
+            "data": res
+        }
+        response_data = json.dumps(response, default=json_handler)
+        etag = handle_etag(response_data)
+        if etag is None:
+            return
+        return handle_response(response, etag=etag)
     except Exception as e:
         frappe.logger('product').exception(e)
-        return error_response(e)
+        return error_response(str(e))
 
 
 def get_detailed_item_list(currency, items, customer_id=None, filters={}, product_limit=None):

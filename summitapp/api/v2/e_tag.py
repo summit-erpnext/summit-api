@@ -25,11 +25,11 @@ def get_product_list(kwargs=None):
             "message": "Product list fetched successfully",
             "data": products
         }
-        return custom_response(response_body, etag=etag)
+        return handle_response(response_body, etag=etag)
 
     except Exception as e:
         frappe.log_error(f"Error in get_product_list: {str(e)}")
-        return custom_response({
+        return handle_response({
             "status": "error",
             "message": f"Failed to fetch product list: {str(e)}"
         })
@@ -40,7 +40,7 @@ def json_handler(obj):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable")
 
-def custom_response(data, etag=None):
+def handle_response(data, etag=None):
     response = Response(
         response=json.dumps(data, default=json_handler),
         mimetype="application/json"
