@@ -52,6 +52,9 @@ doc_events = {
 	},
 	"Address": {
 		"before_validate": "summitapp.overrides.address.before_validate"
+	},
+	"Currency Exchange":{
+		"validate":"summitapp.overrides.currency_exchange.validate"
 	}
 }
 
@@ -88,8 +91,8 @@ jinja = {
 
 scheduler_events = {
 	"cron": {
-		"* * * * *": [
-			"summitapp.api.v1.access_token.generate_keys",
+		"0 0 * * *":[
+			"summitapp.overrides.currency_exchange.create_currency_exchange_records"
 		]
 	},}
 
