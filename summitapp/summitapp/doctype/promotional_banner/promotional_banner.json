@@ -10,7 +10,9 @@
   "description",
   "column_break_iyve",
   "image",
-  "sequence"
+  "sequence",
+  "button_url",
+  "button_text"
  ],
  "fields": [
   {
@@ -36,11 +38,21 @@
   {
    "fieldname": "column_break_iyve",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "button_url",
+   "fieldtype": "Data",
+   "label": "Button URL"
+  },
+  {
+   "fieldname": "button_text",
+   "fieldtype": "Data",
+   "label": "Button Text"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-16 16:30:54.844411",
+ "modified": "2025-01-23 19:05:35.119002",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Promotional Banner",
