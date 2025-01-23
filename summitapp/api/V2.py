@@ -45,6 +45,7 @@ import summitapp.api.v2.customer_review as customer_review
 import summitapp.api.v2.warranty_claim as warranty_claim
 import summitapp.api.v2.website_interface as website_interface
 import summitapp.api.v2.e_tag as e_tag
+import summitapp.api.v2.blog_post as blog_post
 
 
 class V2():
@@ -79,7 +80,8 @@ class V2():
             "warranty_claim":["get_warranty_claim","create_warranty_claim",
                               "get_sr_no_list","get_sr_no_details","get_cust_wc_details"],
             "website_interface":["publish_website_interface"],
-            "e_tag":["get_product_list"]
+            "e_tag":["get_product_list"],
+            "blog_post":["get_blog_post_list","get_blog_post_detail"]
         }
 
     def class_map(self, kwargs):
