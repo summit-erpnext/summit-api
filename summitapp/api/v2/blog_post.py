@@ -10,10 +10,17 @@ def get_blog_post_list(kwargs):
 
 def get_blog_post_detail(kwargs):
     slug = kwargs.get("slug")
+    if not slug:
+        return error_response("Slug is required to fetch detail page")
     fields = get_field_names("Blog Post")
-    blog_post_detail = frappe.get_list("Blog Post", filters = {"custom_slug":slug},fields=fields)
-    blog_detail_images = frappe.get_all("Item Images", filters = {"parent":blog_post_detail[0].name},fields=['upload_image'])
-    blog_post_detail.extend(blog_detail_images)
-   
-    return success_response(blog_post_detail)
+    blog_post_detail = frappe.get_list("Blog Post", filters={"custom_slug": slug}, fields=fields)
+    if not blog_post_detail:
+        return error_response("Blog Post not found")
+    blog_images = frappe.get_all(
+        "Item Images",
+        filters={"parent": blog_post_detail[0].name},
+        fields=["upload_image"]
+    )
+    blog_post_detail[0]["blog_images"] = blog_images
     
+    return success_response(blog_post_detail[0])
