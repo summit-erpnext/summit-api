@@ -79,7 +79,7 @@ def send_twilio_sms(kwargs):
     account_sid=twilio_details.account_sid
     auth_token=twilio_details.auth_token
     twilio_phone_number=twilio_details.twilio_phone_number
-    twilio_api_url=twilio_details.twilio_api_url+f'/{account_sid}/Messages.json'
+    twilio_api_url=twilio_details.twilio_api_url+f'2010-04-01/Accounts/{account_sid}/Messages.json'
     phone = (kwargs.get("phone"))
     phone_number = f"+{phone}"
     otp_length = 6
