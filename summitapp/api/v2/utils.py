@@ -763,13 +763,22 @@ def get_category_size(parent_category):
     
     category_size = []
     for item in item_characteristics:
+        value = item.get("value")
+        if not value:
+            continue
+        
         try:
-            parsed_value = ast.literal_eval(item["value"]) 
+            parsed_value = ast.literal_eval(value)
             if isinstance(parsed_value, list):
-                category_size.extend(parsed_value) 
+                # Filter out non-numeric values
+                category_size.extend([num for num in parsed_value if isinstance(num, (int, float))])
+            elif isinstance(parsed_value, (int, float)):
+                category_size.append(parsed_value)
             else:
-                category_size.append(parsed_value)  
+                # Handle non-numeric types gracefully
+                return(f"Non-numeric value ignored: {parsed_value}")
         except (ValueError, SyntaxError):
-            category_size.append(item["value"])  
+            return(f"Error parsing value: {value}")
+            continue
 
     return category_size
