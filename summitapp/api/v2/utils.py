@@ -772,4 +772,4 @@ def get_category_size(parent_category):
         except (ValueError, SyntaxError):
             category_size.append(item["value"])  
 
-    return category_size  t
+    return category_size
