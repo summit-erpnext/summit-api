@@ -118,3 +118,4 @@ fixtures = [
 ]
 
 # after_migrate = "summitapp.transalations.create_translations"
+after_migrate = "summitapp.migrate.after_migrate"
