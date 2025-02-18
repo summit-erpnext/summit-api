@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "field:purity",
  "creation": "2025-02-18 12:54:14.731189",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -19,10 +20,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-18 12:54:47.696346",
+ "modified": "2025-02-18 17:02:50.043772",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Purity",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
   {
