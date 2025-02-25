@@ -76,12 +76,14 @@ def verify_otp(kwargs):
 @frappe.whitelist(allow_guest=True)
 def send_twilio_sms(kwargs):
     twilio_details=frappe.get_doc('Twilio Sms Settings')
+    
     account_sid=twilio_details.account_sid
     auth_token=twilio_details.auth_token
     twilio_phone_number=twilio_details.twilio_phone_number
     twilio_api_url=twilio_details.twilio_api_url+f'2010-04-01/Accounts/{account_sid}/Messages.json'
-    phone = (kwargs.get("phone"))
-    phone_number = f"+{phone}"
+    
+    phone_number = f'+{kwargs.get("phone")}'
+    
     otp_length = 6
     otp = "".join([f"{random.randint(0, 9)}" for _ in range(otp_length)])
     key = f"{phone_number}_otp"
@@ -92,19 +94,24 @@ def send_twilio_sms(kwargs):
     }
     rs = frappe.cache()
     rs.set_value(key, json.dumps(otp_json))
+    
+    sms_body = f'{kwargs.get("user")} is trying to login for mobile app please share the otp: {otp}' if kwargs.get("for_mobile_login") else f'Your Otp is {otp}'
+    
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
     }
     data = {
         'To': phone_number,
         'From': twilio_phone_number,
-        'Body': f'Your Otp is {otp}',
+        'Body': sms_body,
     }
     auth = (account_sid, auth_token)
     response = requests.post(twilio_api_url, headers=headers, data=data, auth=auth)
+    
+    success_response = "OTP sent" if kwargs.get("for_mobile_login") else 'OTP sent on your phone number!'
     if response.status_code == 201:
         # frappe.msgprint(f"SMS sent: {response.json().get('sid')}")
-        return success_response("OTP sent on your phone number!")
+        return success_response(success_response)
     else:
         frappe.msgprint(f"Failed to send SMS: {response.status_code}, {response.text}")
 
