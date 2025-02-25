@@ -7,7 +7,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "enable_user_based_menu"
+  "enable_user_based_menu",
+  "summit_screens_error_message"
  ],
  "fields": [
   {
@@ -15,12 +16,18 @@
    "fieldname": "enable_user_based_menu",
    "fieldtype": "Check",
    "label": "Enable User Based Menu"
+  },
+  {
+   "fieldname": "summit_screens_error_message",
+   "fieldtype": "Table",
+   "label": "Summit Screens Error Message",
+   "options": "Summit Screens Error Message"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-08-28 17:02:15.746652",
+ "modified": "2025-02-25 13:13:24.764965",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
