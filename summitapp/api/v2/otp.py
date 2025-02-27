@@ -107,11 +107,10 @@ def send_twilio_sms(kwargs):
     }
     auth = (account_sid, auth_token)
     response = requests.post(twilio_api_url, headers=headers, data=data, auth=auth)
-    
-    success_response = "OTP sent" if kwargs.get("for_mobile_login") else 'OTP sent on your phone number!'
+    success_response_msg = "OTP sent" if kwargs.get("for_mobile_login") else 'OTP sent on your phone number!'
     if response.status_code == 201:
         # frappe.msgprint(f"SMS sent: {response.json().get('sid')}")
-        return success_response(success_response)
+        return success_response(success_response_msg)
     else:
         frappe.msgprint(f"Failed to send SMS: {response.status_code}, {response.text}")
 
