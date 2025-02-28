@@ -12,7 +12,9 @@
   "column_break_px7d",
   "show_variant_on_product_card",
   "variant_attribute_on_product_card",
-  "footer_component"
+  "footer_component",
+  "section_break_fozj",
+  "summit_screens_error_message"
  ],
  "fields": [
   {
@@ -62,12 +64,22 @@
    "fieldtype": "Select",
    "label": "Font Family",
    "options": "\nBelgrano\nBelleza\nCairo\nCatamaran\nNunito\nPlayfair Display\nPoppins\nRoboto\nSofia\nSpectral"
+  },
+  {
+   "fieldname": "section_break_fozj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "summit_screens_error_message",
+   "fieldtype": "Table",
+   "label": "Summit Screens Error Message",
+   "options": "Summit Screens Error Message"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-16 12:31:57.784638",
+ "modified": "2025-02-28 16:31:34.967979",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
