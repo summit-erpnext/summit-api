@@ -8,7 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable_user_based_menu",
-  "summit_screens_error_message"
+  "socket_site_url"
  ],
  "fields": [
   {
@@ -18,16 +18,15 @@
    "label": "Enable User Based Menu"
   },
   {
-   "fieldname": "summit_screens_error_message",
-   "fieldtype": "Table",
-   "label": "Summit Screens Error Message",
-   "options": "Summit Screens Error Message"
+   "fieldname": "socket_site_url",
+   "fieldtype": "Data",
+   "label": "Socket Site URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-25 13:13:24.764965",
+ "modified": "2025-03-04 11:18:16.510629",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
