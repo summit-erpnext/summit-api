@@ -131,7 +131,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
             'prod_specifications': lambda: {'prod_specifications': get_specifications(item)},
             'item_pdf_url': lambda: {'item_pdf_url': get_pdf_attachments("Item", item.get("name"))},
             'store_pick_up_available': lambda: {'store_pick_up_available': item.get('store_pick_up_available') == 'Yes'},
-            'home_delivery_available': lambda: {'home_delivery_available': item.get('home_delivery_available') == 'Yes'}
+            'home_delivery_available': lambda: {'home_delivery_available': item.get('home_delivery_available') == 'Yes'},
+            'category_size': lambda: {'category_size':get_category_size(item.get('custom_parent_category'))}
         }
 
         item_fields = {}
@@ -877,3 +878,45 @@ def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
         variant_info['image'] = get_item_images(item.name)
         varient_info_list.append(variant_info)
     return varient_info_list
+
+
+import ast
+
+def get_category_size(parent_category):
+    item_characteristics_detail = frappe.get_all(
+        "Item Characteristics Detail",
+        filters={"parent": parent_category},
+        fields=["label_name"]
+    )
+    if not item_characteristics_detail:
+        return []
+
+    label_names = [item["label_name"] for item in item_characteristics_detail]
+    
+    item_characteristics = frappe.get_list(
+        "Item Characteristics",
+        filters={"name": ["in", label_names]},
+        fields=["value"]
+    )
+    
+    category_size = []
+    for item in item_characteristics:
+        value = item.get("value")
+        if not value:
+            continue
+        
+        try:
+            parsed_value = ast.literal_eval(value)
+            if isinstance(parsed_value, list):
+                # Filter out non-numeric values
+                category_size.extend([num for num in parsed_value if isinstance(num, (int, float))])
+            elif isinstance(parsed_value, (int, float)):
+                category_size.append(parsed_value)
+            else:
+                # Handle non-numeric types gracefully
+                return(f"Non-numeric value ignored: {parsed_value}")
+        except (ValueError, SyntaxError):
+            return(f"Error parsing value: {value}")
+            continue
+
+    return category_size
