@@ -1,6 +1,7 @@
 import frappe
 from summitapp.utils import make_payment_entry
-
+import requests
+import json
 
 def on_submit(self, method=None):
     if self.store_credit_used:
@@ -53,6 +54,7 @@ def on_cancel(self, method=None):
         frappe.db.set_value("Sales Order",self.name,"order_status","Cancelled")
 
 def validate(self, method=None):
+    send_sales_order_api(self)
     if self.workflow_state == "Order Placed":
         self.order_status = "Pending for Approval"
 
@@ -78,3 +80,27 @@ def autoname(self,method=None):
         else:
             sales_order_naming = f"{self.parent_sales_order}-Replacement-{replacement_sales_order}"
             self.name = sales_order_naming
+
+
+
+def send_sales_order_api(doc):
+    summit_settings = frappe.get_single("Summit Settings")
+    url = f"{summit_settings.socket_site_url}/api/sales-order"
+    headers = {"Content-Type": "application/json"}
+    for item in doc.items:
+        payload = {
+            "user_name": doc.customer,
+            "email_id": frappe.db.get_value("Customer", {"name": doc.customer}, 'email'),
+            "phone": frappe.db.get_value("Customer", {"name": doc.customer}, 'mobile_number'),
+            "page_type":"Product",
+            "page_id": item.item_code,
+            "action":"Sales Order",
+            "reference_type": item.reference_page,
+            "reference_id": item.reference_id
+        }
+        try:
+            response = requests.post(url, headers=headers, data=json.dumps(payload))
+            if response.status_code != 200:
+                frappe.log_error(f"Error in Sales Order API: {response.text}", "Sales Order API Error")
+        except Exception as e:
+            frappe.log_error(f"Exception: {str(e)}", "Sales Order API Exception")            

@@ -13,6 +13,7 @@
   "show_variant_on_product_card",
   "variant_attribute_on_product_card",
   "footer_component",
+  "socket_site_url",
   "section_break_fozj",
   "summit_screens_error_message"
  ],
@@ -74,12 +75,17 @@
    "fieldtype": "Table",
    "label": "Summit Screens Error Message",
    "options": "Summit Screens Error Message"
+  },
+  {
+   "fieldname": "socket_site_url",
+   "fieldtype": "Data",
+   "label": "Socket Site URL"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-02-28 16:31:34.967979",
+ "modified": "2025-03-06 13:30:01.293848",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
