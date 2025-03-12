@@ -22,7 +22,7 @@
             "insert_after":"opening_stock",
             "fieldtype":"Data",
             "translatable":1,
-            "read_only":1,
+            "read_only":0,
             "module": "SummitApp"
         },
         {
@@ -41,14 +41,6 @@
             "label": "Purity",
             "module": "SummitApp",
             "options": "Purity"
-        },
-        {
-            "fieldname": "colour",
-            "fieldtype": "Data",
-            "insert_after": "custom_size",
-            "label": "Colour",
-            "module": "SummitApp",
-            "read_only": 1
         }
     ]
 }
