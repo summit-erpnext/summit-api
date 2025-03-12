@@ -52,11 +52,17 @@ def send_otp_to_email(username, otp):
 def verify_otp(kwargs):
     try:
         email = kwargs.get("email")
-        phone = kwargs.get("phone")
+        phone = (
+            frappe.db.get_single_value(
+                "Summit Mobile App Settings", "otp_reciever_mobile_number"
+            )
+            if kwargs.get("for_mobile_login")
+            else kwargs.get("phone")
+        )
         if email:
             key = f"{email}_otp"
         if phone:
-            key = f"+{phone}_otp" or f"{phone}_otp"
+            key = f"{phone}_otp" if phone.startswith("+") else f"+{phone}_otp"
         otp = kwargs.get("otp")
         rs = frappe.cache()
         stored_otp = rs.get_value(key)
@@ -82,7 +88,13 @@ def send_twilio_sms(kwargs):
     twilio_phone_number=twilio_details.twilio_phone_number
     twilio_api_url=twilio_details.twilio_api_url+f'2010-04-01/Accounts/{account_sid}/Messages.json'
     
-    phone_number = f'+{kwargs.get("phone")}'
+    phone_number = (
+        frappe.db.get_single_value(
+            "Summit Mobile App Settings", "otp_reciever_mobile_number"
+        )
+        if kwargs.get("for_mobile_login")
+        else f'+{kwargs.get("phone")}'
+    )
     
     otp_length = 6
     otp = "".join([f"{random.randint(0, 9)}" for _ in range(otp_length)])
@@ -95,8 +107,11 @@ def send_twilio_sms(kwargs):
     rs = frappe.cache()
     rs.set_value(key, json.dumps(otp_json))
     
-    sms_body = f'{kwargs.get("user")} is trying to login for mobile app please share the otp: {otp}' if kwargs.get("for_mobile_login") else f'Your Otp is {otp}'
-    
+    sms_body = (
+            f'{kwargs.get("user")} is trying to login for mobile app please share the otp: {otp}'
+            if kwargs.get("for_mobile_login")
+            else f"Your Otp is {otp}"
+        )    
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
     }
