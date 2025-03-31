@@ -243,6 +243,7 @@ def get_processed_order(orders, customer):
             'currency': lambda: {'currency': get_currency(order.currency)},
             'currency_symbol': lambda: {'currency_symbol': get_currency_symbol(order.currency)},
             'addresses': lambda: {"addresses": get_address(customer, order.customer_address, order.shipping_address_name)},
+            'colour': lambda: {"colour": order.colour},
             'shipping_method': lambda: {'shipping_method': {
                 "transporter": order.transporter,
                 "transport_charges": order.transport_charges,
