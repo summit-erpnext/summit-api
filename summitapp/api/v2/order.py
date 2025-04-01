@@ -1,6 +1,6 @@
 import contextlib
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, format_date
 from summitapp.utils import error_response, success_response
 from summitapp.api.v2.product import get_product_url, get_detailed_item_list
 from summitapp.api.v2.customer_address import get_details as get_address_details
@@ -253,7 +253,10 @@ def get_processed_order(orders, customer):
                 "remarks": order.remarks
             }},
             'outstanding_amount': lambda: {"outstanding_amount": frappe.db.get_value("Return Replacement Request", {"new_order_id": order.name}, "outstanding_amount") or 0},
-            'print_url': lambda: {"print_url": print_url}
+            'print_url': lambda: {"print_url": print_url},
+			'pending_weight': lambda: {"pending_weight": calculate_pending_weight(order.name)},
+			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
+			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
         }
         charges_fields = {}
         for field_name in field_names:
@@ -264,6 +267,19 @@ def get_processed_order(orders, customer):
         order_data.append(charges_fields)
     return order_data
 
+def calculate_pending_weight(order_name):
+    pending_weight = 0
+    order_items = frappe.db.get_all("Sales Order Item", 
+                                    {"parent": order_name}, 
+                                    ["name", "total_weight"])
+    
+    for item in order_items:
+        status = frappe.db.get_value(
+            "Sales Order Item Status Details", item.name, "manufacturing_status"
+        )
+        if status != "Completed":
+            pending_weight += item.total_weight or 0
+    return flt(pending_weight,3)
 
 	
 def get_product_details(order):
