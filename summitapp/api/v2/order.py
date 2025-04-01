@@ -279,7 +279,7 @@ def calculate_pending_weight(order_name):
             "Sales Order Item Status Details", item.name, "manufacturing_status"
         )
         if status != "Completed":
-            pending_weight += item.total_weight or 0
+            pending_weight += item.total_size_weight or 0
     return flt(pending_weight,3)
 
 	
