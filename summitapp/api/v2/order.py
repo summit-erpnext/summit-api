@@ -272,7 +272,7 @@ def calculate_pending_weight(order_name):
     pending_weight = 0
     order_items = frappe.db.get_all("Sales Order Item", 
                                     {"parent": order_name}, 
-                                    ["name", "total_weight"])
+                                    ["name", "total_size_weight"])
 
     for item in order_items:
         status = frappe.db.get_value(
