@@ -257,6 +257,7 @@ def get_processed_order(orders, customer):
             'pending_weight': lambda: {"pending_weight": calculate_pending_weight(order.name)},
 			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
+   			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")}
         }
         charges_fields = {}
         for field_name in field_names:
