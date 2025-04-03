@@ -257,6 +257,7 @@ def get_processed_order(orders, customer):
 			'pending_weight': lambda: {"pending_weight": calculate_pending_weight(order.name)},
 			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
+			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")}
         }
         charges_fields = {}
         for field_name in field_names:
@@ -271,14 +272,14 @@ def calculate_pending_weight(order_name):
     pending_weight = 0
     order_items = frappe.db.get_all("Sales Order Item", 
                                     {"parent": order_name}, 
-                                    ["name", "total_weight"])
+                                    ["name", "total_size_weight"])
     
     for item in order_items:
         status = frappe.db.get_value(
             "Sales Order Item Status Details", item.name, "manufacturing_status"
         )
         if status != "Completed":
-            pending_weight += item.total_weight or 0
+            pending_weight += item.total_size_weight or 0
     return flt(pending_weight,3)
 
 	
