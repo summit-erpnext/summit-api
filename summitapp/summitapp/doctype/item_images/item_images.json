@@ -11,7 +11,8 @@
   "created_on",
   "small_size_image",
   "large_size_image",
-  "image_unavailable"
+  "image_unavailable",
+  "disabled"
  ],
  "fields": [
   {
@@ -43,6 +44,12 @@
    "fieldname": "image_unavailable",
    "fieldtype": "Check",
    "label": "Image Unavailable"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
   }
  ],
  "index_web_pages_for_search": 1,
