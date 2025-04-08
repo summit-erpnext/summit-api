@@ -270,7 +270,6 @@ def get_processed_order(orders, customer):
 			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
    			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")},
-			'order_status': lambda: {"order_status": order.order_status if order.order_status else "Pending"},
         }
         charges_fields = {}
         for field_name in field_names:
