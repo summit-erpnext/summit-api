@@ -15,15 +15,19 @@ import json
 @frappe.whitelist()
 def get_list(kwargs):
 	try:
+		email = frappe.session.user
+		if email == "Guest":
+			return error_response('Please Login As A Customer')
 		order_id = kwargs.get('order_id')
 		date_range = kwargs.get('date_range')
 		status = kwargs.get('status')
 		session_id = kwargs.get('session_id')
-		email = frappe.session.user
 		limit = int(kwargs.get("limit",0))
 		page_no = int((kwargs.get("page_no",0)))
-		if email == "Guest":
-			return error_response('Please Login As A Customer')
+		if "System Manager" not in frappe.get_roles(email):
+			customer = frappe.get_value("Customer",{'email':email}, 'name')
+		else:
+			customer = None
 		customer = frappe.get_value("Customer",{'email':email})
 		result, order_count = get_listing_details(customer, order_id, date_range, status, session_id, limit, page_no)
 		return {'msg': 'success', 'data': result, 'order_count': order_count}
@@ -266,7 +270,8 @@ def get_processed_order(orders, customer):
             'pending_weight': lambda: {"pending_weight": calculate_pending_weight(order.name)},
 			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
-   			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")}
+   			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")},
+			'order_status': lambda: {"order_status": order.order_status if order.order_status else "Pending"},
         }
         charges_fields = {}
         for field_name in field_names:
