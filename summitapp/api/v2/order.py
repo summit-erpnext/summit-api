@@ -28,7 +28,6 @@ def get_list(kwargs):
 			customer = frappe.get_value("Customer",{'email':email}, 'name')
 		else:
 			customer = None
-		customer = frappe.get_value("Customer",{'email':email})
 		result, order_count = get_listing_details(customer, order_id, date_range, status, session_id, limit, page_no)
 		return {'msg': 'success', 'data': result, 'order_count': order_count}
 	except Exception as e:
