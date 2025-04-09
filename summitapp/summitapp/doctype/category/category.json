@@ -12,23 +12,18 @@
   "label",
   "image",
   "heading",
-  "slug",
-  "menu_image_1",
-  "menu_image_3",
-  "description",
   "column_break_snyvc",
   "enable_category",
   "url",
   "sequence",
-  "mega_image_1_url",
-  "mega_image_2_url",
-  "mega_image_3_url",
+  "slug",
   "column_break_ogrcp",
   "lft",
   "rgt",
   "is_group",
   "old_parent",
   "parent_category",
+  "description",
   "menu",
   "is_product_category"
  ],
@@ -59,16 +54,6 @@
    "label": "Slug"
   },
   {
-   "fieldname": "menu_image_1",
-   "fieldtype": "Attach",
-   "label": "Menu Image 1"
-  },
-  {
-   "fieldname": "menu_image_3",
-   "fieldtype": "Attach",
-   "label": "Menu Image 3"
-  },
-  {
    "fieldname": "description",
    "fieldtype": "Small Text",
    "label": "Description"
@@ -94,21 +79,6 @@
    "fieldname": "sequence",
    "fieldtype": "Int",
    "label": "Sequence"
-  },
-  {
-   "fieldname": "mega_image_1_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 1 URL"
-  },
-  {
-   "fieldname": "mega_image_2_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 2 URL"
-  },
-  {
-   "fieldname": "mega_image_3_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 3 URL"
   },
   {
    "fieldname": "column_break_ogrcp",
@@ -170,7 +140,7 @@
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2023-12-28 15:28:04.069009",
+ "modified": "2025-04-09 17:35:17.125072",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
@@ -191,6 +161,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
