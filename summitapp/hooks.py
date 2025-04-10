@@ -112,6 +112,11 @@ fixtures = [
         [
             "name", "=", "Sales Order-main-links_order"
         ]
+    ]},
+    {"dt": "Workspace", "filters": [
+        [
+            "module", "=", "SummitApp"
+        ]
     ]}
 ]
 
