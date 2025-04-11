@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 from frappe.model.db_query import DatabaseQuery
 import json
-from better_profanity import profanity
+
 
 @frappe.whitelist()
 def create_customer_review(kwargs):
@@ -107,7 +107,6 @@ def create_customer_review_and_send_mail(kwargs):
             {"email": user, "item_code": item_name}
         )
         if existing_review:
-            print(customer)
             customer_review_send_email(
                 customer, 
                 user, 
@@ -125,20 +124,8 @@ def create_customer_review_and_send_mail(kwargs):
                 AND so.order_status = "Order Delivered"
                 AND soi.item_code = %(item_name)s;
             """, {"customer": customer, "item_name": item_name}, as_dict=True)
-
-        if sales_order_list:
-            if comment:
-                data = check_inappropriate_content(comment)
-                if data["contains_inappropriate"] == False:
-                    customer_review_send_email(customer, user,message = f"Your review for the product has been successfully submitted.",verified = 0)
-                    return success_response(data=len(sales_order_list)) 
-                elif data["contains_inappropriate"] == True:
-                    customer_review_send_email(customer, user, message = f"Your Review has been rejected.")
-                    return success_response(data=len(sales_order_list))
-            return success_response(data=len(sales_order_list))
-        else:
-            customer_review_send_email(customer, user, message = f"Your are not allowed to review this product.")
-            return success_response(data=len(sales_order_list))
+        customer_review_send_email(customer, user, message = f"Your are not allowed to review this product.")
+        return success_response(data=len(sales_order_list))
     
     except Exception as e:
         frappe.logger("cr").exception(e)
@@ -147,15 +134,14 @@ def create_customer_review_and_send_mail(kwargs):
 
 def customer_review_send_email(customer, user, message, verified=0):
     try:
-        print("Sending email...")
         frappe.sendmail(
             recipients=[user],
             subject="New Customer Review Submission",
             message=message
         )
-        print("Email sent successfully")
+       
         request_data = json.loads(frappe.request.data)
-        print("Request Data:", request_data)
+
         # Create a new Customer Reviews document
         cr_doc = frappe.new_doc('Customer Reviews')
         cr_doc.name1 = customer
@@ -168,7 +154,7 @@ def customer_review_send_email(customer, user, message, verified=0):
         cr_doc.date = datetime.now()
 
         images = request_data.get("images", [])
-        print("Review images:", images)
+     
         for i in images:
             image = i.get('image')
             cr_doc.append("review_image", {
@@ -182,17 +168,5 @@ def customer_review_send_email(customer, user, message, verified=0):
         # frappe.throw("Failed to send email")
         return error_response(str(e))
 
-def check_inappropriate_content(text):
-    profanity.load_censor_words()
-    has_profanity = profanity.contains_profanity(text)
-    censored_text = profanity.censor(text)
-    result = {
-        'original_text': text,
-        'contains_inappropriate': has_profanity,
-        'censored_text': censored_text
-    }
-    return result
-    # print(f"Original text: {result['original_text']}")
-    # print(f"Contains inappropriate content: {result['contains_inappropriate']}")
-    # print(f"Censored text: {result['censored_text']}")
+  
 
