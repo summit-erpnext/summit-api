@@ -74,7 +74,7 @@
    "fieldname": "product_category_page_layout",
    "fieldtype": "Select",
    "label": "Product Category Page Layout",
-   "options": "\nDefault Layout\nCollapsible Layout\nTop Filters Layout"
+   "options": "\nDefault Layout\nCollapsible Layout\nTop Filters Layout\nFixed Filters Layout"
   },
   {
    "depends_on": "eval: doc.page_type=='Product Category Page'",
@@ -120,7 +120,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-16 11:38:46.609127",
+ "modified": "2025-04-14 16:59:29.631921",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
@@ -140,6 +140,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
