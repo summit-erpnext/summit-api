@@ -114,13 +114,12 @@ def get_page_components(page_type):
                     key: value for key, value in row.items()
                     if key not in common_fields and value is not None
                 }
-                # Ensure 'properties' key is always present for Associate Components
-                if table_name == "associated_component":
-                    component_data["properties"] = component_data.get("properties", None)
-                components[table_name].append(component_data)
+                if component_data:
+                    components[table_name].append(component_data)
         else:
             # Add an empty properties key for Associate Components even if raw_data is empty
-            components[table_name] = [{"properties": None}] if table_name == "associated_component" else []
+            components[table_name] = [] if table_name == "associated_component" else []
+
 
     return {
         "page_name": page_type,
