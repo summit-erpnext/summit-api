@@ -49,7 +49,7 @@ class V2():
     def __init__(self):
         self.methods = {
             'banner': ['get'],
-            'otp': ['send_otp', 'verify_otp','send_twilio_sms','send_email_otp','send_pinnacle_sms','login_with_mobile_otp'],
+            'otp': ['send_otp', 'verify_otp','send_twilio_sms','send_email_otp','send_pinnacle_sms','login_with_mobile_otp',"send_otp_message"],
             "brand": ['get', 'get_product_list', 'get_product_details'],
             "cart": ['get_list', 'put_products', 'delete_products', 'clear_cart','request_for_quotation','get_quotation_history'],
             "catalog": ['get', 'get_items','put','put_items','delete','delete_items'],

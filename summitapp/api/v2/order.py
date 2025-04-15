@@ -219,10 +219,10 @@ def get_listing_details(customer, order_id, date_range, status, session_id, limi
          fields="*",
          limit_start=(page_no - 1) * limit,
          limit_page_length=limit,
+         order_by="creation desc",
      )
 	charges_fields = get_processed_order(orders, customer)
 	return charges_fields, len(charges_fields)
-
 
 
 def get_processed_order(orders, customer):
@@ -266,8 +266,8 @@ def get_processed_order(orders, customer):
             }},
             'outstanding_amount': lambda: {"outstanding_amount": frappe.db.get_value("Return Replacement Request", {"new_order_id": order.name}, "outstanding_amount") or 0},
             'print_url': lambda: {"print_url": print_url},
-            'pending_weight': lambda: {"pending_weight": calculate_pending_weight(order.name)},
-			'total_weight': lambda: {"total_weight": flt(order.total_weight,3)},
+			'pending_weight': lambda: {"pending_weight": format(calculate_pending_weight(order.name), ".3f")},
+			'total_weight': lambda: {"total_weight": format(order.total_weight, ".3f")},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
    			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")},
         }
