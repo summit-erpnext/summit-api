@@ -123,17 +123,137 @@ def send_twilio_sms(kwargs):
     auth = (account_sid, auth_token)
     response = requests.post(twilio_api_url, headers=headers, data=data, auth=auth)
     success_response_msg = "OTP sent" if kwargs.get("for_mobile_login") else 'OTP sent on your phone number!'
+    if kwargs.get("for_mobile_login"):
+        return response.json()
     if response.status_code == 201:
-        # frappe.msgprint(f"SMS sent: {response.json().get('sid')}")
         return success_response(success_response_msg)
     else:
         frappe.msgprint(f"Failed to send SMS: {response.status_code}, {response.text}")
 
+@frappe.whitelist(allow_guest=True)
+def send_whatsapp_otp(kwargs):
+    phone_number_id = frappe.db.get_single_value(
+        "Summit Mobile App Settings", "phone_number_id"
+    )
+    access_token = frappe.db.get_single_value(
+        "Summit Mobile App Settings", "access_token"
+    )
+    otp_reciever_mobile_number = (
+        frappe.db.get_single_value(
+            "Summit Mobile App Settings", "otp_reciever_mobile_number"
+        )
+        .replace("+", "")
+        .replace("-", "")
+    )
+    template_name = frappe.db.get_single_value(
+        "Summit Mobile App Settings", "template_name"
+    )
+
+    otp_length = 6
+    otp = "".join([f"{random.randint(0, 9)}" for _ in range(otp_length)])
+    key = f"{otp_reciever_mobile_number}_otp"
+    otp_json = {
+        "id": key,
+        "otp": otp,
+        "timestamp": str(frappe.utils.get_datetime().utcnow()),
+    }
+    rs = frappe.cache()
+    rs.set_value(key, json.dumps(otp_json))
+
+    url = f"https://graph.facebook.com/v22.0/{phone_number_id}/messages"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": otp_reciever_mobile_number,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {"code": "en"},
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {"type": "text", "text": kwargs.get("user")},
+                        {"type": "text", "text": otp},
+                    ],
+                }
+            ],
+        },
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    return response.json()
+
+
+@frappe.whitelist(allow_guest=True)
+def send_otp_message(kwargs):
+    summit_mobile_app_settings = frappe.get_doc(
+        "Summit Mobile App Settings", "Summit Mobile App Settings"
+    )
+
+    response_msg = ""
+    success = False
+
+    # Check if any OTP method is enabled
+    if (
+        not summit_mobile_app_settings.send_sms_otp
+        and not summit_mobile_app_settings.send_whatsapp_otp
+    ):
+        frappe.log_error("No OTP delivery method enabled", "OTP Error")
+        return error_response("OTP delivery method not configured")
+
+    # Try SMS if enabled
+    if summit_mobile_app_settings.send_sms_otp:
+        try:
+            sms_response = send_twilio_sms(kwargs)
+            if (
+                kwargs.get("for_mobile_login")
+                and isinstance(sms_response, dict)
+                and sms_response.get("sid")
+            ):
+                response_msg += "OTP sent on SMS"
+                success = True
+            else:
+                frappe.log_error(
+                    f"Failed to send OTP on SMS", sms_response
+                )
+        except Exception as e:
+            frappe.log_error(f"Exception sending SMS OTP", {str(e)})
+
+    # Try WhatsApp if SMS failed or not enabled, and WhatsApp is enabled
+    if not success and summit_mobile_app_settings.send_whatsapp_otp:
+        try:
+            whatsapp_response = send_whatsapp_otp(kwargs)
+            print(whatsapp_response)
+            if (
+                isinstance(whatsapp_response, dict)
+                and whatsapp_response.get("messages")
+                and whatsapp_response["messages"][0].get("id")
+            ):
+                response_msg += "OTP sent on WhatsApp"
+                success = True
+            else:
+                frappe.log_error(
+                    f"Failed to send OTP on WhatsApp", whatsapp_response
+                )
+        except Exception as e:
+            frappe.log_error(f"Failed to send OTP on WhatsApp", whatsapp_response)
+            frappe.log_error(f"Exception sending WhatsApp OTP", str(e))
+
+    # Return response
+    if success:
+        return success_response(response_msg)
+    else:
+        return error_response("Failed to send OTP")
+        
 
 def send_pinnacle_sms(kwargs):
     try:
         pinnacle_settings = frappe.get_doc("Pinnacle SMS Settings")
-        print("111",pinnacle_settings.url,pinnacle_settings.apikey,pinnacle_settings.sender,pinnacle_settings.messagetype,pinnacle_settings.dlttempid,pinnacle_settings.contenttype)
         phone = (kwargs.get("phone"))
         phone_number = f"+{phone}"
         otp_length = 6
