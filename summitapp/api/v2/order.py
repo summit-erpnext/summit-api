@@ -219,7 +219,7 @@ def get_listing_details(customer, order_id, date_range, status, session_id, limi
          fields="*",
          limit_start=(page_no - 1) * limit,
          limit_page_length=limit,
-         order_by="creation desc",
+         order_by="transaction_date desc",
      )
 	charges_fields = get_processed_order(orders, customer)
 	return charges_fields, len(charges_fields)
