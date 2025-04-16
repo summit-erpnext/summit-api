@@ -212,6 +212,7 @@ def get_listing_details(customer, order_id, date_range, status, session_id, limi
 		filters = get_date_range_filter(filters, date_range)
 	if session_id:
 		filters.append(["Sales Order", "custom_session_id", "=", session_id])
+	filters.append(["Sales Order", "order_type", "!=", "Accessory"])
   
 	orders = frappe.get_all(
          "Sales Order",
