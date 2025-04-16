@@ -1,20 +1,3 @@
-# import frappe
-# from summitapp.utils import success_response, error_response
-# import summitapp.api.v2.banner as banner
-# from summitapp.api.V1 import V1
-
-# class V2(V1):
-#     def __init__(self):
-#         self.methods = {'banner':['get']}
-
-#     def class_map(self,kwargs):
-#         entity = kwargs.get('entity')
-#         method = kwargs.get('method')
-#         if self.methods.get(entity) and method in self.methods.get(entity):
-#             function = f"{kwargs.get('entity')}.{kwargs.get('method')}({kwargs})"
-#             return eval(function)
-#         return V1.class_map(self,kwargs)
-
 import frappe
 from summitapp.utils import success_response, error_response
 import summitapp.api.v2.banner as banner
@@ -61,7 +44,7 @@ class V2():
             "customer_address": ['get', 'put','create_guest_to_customer'],
             "dealer": ['get_dealer'],
             "profile": ['get_profile','customer_inquiry', 'ageing_report', 'get_transporters'],
-            "filter": ['get_filters'],
+            "filter": ['get_filters','get_vehicle_filters'],
             "mega_menu": ['get', 'breadcrums','get_mega_menu','get_navbar_data','get_menu'],
             "order": ['get_list', 'get_summary', 'get_order_id', 'place_order', 'return_replace_item', 'get_razorpay_payment_url', 'get_order_details', 'recently_bought', 'cancel_order'],
             "product": ['get_list', 'get_details', 'get_cyu_categories', 'get_variants', 'get_recommendation', 'get_top_categories', "get_tagged_products", "check_availability", "get_categories",'get_default_currency', 'quick_order', 'get_variants_for_listing'],
