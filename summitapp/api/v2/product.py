@@ -38,7 +38,7 @@ def get_list(kwargs):
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
         access_level = get_access_level(customer_id)
-
+        vehicle_filters = kwargs.get('vehicle_filters')
         if not search_text:
             order_by = None
             filter_args = {"access_level": access_level}
@@ -88,6 +88,9 @@ def get_list(kwargs):
                 if sort_order:
                     order_by = 'sequence {}'.format(sort_order)
                     del filters['sequence']
+            if vehicle_filters:
+                vehicle_filters = json.loads(vehicle_filters)
+                filters.update(vehicle_filters)
             debug = kwargs.get("debug_query", 0)
             count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
         else:
@@ -125,18 +128,6 @@ def get_list(kwargs):
         return error_response(str(e))
 
 
-
-# @frappe.whitelist(allow_guest=True)
-# def get_list(kwargs):
-#     try:
-#         # kwargs_variables = get_kwargs(kwargs)
-#         # print(kwargs_variables.get('category'))
-#         item_list = frappe.get_list("Item", fields=["*"])
-#         items = get_processed_list(None, item_list,None, None)
-#         return items
-#     except Exception as e:
-#         frappe.logger('product').exception(e)
-    
     
 def get_kwargs(kwargs):
     kwargs_list=[]
@@ -308,15 +299,35 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     offset = 0
     if page_no is not None:
         if limit is None:
-            limit  = 0
+            limit = 0
         offset = int(page_no) * int(limit)
+
     if 'access_level' not in filters:
         filters['access_level'] = 0
+
+    # Inject category and brand filtering logic
     if categories := get_allowed_categories(filters.get("category")):
         filters["category"] = ["in", categories]
+
     if brands := get_allowed_brands():
         if not (filters.get("brand") and filters.get("brand") in brands):
             filters["brand"] = ["in", brands]
+
+    vehicle_fields = ["vehicle", "cc", "model", "year", "model_comments"]
+    vehicle_filter_conditions = {k: filters.pop(k) for k in vehicle_fields if k in filters}
+
+    if vehicle_filter_conditions:
+        vehicle_detail = frappe.qb.DocType("Vehicle Detail")
+        query = frappe.qb.from_(vehicle_detail).select(vehicle_detail.parent)
+
+        for field, value in vehicle_filter_conditions.items():
+            query = query.where(getattr(vehicle_detail, field) == value)
+
+        item_names = [r[0] for r in query.distinct().run()]
+        if not item_names:
+            return 0, []
+
+        filters["name"] = ["in", item_names]
 
     if global_items is not None:
         return get_items_via_search(global_items, filters)
@@ -324,13 +335,14 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
     ignore_permissions = frappe.session.user == "Guest"
 
     if not order_by:
-        order_by = 'valuation_rate asc' if price_range != 'high_to_low' else 'valuation_rate desc' if price_range else ''
+        order_by = 'valuation_rate asc' if price_range == 'low_to_high' else 'valuation_rate desc' if price_range == 'high_to_low' else ''
         if sort_by == "oldest":
             order_by = "modified asc"
         elif sort_by == "latest":
             order_by = "modified desc"
     else:
         order_by = order_by
+
     data = frappe.get_list('Item',
                            filters=filters,
                            or_filters=or_filters,
@@ -339,7 +351,8 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
                            limit_start=offset,
                            order_by=order_by,
                            ignore_permissions=ignore_permissions,
-                           debug=debug)                     
+                           debug=debug)
+
     count = get_count("Item", filters=filters, or_filters=or_filters,
                       ignore_permissions=ignore_permissions)
 
@@ -347,6 +360,7 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         data = data[0] if data else []
 
     return count, data
+
 
 
 
