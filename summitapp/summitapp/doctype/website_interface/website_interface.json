@@ -81,7 +81,7 @@
    "fieldname": "filters_component",
    "fieldtype": "Select",
    "label": "Filters Component",
-   "options": "\nStandard Filters"
+   "options": "\nStandard Filters\nDropdown Plus CheckBox"
   },
   {
    "depends_on": "eval: doc.page_type=='Product Category Page'",
@@ -120,7 +120,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-14 16:59:29.631921",
+ "modified": "2025-04-17 15:08:47.753953",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
