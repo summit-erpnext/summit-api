@@ -90,7 +90,8 @@ def get_list(kwargs):
                     del filters['sequence']
             if vehicle_filters:
                 vehicle_filters = json.loads(vehicle_filters)
-                filters.update(vehicle_filters)
+                vehicle_filter_conditions = parse_vehicle_filter(vehicle_filters)
+                filters.update(vehicle_filter_conditions)
             debug = kwargs.get("debug_query", 0)
             count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
         else:
@@ -313,21 +314,30 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         if not (filters.get("brand") and filters.get("brand") in brands):
             filters["brand"] = ["in", brands]
 
-    vehicle_fields = ["vehicle", "cc", "model", "year", "model_comments"]
+    # Dynamically fetch all fields from Vehicle Detail child table
+    vehicle_meta = frappe.get_meta("Vehicle Detail")
+    vehicle_fields = [df.fieldname for df in vehicle_meta.fields if df.fieldtype not in ["Section Break", "Column Break"]]
+
+    # Extract only vehicle-related filters
     vehicle_filter_conditions = {k: filters.pop(k) for k in vehicle_fields if k in filters}
+
 
     if vehicle_filter_conditions:
         vehicle_detail = frappe.qb.DocType("Vehicle Detail")
         query = frappe.qb.from_(vehicle_detail).select(vehicle_detail.parent)
 
         for field, value in vehicle_filter_conditions.items():
-            query = query.where(getattr(vehicle_detail, field) == value)
+            if isinstance(value, list):
+                query = query.where(getattr(vehicle_detail, field).isin(value))
+            else:
+                query = query.where(getattr(vehicle_detail, field) == value)
 
         item_names = [r[0] for r in query.distinct().run()]
         if not item_names:
             return 0, []
 
         filters["name"] = ["in", item_names]
+
 
     if global_items is not None:
         return get_items_via_search(global_items, filters)
@@ -801,3 +811,34 @@ def product_search(kwargs):
         "status": "success",
         "data": formatted_items
     }
+
+
+def parse_vehicle_filter(vehicle_filter_data):
+    # Dynamically get all fields from Vehicle Detail doctype
+    vehicle_fields = [
+        df.fieldname for df in frappe.get_meta("Vehicle Detail").fields
+        if df.fieldtype not in ["Section Break", "Column Break"]
+    ]
+
+    vehicle_conditions = {}
+
+    # Add top-level fields (like "vehicle": "Car")
+    for key, val in vehicle_filter_data.items():
+        if key != "sections" and key in vehicle_fields:
+            vehicle_conditions[key] = val
+
+    # Parse section-based values
+    sections = vehicle_filter_data.get("sections", [])
+    for section in sections:
+        name = section.get("name")
+        value = section.get("value")
+        if not name:
+            continue
+
+        # Convert label-style name to fieldname format
+        field_key = name.lower().replace(" ", "_")
+        if field_key in vehicle_fields:
+            vehicle_conditions[field_key] = value if len(value) > 1 else value[0]
+
+    return vehicle_conditions
+

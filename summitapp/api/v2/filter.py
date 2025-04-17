@@ -23,7 +23,7 @@ def get_vehicle_filters(kwargs):
     try:
         # Default response structure (raw)
         raw_response = {
-            "Company": frappe.get_list("Vehicle Company", fields=["name"]),
+            "Vehicle Company": frappe.get_list("Vehicle Company", fields=["name"]),
             "Vehicle": [],
             "CC": [],
             "Model": [],
@@ -70,7 +70,7 @@ def get_vehicle_filters(kwargs):
         filters = []
         for key, values in raw_response.items():
             filters.append({
-                "section": "Company" if key == "Company" else key,
+                "section": "Vehicle Company" if key == "Vehicle Company" else key,
                 "values": [v["name"] if isinstance(v, dict) else v for v in values]
             })
 
