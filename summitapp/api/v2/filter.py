@@ -21,9 +21,9 @@ from frappe import _
 @frappe.whitelist(allow_guest=True)
 def get_vehicle_filters(kwargs):
     try:
-        # Default response structure
-        response = {
-            "Company": frappe.get_list("Motor Company", fields=["name"]),
+        # Default response structure (raw)
+        raw_response = {
+            "Company": frappe.get_list("Vehicle Company", fields=["name"]),
             "Vehicle": [],
             "CC": [],
             "Model": [],
@@ -31,11 +31,11 @@ def get_vehicle_filters(kwargs):
             "Model Comments": []
         }
 
-        if kwargs.get("motor_company"):
-            motor_company = kwargs.get("motor_company")
+        if kwargs.get("vehicle_company"):
+            vehicle_company = kwargs.get("vehicle_company")
 
             # Get Vehicle Details Data doc name
-            parent_doc = frappe.get_doc("Vehicle Details Data", motor_company)
+            parent_doc = frappe.get_doc("Vehicle Details Data", vehicle_company)
             parent_name = parent_doc.name
 
             # Define Vehicle Detail as DocType
@@ -49,24 +49,34 @@ def get_vehicle_filters(kwargs):
                     .where(VehicleDetail.parent == parent_name)
                     .run(as_dict=True)
                 )
-                return [row for row in results if row.get("name")]
+                return [row.get("name") for row in results if row.get("name")]
 
             # Populate filters from Vehicle Detail child table
-            response["Vehicle"] = get_distinct_field("vehicle")
-            response["CC"] = get_distinct_field("cc")
-            response["Model"] = get_distinct_field("model")
-            response["Year"] = get_distinct_field("year")
-            response["Model Comments"] = get_distinct_field("model_comments")
+            raw_response["Vehicle"] = get_distinct_field("vehicle")
+            raw_response["CC"] = get_distinct_field("cc")
+            raw_response["Model"] = get_distinct_field("model")
+            raw_response["Year"] = get_distinct_field("year")
+            raw_response["Model Comments"] = get_distinct_field("model_comments")
 
         else:
             # Populate all values if no company filter
-            response["Vehicle"] = frappe.get_list("Vehicle Variant Name", fields=["name"])
-            response["CC"] = frappe.get_list("Engine CC", fields=["name"])
-            response["Model"] = frappe.get_list("Model", fields=["name"])
-            response["Year"] = frappe.get_list("Model Year", fields=["name"])
-            response["Model Comments"] = frappe.get_list("Model Comments", fields=["name"])
+            raw_response["Vehicle"] = [row["name"] for row in frappe.get_list("Vehicle Variant Name", fields=["name"])]
+            raw_response["CC"] = [row["name"] for row in frappe.get_list("Engine CC", fields=["name"])]
+            raw_response["Model"] = [row["name"] for row in frappe.get_list("Model", fields=["name"])]
+            raw_response["Year"] = [row["name"] for row in frappe.get_list("Model Year", fields=["name"])]
+            raw_response["Model Comments"] = [row["name"] for row in frappe.get_list("Model Comments", fields=["name"])]
 
-        return response
+        # Format final response
+        filters = []
+        for key, values in raw_response.items():
+            filters.append({
+                "section": "Company" if key == "Company" else key,
+                "values": [v["name"] if isinstance(v, dict) else v for v in values]
+            })
+
+        return {
+            "filters": filters,
+        }
 
     except Exception as e:
         frappe.logger('filter').exception(e)
