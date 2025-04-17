@@ -57,7 +57,10 @@ def verify_otp(kwargs):
         if email:
             key = f"{email}_otp"
         if phone:
+            key = f"{phone}_otp"
+        else:
             key = f"{'user_phone_number'}_otp"
+
         otp = kwargs.get("otp")
         rs = frappe.cache()
         stored_otp = rs.get_value(key)
