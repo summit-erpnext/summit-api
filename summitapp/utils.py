@@ -253,7 +253,6 @@ def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 	if allowed_categories:
 		if category_list:
 			filtered_category = [category for category in allowed_categories if category in category_list]
-			print("CATEGORIRE",filtered_category)
 	return filtered_category or (allowed_categories if categories else category_list)
 
 

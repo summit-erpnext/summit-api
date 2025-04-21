@@ -297,8 +297,6 @@ def get_top_categories(kwargs):
 
 
 def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, vehicle_filters, or_filters={}, debug=0):
-    print("FFF",filters)
-    print("vehicle filter",vehicle_filters)
     offset = 0
     if page_no is not None:
         if limit is None:
@@ -423,10 +421,7 @@ def append_applied_filters(filters, filter_list):
             if field_val == 'sequence':
                 # Get the sort order value from the section's value list
                 sort_order = section['value'][0]
-            if section['name'] == "Sub Category":
-                filters_list.append((field_val, ['in', section['value']]))
     filters = dict(filters_list)  # Convert filters_list back to a dictionary
-    print("FILTER",filters)
     return filters, sort_order
 
 
