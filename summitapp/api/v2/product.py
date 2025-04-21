@@ -93,7 +93,7 @@ def get_list(kwargs):
                 vehicle_filter_conditions = parse_vehicle_filter(vehicle_filters)
                 filters.update(vehicle_filter_conditions)
             debug = kwargs.get("debug_query", 0)
-            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, or_filters=or_filters, debug=debug)
+            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, vehicle_filters,or_filters=or_filters, debug=debug)
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
@@ -296,7 +296,9 @@ def get_top_categories(kwargs):
 	return success_response(res)
 
 
-def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, or_filters={}, debug=0):
+def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, vehicle_filters, or_filters={}, debug=0):
+    print("FFF",filters)
+    print("vehicle filter",vehicle_filters)
     offset = 0
     if page_no is not None:
         if limit is None:
@@ -315,29 +317,8 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
             filters["brand"] = ["in", brands]
 
     # Dynamically fetch all fields from Vehicle Detail child table
-    vehicle_meta = frappe.get_meta("Vehicle Detail")
-    vehicle_fields = [df.fieldname for df in vehicle_meta.fields if df.fieldtype not in ["Section Break", "Column Break"]]
-
-    # Extract only vehicle-related filters
-    vehicle_filter_conditions = {k: filters.pop(k) for k in vehicle_fields if k in filters}
-
-
-    if vehicle_filter_conditions:
-        vehicle_detail = frappe.qb.DocType("Vehicle Detail")
-        query = frappe.qb.from_(vehicle_detail).select(vehicle_detail.parent)
-
-        for field, value in vehicle_filter_conditions.items():
-            if isinstance(value, list):
-                query = query.where(getattr(vehicle_detail, field).isin(value))
-            else:
-                query = query.where(getattr(vehicle_detail, field) == value)
-
-        item_names = [r[0] for r in query.distinct().run()]
-        if not item_names:
-            return 0, []
-
-        filters["name"] = ["in", item_names]
-
+    if vehicle_filters:
+        vehicle_child_filters(filters)
 
     if global_items is not None:
         return get_items_via_search(global_items, filters)
@@ -844,3 +825,25 @@ def parse_vehicle_filter(vehicle_filter_data):
 
     return vehicle_conditions
 
+def vehicle_child_filters(filters):
+    vehicle_meta = frappe.get_meta("Vehicle Detail")
+    vehicle_fields = [df.fieldname for df in vehicle_meta.fields if df.fieldtype not in ["Section Break", "Column Break"]]
+
+    # Extract only vehicle-related filters
+    vehicle_filter_conditions = {k: filters.pop(k) for k in vehicle_fields if k in filters}
+
+    if vehicle_filter_conditions:
+        vehicle_detail = frappe.qb.DocType("Vehicle Detail")
+        query = frappe.qb.from_(vehicle_detail).select(vehicle_detail.parent)
+
+        for field, value in vehicle_filter_conditions.items():
+            if isinstance(value, list):
+                query = query.where(getattr(vehicle_detail, field).isin(value))
+            else:
+                query = query.where(getattr(vehicle_detail, field) == value)
+
+        item_names = [r[0] for r in query.distinct().run()]
+        if not item_names:
+            return 0, []
+
+        filters["name"] = ["in", item_names]
