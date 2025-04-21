@@ -442,8 +442,10 @@ def append_applied_filters(filters, filter_list):
             if field_val == 'sequence':
                 # Get the sort order value from the section's value list
                 sort_order = section['value'][0]
-
+            if section['name'] == "Sub Category":
+                filters_list.append((field_val, ['in', section['value']]))
     filters = dict(filters_list)  # Convert filters_list back to a dictionary
+    print("FILTER",filters)
     return filters, sort_order
 
 
