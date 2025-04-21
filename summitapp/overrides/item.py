@@ -20,14 +20,15 @@ def on_update(self, method=None):
 		make_website_item(self)
 
 def validate(self, method=None):
-    set_parent_category(self)
-    set_custom_attributes(self)
-    specs_desc = ''
-    for row in (self.get("item_filters") or []):
-        specs_desc += f'{row.field_name} : {str(row.get("field_value"))}\n'
-    self.specification_description = specs_desc
-    add_synonym_desc(self)
-    add_model_no(self)
+	set_parent_category(self)
+	set_sub_category(self)
+	set_custom_attributes(self)
+	specs_desc = ''
+	for row in (self.get("item_filters") or []):
+		specs_desc += f'{row.field_name} : {str(row.get("field_value"))}\n'
+	self.specification_description = specs_desc
+	add_synonym_desc(self)
+	add_model_no(self)
 
 
 
@@ -128,3 +129,7 @@ def set_parent_category(doc):
 		parent = frappe.db.get_value("Category", doc.category, "parent_category")
 		if parent:
 			doc.custom_parent_category = parent
+
+def set_sub_category(doc):
+	if doc.category:
+		doc.sub_category = doc.category			
