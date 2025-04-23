@@ -84,8 +84,12 @@ scheduler_events = {
 	"cron": {
 		"* * * * *": [
 			"summitapp.api.v1.access_token.generate_keys",
-		]
-	},}
+		],
+  		"*/5 * * * *": [
+			"summitapp.summitapp.scheduler.resize_image.resize_image",
+        ]
+	},
+ }
 
 # import summitapp.monkey_patches
 # Authentication and authorization

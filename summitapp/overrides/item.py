@@ -2,6 +2,8 @@ import frappe
 import json
 from frappe import _
 from erpnext.e_commerce.doctype.website_item.website_item import insert_item_to_index
+from frappe.utils import now
+
 
 def on_save(self, method):
 	if self.get("product_type"):
@@ -28,6 +30,8 @@ def validate(self, method=None):
 	self.specification_description = specs_desc
 	add_synonym_desc(self)
 	add_model_no(self)
+	update_image(self)
+
 
 def add_synonym_desc(self):
 	synonym_desc = ''
@@ -133,4 +137,15 @@ def set_parent_category(doc):
 		parent = frappe.db.get_value("Category", doc.category, "parent_category")
 		if parent:
 			doc.custom_parent_category = parent
-		
+
+
+def update_image(self):
+    if self.image:
+        self.custom_item_image = self.image
+
+        existing_images = [row.upload_image for row in self.get("custom_item_images")]
+
+        if self.image not in existing_images:
+            self.append("custom_item_images", {"upload_image": self.image, "created_on": now()})
+    else:
+        self.custom_item_image = None
