@@ -15,16 +15,19 @@ import json
 @frappe.whitelist()
 def get_list(kwargs):
 	try:
+		email = frappe.session.user
+		if email == "Guest":
+			return error_response('Please Login As A Customer')
 		order_id = kwargs.get('order_id')
 		date_range = kwargs.get('date_range')
 		status = kwargs.get('status')
 		session_id = kwargs.get('session_id')
-		email = frappe.session.user
 		limit = int(kwargs.get("limit",0))
 		page_no = int((kwargs.get("page_no",0)))
-		if email == "Guest":
-			return error_response('Please Login As A Customer')
-		customer = frappe.get_value("Customer",{'email':email})
+		if "System Manager" not in frappe.get_roles(email):
+			customer = frappe.get_value("Customer",{'email':email}, 'name')
+		else:
+			customer = None
 		result, order_count = get_listing_details(customer, order_id, date_range, status, session_id, limit, page_no)
 		return {'msg': 'success', 'data': result, 'order_count': order_count}
 	except Exception as e:
@@ -205,111 +208,93 @@ def get_listing_details(customer, order_id, date_range, status, session_id, limi
 		else:
 			filters.append(["Sales Order", "order_status", "!=", "Cancelled"])
 			filters.append(["Sales Order", "is_replacement", "=", "0"])
-			filters.append(["Sales Order", "is_replacement", "=", "0"])
-			filters.append(["Sales Order", "is_replacement", "=", "0"])
-
 	if date_range:
 		filters = get_date_range_filter(filters, date_range)
 	if session_id:
 		filters.append(["Sales Order", "custom_session_id", "=", session_id])
-	print(filters)
+	filters.append(["Sales Order", "order_type", "!=", "Accessory"])
+  
 	orders = frappe.get_all(
-        "Sales Order",
-        filters=filters,
-        fields="*",
-        limit_start=(page_no - 1) * limit,
-        limit_page_length=limit,
-    )
+         "Sales Order",
+         filters=filters,
+         fields="*",
+         limit_start=(page_no - 1) * limit,
+         limit_page_length=limit,
+         order_by="transaction_date desc",
+     )
 	charges_fields = get_processed_order(orders, customer)
 	return charges_fields, len(charges_fields)
 
 
-
 def get_processed_order(orders, customer):
-    field_names = get_field_names("Order")
+    field_names = get_field_names('Order')
     order_data = []
     for order in orders:
-        tax_table = frappe.get_all(
-            "Sales Taxes and Charges", {"parent": order.name}, "*"
-        )
+        tax_table = frappe.get_all("Sales Taxes and Charges", {'parent': order.name}, "*")
         try:
-            sales_invoice = frappe.get_doc(
-                "Sales Invoice", {"sales_order": order.name}, "*"
-            )
-            print_url = (
-                get_pdf_link("Sales Invoice", sales_invoice.name)
-                if sales_invoice
-                else ""
-            )
-        except frappe.DoesNotExistError:
+            sales_invoice = frappe.get_doc("Sales Invoice", {'sales_order': order.name}, "*")
+            if sales_invoice:
+                print_url =get_pdf_link ("Sales Invoice", sales_invoice.name)
+            else:
+                print_url = ""
+        except frappe.DoesNotExistError as e:
+            print(f"Sales Invoice not found for order {order.name}: {e}")
             print_url = ""
-
         charges = get_charges_from_table({}, tax_table)
-
-        computed_values = {
-            "tax": charges.get("tax", 0),
-            "shipping": charges.get("shipping", 0),
-            "gateway_charges": charges.get("gateway_charge", 0),
-            "subtotal_include_tax": order.total + charges.get("tax", 0),
-            "subtotal_exclude_tax": order.total,
-            "total": order.rounded_total - order.store_credit_used,
-            "creation": get_creation_date_time(order.name),
-            "order_details": get_product_details(order.name),
-            "payment_status": order.get("workflow_state"),
-            "coupon_code": order.get("coupon_code"),
-            "coupon_amount": order.get("discount_amount"),
-            "currency": get_currency(order.currency),
-            "currency_symbol": get_currency_symbol(order.currency),
-            "addresses": get_address(
-                customer, order.customer_address, order.shipping_address_name
-            ),
-            "colour": order.colour,
-            "shipping_method": {
+        computed_fields = {
+            'tax': lambda: {"tax": charges.get("tax", 0)},
+            'shipping': lambda: {"shipping": charges.get("shipping", 0)},
+            'gateway_charge': lambda: {"gateway_charges": charges.get("gateway_charge", 0)},
+            'subtotal_include_tax': lambda: {"subtotal_include_tax": order.total + charges.get("tax", 0)},
+            'subtotal_exclude_tax': lambda: {"subtotal_exclude_tax": order.total},
+            'total': lambda: {"total": order.rounded_total - order.store_credit_used},
+            'creation': lambda: {"creation": get_creation_date_time(order.name)},
+            'order_details': lambda: {"order_details": get_product_details(order.name)},
+            'payment_status': lambda: {"payment_status": order.get("workflow_state")},
+            'coupon_code': lambda: {"coupon_code": order.get("coupon_code")},
+            'coupon_amount': lambda: {"coupon_amount": order.get("discount_amount")},
+            'currency': lambda: {'currency': get_currency(order.currency)},
+            'currency_symbol': lambda: {'currency_symbol': get_currency_symbol(order.currency)},
+            'addresses': lambda: {"addresses": get_address(customer, order.customer_address, order.shipping_address_name)},
+	    	'colour': lambda: {"colour": order.colour},
+            'shipping_method': lambda: {'shipping_method': {
                 "transporter": order.transporter,
                 "transport_charges": order.transport_charges,
                 "door_delivery": order.door_delivery,
                 "godown_delivery": order.godown_delivery,
                 "location": order.location,
-                "remarks": order.remarks,
-            },
-            "outstanding_amount": frappe.db.get_value(
-                "Return Replacement Request",
-                {"new_order_id": order.name},
-                "outstanding_amount",
-            )
-            or 0,
-            "print_url": print_url,
-            # "pending_weight": calculate_pending_weight(order.name),
-            "total_weight": flt(order.total_weight, 3),
-            "transaction_date": format_date(order.transaction_date),
-            "image": frappe.db.get_all(
-                "Sales Order Item", {"parent": order.name}, "image", pluck="image"
-            ),
+                "remarks": order.remarks
+            }},
+            'outstanding_amount': lambda: {"outstanding_amount": frappe.db.get_value("Return Replacement Request", {"new_order_id": order.name}, "outstanding_amount") or 0},
+            'print_url': lambda: {"print_url": print_url},
+			'pending_weight': lambda: {"pending_weight": format(calculate_pending_weight(order.name), ".3f")},
+			'total_weight': lambda: {"total_weight": format(order.total_weight, ".3f")},
+			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
+   			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")},
         }
-
         charges_fields = {}
         for field_name in field_names:
-            if field_name in computed_values:
-                charges_fields[field_name] = computed_values[field_name]
+            if field_name in computed_fields.keys():
+                charges_fields.update(computed_fields.get(field_name)())
             else:
-                charges_fields[field_name] = order.get(field_name)
-
+                charges_fields.update({field_name: order.get(field_name)})
         order_data.append(charges_fields)
     return order_data
 
-# def calculate_pending_weight(order_name):
-#     pending_weight = 0
-#     order_items = frappe.db.get_all(
-#         "Sales Order Item", {"parent": order_name}, ["name", "total_size_weight"]
-#     )
 
-#     for item in order_items:
-#         status = frappe.db.get_value(
-#             "Sales Order Item Status Details", item.name, "manufacturing_status"
-#         )
-#         if status != "Completed":
-#             pending_weight += item.total_size_weight or 0
-#     return flt(pending_weight, 3)
+def calculate_pending_weight(order_name):
+    pending_weight = 0
+    order_items = frappe.db.get_all(
+        "Sales Order Item", {"parent": order_name}, ["name", "total_size_weight"]
+    )
+
+    for item in order_items:
+        status = frappe.db.get_value(
+            "Sales Order Item Status Details", item.name, "manufacturing_status"
+        )
+        if status != "Completed":
+            pending_weight += item.total_size_weight or 0
+    return flt(pending_weight, 3)
 
 	
 def get_product_details(order):
