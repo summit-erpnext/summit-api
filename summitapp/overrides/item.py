@@ -2,6 +2,8 @@ import frappe
 import json
 from frappe import _
 from webshop.webshop.redisearch_utils import insert_item_to_index
+from frappe.utils import now
+
 
 def on_save(self, method):
 	if self.get("product_type"):
@@ -29,7 +31,7 @@ def validate(self, method=None):
 	self.specification_description = specs_desc
 	add_synonym_desc(self)
 	add_model_no(self)
-
+	update_image(self)
 
 
 def add_synonym_desc(self):
@@ -132,4 +134,16 @@ def set_parent_category(doc):
 
 def set_sub_category(doc):
 	if doc.category:
-		doc.sub_category = doc.category			
+		doc.sub_category = doc.category
+  
+
+def update_image(self):
+    if self.image:
+        self.custom_item_image = self.image
+
+        existing_images = [row.upload_image for row in self.get("custom_item_images")]
+
+        if self.image not in existing_images:
+            self.append("custom_item_images", {"upload_image": self.image, "created_on": now()})
+    else:
+        self.custom_item_image = None

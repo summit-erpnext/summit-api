@@ -91,8 +91,12 @@ scheduler_events = {
 	"cron": {
 		"0 0 * * *":[
 			"summitapp.overrides.currency_exchange.create_currency_exchange_records"
-		]
-	},}
+		],
+  		"*/5 * * * *": [
+			"summitapp.summitapp.scheduler.resize_image.resize_image",
+        ]
+	},
+ }
 
 # import summitapp.monkey_patches
 # Authentication and authorization
