@@ -581,11 +581,11 @@ def check_availability(kwargs):
             "Item", item_code, ["variant_of", "lead_time_days"])
 
         warehouse = frappe.db.get_value(
-            "Website Item", {"item_code": item_code}, "website_warehouse")
+            "Item", {"item_code": item_code}, "website_warehouse")
         
         if not warehouse and template_item_code and template_item_code != item_code:
             warehouse = frappe.db.get_value(
-                "Website Item", {"item_code": template_item_code}, "website_warehouse")
+                "Item", {"item_code": template_item_code}, "website_warehouse")
 
         future_stock = frappe.get_list("Item Future Availability", {
             'item': item_code,
@@ -645,11 +645,11 @@ def get_web_item_future_stock(item_code, item_warehouse_field, warehouse=None):
 	)
 	if not warehouse:
 		warehouse = frappe.db.get_value(
-			"Website Item", {"item_code": item_code}, item_warehouse_field)
+			"Item", {"item_code": item_code}, item_warehouse_field)
 
 	if not warehouse and template_item_code and template_item_code != item_code:
 		warehouse = frappe.db.get_value(
-			"Website Item", {
+			"Item", {
 				"item_code": template_item_code}, item_warehouse_field
 		)
 	if warehouse:
