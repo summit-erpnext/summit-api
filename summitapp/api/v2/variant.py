@@ -1,19 +1,11 @@
 import frappe
-from summitapp.utils import error_response, success_response, get_access_level, get_allowed_categories, get_allowed_brands, get_child_categories
-import json
-from frappe import _
-from frappe.model.db_query import DatabaseQuery
-from frappe.utils.global_search import search
-from frappe.utils import flt, cint, today, add_days
-from summitapp.api.v2.translation import translate_result
-from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
-                                       get_slide_images, get_stock_info, 
-									   get_processed_list, get_item_field_values, 
-									   get_field_names, create_user_tracking,
-									   get_default_variant, variant_thumbnail_reqd,
-                                    	get_list_product_limit,get_customer_id)
-
-
+from summitapp.utils import error_response, success_response
+from summitapp.api.v2.utils import (
+    get_slide_images,
+    get_stock_info,
+    get_default_variant,
+    variant_thumbnail_reqd,
+)
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
@@ -36,13 +28,16 @@ def get_variants(kwargs):
             # Collect unique values for the attribute
             unique_values = {var.get(attribute) for var in variant_info if var.get(attribute)}
             attr = list(unique_values)
-            # Sort the attribute values based on 'abbr' and 'idx'
-            sorted_attr = frappe.get_all(
-                "Item Attribute Value",
-                filters={"abbr": ["IN", attr], "parent": attribute},
-                pluck='abbr',
-                order_by="idx asc",
-            )
+            try:
+                attr = sorted(attr, key=float)  # Sort numerically
+            except (ValueError, TypeError):
+                # Sort the attribute values based on 'abbr' and 'idx'
+                attr = frappe.get_all(
+                    "Item Attribute Value",
+                    filters={"abbr": ["IN", attr], "parent": attribute},
+                    pluck='abbr',
+                    order_by="idx asc",
+                )
             # Append the attribute details to the list
             attributes_list.append({
                 "field_name": attribute,

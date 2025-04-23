@@ -688,59 +688,22 @@ def get_home_page(kwargs):
 
 
 def get_item_images(item_code):
-    """
-    Optimized function to retrieve images for an item based on whether it is a template or a variant.
-
-    :param item_code: Item code to fetch images for.
-    :return: List of unique image URLs.
-    """
-    try:
-        # Fetch only required fields for the main item
-        item = frappe.db.get_value(
-            "Item",
-            {"name": item_code},
-            ["image", "variant_of"],
-            as_dict=True
-        )
-        if not item:
-            return []
-
-        # Initialize image list
-        slide_images = set()
-
-        # Add main item image
-        if item.get("image"):
-            slide_images.add(item["image"])
-
-        # Fetch child images in one query for the item and its variant/template (if applicable)
-        parents = [item_code]
-        if item.get("variant_of"):
-            parents.append(item["variant_of"])
-
-            # Fetch the template item image in one query if it exists
-            template_image = frappe.db.get_value(
-                "Item",
-                {"name": item["variant_of"]},
-                "image"
-            )
-            if template_image:
-                slide_images.add(template_image)
-
-        # Query all child images for item and its template in a single query
-        child_images = frappe.get_all(
-            "Item Images",
-            filters={"parent": ["in", parents]},
-            fields=["upload_image"]
-        )
-        slide_images.update(ci["upload_image"] for ci in child_images if ci["upload_image"])
-
-        # Return sorted list of unique images
-        return sorted(slide_images)
-
-    except Exception as e:
-        frappe.logger('product').exception(e)
-        return []
-
+    # Get all Item Images records for the parent item
+    child_image_docs = frappe.get_all(
+        "Item Images", 
+        {"parent": item_code}, 
+        ["large_size_image", "upload_image"], 
+        order_by="idx asc"
+    )
+    
+    child_images = []
+    for img in child_image_docs:
+        # Use large_size_image if present, otherwise fall back to upload_image
+        image = img.large_size_image if img.large_size_image else img.upload_image
+        if image:
+            child_images.append(image)
+    
+    return child_images
 
 import ast
 
