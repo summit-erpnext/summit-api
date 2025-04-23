@@ -93,7 +93,7 @@ def get_list(kwargs):
                 vehicle_filter_conditions = parse_vehicle_filter(vehicle_filters)
                 filters.update(vehicle_filter_conditions)
             debug = kwargs.get("debug_query", 0)
-            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, limit, vehicle_filters,or_filters=or_filters, debug=debug)
+            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, vehicle_filters,limit,or_filters=or_filters, debug=debug)
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
@@ -191,7 +191,7 @@ def get_details(kwargs):
             return error_response(_("Invalid key 'item'"))
         customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
-        count, item = get_list_data(None, None, filters, None, None, None, limit=1)
+        count, item = get_list_data(None, None, filters, None, None, None, None, limit=1)
         field_names = get_field_names('Details')
         translated_item_fields = {}
         if item:
@@ -296,7 +296,7 @@ def get_top_categories(kwargs):
 	return success_response(res)
 
 
-def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, limit, vehicle_filters, or_filters={}, debug=0):
+def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, vehicle_filters, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
         if limit is None:
