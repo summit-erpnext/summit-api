@@ -81,6 +81,11 @@ def create_address(kwargs,id):
 
 def create_user(kwargs):
 	#Creates User Document for the Customer
+	role_profile = kwargs.get("role")
+	if role_profile:
+		role = role_profile
+	else:
+		role = "Customer"	
 	user_doc = frappe.get_doc({
 		"doctype": 'User',
 		'email': kwargs.get("usr") or kwargs.get('email'),
@@ -90,7 +95,7 @@ def create_user(kwargs):
 		'language':kwargs.get("language_code"),
 		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'phone': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'roles': [{"doctype": "Has Role", "role": "Customer"}],
+		'roles': [{"doctype": "Has Role", "role": role},{"doctype": "Has Role", "role": "Summit Website User"}],
 		"api_key" : frappe.generate_hash(length=15),  
 		"api_secret" : frappe.generate_hash(length=15) 
 	})
