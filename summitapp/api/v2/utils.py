@@ -132,7 +132,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
             'item_pdf_url': lambda: {'item_pdf_url': get_pdf_attachments("Item", item.get("name"))},
             'store_pick_up_available': lambda: {'store_pick_up_available': item.get('store_pick_up_available') == 'Yes'},
             'home_delivery_available': lambda: {'home_delivery_available': item.get('home_delivery_available') == 'Yes'},
-            'category_size': lambda: {'category_size':get_category_size(item.get('custom_parent_category'))},
+            'category_size': lambda: {'category_size':get_category_size(item.get('category'))},
             'vehicle_details':lambda:{'vehicle_details':get_vehicle_detail(item.get("name"))},
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
         }
