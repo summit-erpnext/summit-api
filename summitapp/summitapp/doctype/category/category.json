@@ -25,7 +25,10 @@
   "parent_category",
   "description",
   "menu",
-  "is_product_category"
+  "is_product_category",
+  "section_break_tlfu",
+  "custom_item_characteristics",
+  "custom_item_description"
  ],
  "fields": [
   {
@@ -135,12 +138,30 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Is Product Category"
+  },
+  {
+   "fieldname": "section_break_tlfu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "custom_item_characteristics",
+   "fieldtype": "Table",
+   "label": "Item Characteristics",
+   "options": "Item Characteristics Detail",
+   "read_only_depends_on": "eval: doc.is_group===1;"
+  },
+  {
+   "fieldname": "custom_item_description",
+   "fieldtype": "Table",
+   "label": "Item Description",
+   "options": "Item Description Detail",
+   "read_only_depends_on": "eval: doc.is_group===1;"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-04-09 17:35:17.125072",
+ "modified": "2025-04-24 12:18:24.582811",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
@@ -161,7 +182,6 @@
    "write": 1
   }
  ],
- "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
