@@ -28,16 +28,13 @@ def get_variants(kwargs):
             # Collect unique values for the attribute
             unique_values = {var.get(attribute) for var in variant_info if var.get(attribute)}
             attr = list(unique_values)
-            try:
-                attr = sorted(attr, key=float)  # Sort numerically
-            except (ValueError, TypeError):
-                # Sort the attribute values based on 'abbr' and 'idx'
-                attr = frappe.get_all(
-                    "Item Attribute Value",
-                    filters={"abbr": ["IN", attr], "parent": attribute},
-                    pluck='abbr',
-                    order_by="idx asc",
-                )
+            # Sort the attribute values based on 'abbr' and 'idx'
+            sorted_attr = frappe.get_all(
+                 "Item Attribute Value",
+                 filters={"abbr": ["IN", attr], "parent": attribute},
+                 pluck='abbr',
+                 order_by="idx asc",
+            )
             # Append the attribute details to the list
             attributes_list.append({
                 "field_name": attribute,
