@@ -73,8 +73,8 @@ def get_list(kwargs):
             type = 'product'
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
+        add_item_description(data)
         result = get_processed_list(currency, data, customer_id, type)
-        print("RESULT",result)
         total_count = count
         translated_item_fields = translate_result(result)
         if internal_call:
@@ -83,6 +83,20 @@ def get_list(kwargs):
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
+
+
+def add_item_description(data):
+     for item in data:
+         item["item_description"] = {}
+         item_description = frappe.db.get_all(
+             "Item Description Detail",
+             {"parent": item["category"], "for_web": 1},
+             ["field_name", "label_name"],
+         )
+ 
+         for row in item_description:
+             row["value"] = item.get(row["field_name"])
+         item["item_description"] = item_description
 
 
 # Whitelisted Function

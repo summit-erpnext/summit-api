@@ -6,6 +6,7 @@ from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
 import requests
 from frappe.utils.data import get_url
+import json
 
 def validate_pincode(kwargs):
 	pincode = True if frappe.db.exists(
@@ -129,8 +130,9 @@ def get_item_field_values(currency,item, customer_id, url_type,field_names):
         'item_pdf_url':lambda:{'item_pdf_url':get_pdf_attachments("Item",item.get("name"))},
 		'store_pick_up_available': lambda: {'store_pick_up_available': item.get('store_pick_up_available') == 'Yes'},
 		'home_delivery_available': lambda: {'home_delivery_available': item.get('home_delivery_available') == 'Yes'},
-        'category_size': lambda: {'category_size':get_category_size(item.get('custom_parent_category'))}
-    }
+        'category_size': lambda: {'category_size':get_category_size(item.get('category'))},
+        'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},    }
+    
     item_fields = {}
     for field_name in field_names:
         if field_name in computed_fields.keys():
@@ -706,6 +708,39 @@ def get_item_images(item_code):
     return child_images
 
 import ast
+
+
+def get_item_characteristics(category):
+     characteristics = frappe.db.sql("""
+         SELECT
+             ic.label_name, ic.data_type,
+             CASE
+                 WHEN ic.has_value = 0 THEN ic.data_type
+                 ELSE ic.value
+             END
+             AS value
+         FROM
+             `tabItem Characteristics Detail` AS icd
+         JOIN
+             `tabItem Characteristics` AS ic ON ic.characteristic_name = icd.label_name
+         WHERE
+             icd.parent = %s;
+     """, (category,), as_dict=True)
+     if not characteristics:
+         return[]
+ 
+     item_characteristics = {}
+     for row in characteristics:
+         label_name = row["label_name"]
+         if label_name == "Size":
+             try:
+                 item_characteristics["Size"] = json.loads(row["value"])
+             except (TypeError, json.JSONDecodeError):
+                 item_characteristics["Size"] = row["value"]
+         else:
+             item_characteristics[label_name] = row["value"]
+     return item_characteristics
+
 
 def get_category_size(parent_category):
     item_characteristics_detail = frappe.get_all(
