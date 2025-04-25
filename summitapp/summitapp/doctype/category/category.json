@@ -30,7 +30,10 @@
   "old_parent",
   "parent_category",
   "menu",
-  "is_product_category"
+  "is_product_category",
+  "section_break_tlfu",
+  "custom_item_characteristics",
+  "custom_item_description"
  ],
  "fields": [
   {
@@ -168,6 +171,24 @@
    "fieldtype": "Check",
    "hidden": 1,
    "label": "Is Product Category"
+},
+{
+ "fieldname": "section_break_tlfu",
+ "fieldtype": "Section Break"
+},
+{
+ "fieldname": "custom_item_characteristics",
+ "fieldtype": "Table",
+ "label": "Item Characteristics",
+ "options": "Item Characteristics Detail",
+ "read_only_depends_on": "eval: doc.is_group===1;"
+},
+{
+ "fieldname": "custom_item_description",
+ "fieldtype": "Table",
+ "label": "Item Description",
+ "options": "Item Description Detail",
+ "read_only_depends_on": "eval: doc.is_group===1;"
   }
  ],
  "index_web_pages_for_search": 1,
