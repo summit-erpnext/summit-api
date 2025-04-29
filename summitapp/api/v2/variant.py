@@ -123,33 +123,33 @@ def get_variant_slug(item_code):
     return frappe.get_value("Item", {"item_code": item_code}, "slug")
 
 
-# def get_default_variant(item_code, attribute):
-#     attr = frappe.get_value(
-#         "Item Variant Attribute",
-#         {"variant_of": item_code, "is_default": 1, "attribute": attribute},
-#         "attribute_value",
-#     )
-#     if attr:
-#         if frappe.db.get_value("Item Attribute", attribute, "numeric_values") == 1:
-#             attr = frappe.db.get_value(
-#                 "Item Variant Attribute",
-#                 filters={
-#                     "variant_of": item_code,
-#                     "is_default": 1,
-#                     "attribute_value": attr,
-#                 },
-#                 fieldname="attribute_value",
-#             )
-#             return attr
-#         else:
-#             attr = frappe.get_value(
-#                 "Item Variant Attribute",
-#                 {"variant_of": item_code, "is_default": 1, "attribute": attribute},
-#                 "attribute_value",
-#             )
-#             return frappe.get_value(
-#                 "Item Attribute Value", {"attribute_value": attr}, "abbr"
-#             )
+def get_default_variant(item_code, attribute):
+    attr = frappe.get_value(
+        "Item Variant Attribute",
+        {"variant_of": item_code, "is_default": 1, "attribute": attribute},
+        "attribute_value",
+    )
+    if attr:
+        if frappe.db.get_value("Item Attribute", attribute, "numeric_values") == 1:
+            attr = frappe.db.get_value(
+                "Item Variant Attribute",
+                filters={
+                    "variant_of": item_code,
+                    "is_default": 1,
+                    "attribute_value": attr,
+                },
+                fieldname="attribute_value",
+            )
+            return attr
+        else:
+            attr = frappe.get_value(
+                "Item Variant Attribute",
+                {"variant_of": item_code, "is_default": 1, "attribute": attribute},
+                "attribute_value",
+            )
+            return frappe.get_value(
+                "Item Attribute Value", {"attribute_value": attr}, "abbr"
+            )
 
 
 def variant_thumbnail_reqd(item_code, attribute):
