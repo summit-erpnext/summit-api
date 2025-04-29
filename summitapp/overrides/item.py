@@ -32,7 +32,7 @@ def validate(self, method=None):
 	add_model_no(self)
 	update_image(self)
 	validate_category_lvl_4(self)
-	validate_attribute_value(self)
+	# validate_attribute_value(self)
 
 
 def add_synonym_desc(self):
