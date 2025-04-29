@@ -50,6 +50,11 @@ doc_events = {
 }
 
 
+override_whitelisted_methods = {
+	"erpnext.controllers.item_variant.get_variant": "summitapp.overrides.item_variant.get_variant",
+}
+
+
 # User Data Protection
 # --------------------
 
