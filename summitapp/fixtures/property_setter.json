@@ -14,5 +14,21 @@
   "property_type": "Small Text",
   "row_name": null,
   "value": "[\"3ih814b9a1\"]"
- }
+ },
+ {
+    "default_value": null,
+    "doc_type": "Item Variant Attribute",
+    "docstatus": 0,
+    "doctype": "Property Setter",
+    "doctype_or_field": "DocField",
+    "field_name": "numeric_values",
+    "is_system_generated": 0,
+    "modified": "2025-04-29 11:55:31.619293",
+    "module": "SummitApp",
+    "name": "Item Variant Attribute-numeric_values-read_only",
+    "property": "read_only",
+    "property_type": "Check",
+    "row_name": null,
+    "value": "1"
+   }
 ]

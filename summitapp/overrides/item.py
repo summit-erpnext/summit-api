@@ -32,6 +32,8 @@ def validate(self, method=None):
 	add_synonym_desc(self)
 	add_model_no(self)
 	update_image(self)
+	validate_category_lvl_4(self)
+	validate_attribute_value(self)
 
 
 def add_synonym_desc(self):
@@ -147,3 +149,27 @@ def update_image(self):
             self.append("custom_item_images", {"upload_image": self.image, "created_on": now()})
     else:
         self.custom_item_image = None
+        
+
+def validate_category_lvl_4(self):
+    if frappe.db.get_value("Category", self.category, "is_group") != 0:
+        frappe.throw(_(f"Category {self.category} is not a level 4 category"))
+
+      
+def validate_attribute_value(self):
+    for attribute in self.attributes:
+        if (
+            self.has_variants == 0
+            and attribute.attribute
+            and attribute.attribute_value
+            and frappe.db.get_value(
+                "Item Attribute", attribute.attribute, "numeric_values"
+            )
+            == 1
+        ):
+            if not isinstance(attribute.attribute_value, (int, float)):
+                frappe.throw(
+                    _(
+                        f"Attribute Value must be a number for attribute {attribute.attribute}"
+                    )
+                )

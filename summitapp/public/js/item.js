@@ -6,3 +6,16 @@ frappe.ui.form.on("Item Images", {
         frm.refresh_field("item_images");
     },
 });
+
+
+frappe.ui.form.on("Item", {
+    refresh: function (frm) {
+        frm.set_query("category", function () {
+            return {
+                filters: {
+                    is_group: 0,
+                },
+            };
+        });
+    },
+});
