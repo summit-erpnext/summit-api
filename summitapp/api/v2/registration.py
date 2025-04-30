@@ -95,8 +95,9 @@ def create_user(kwargs):
 		'language':kwargs.get("language_code"),
 		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'phone': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'roles': [{"doctype": "Has Role", "role": role},{"doctype": "Has Role", "role": "Summit Website User"}],
-		"api_key" : frappe.generate_hash(length=15),  
+		'roles': [{"doctype": "Has Role", "role": role}],
+		"api_key" : frappe.generate_hash(length=15), 
+		"summit_website_user": 1, 
 		"api_secret" : frappe.generate_hash(length=15) 
 	})
 	api_key = user_doc.get("api_key")

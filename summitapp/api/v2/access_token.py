@@ -19,7 +19,8 @@ def get_access_token(kwargs):
         if api_key and api_secret:
             api_token = "token " + api_key + ":" + api_secret
             full_name = doc.full_name
-            result = {"access_token": api_token, "full_name": full_name}
+            user_roles = frappe.get_roles(usr)
+            result = {"access_token": api_token, "full_name": full_name, "user_role":user_roles}
         return success_response(data=result)
     except Exception as e:
         frappe.logger("token").exception(e)
