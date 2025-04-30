@@ -5,15 +5,24 @@ from summitapp.utils import error_response, success_response, get_allowed_catego
 @frappe.whitelist(allow_guest=True)
 def get(kwargs):
 	try:
-		summit_settings =  frappe.get_doc("Summit Settings")
+		summit_settings = frappe.get_doc("Summit Settings")
 		enable_user_based_menu = summit_settings.enable_user_based_menu 
-		filters = {'parent_category':['is','not set']}
-		categories = get_allowed_categories(enable_user_based_menu = enable_user_based_menu)
+		filters = {'parent_category': ['is', 'not set']}
+		
+		categories = get_allowed_categories(enable_user_based_menu=enable_user_based_menu)
 		if categories:
 			filters.update({"name": ["in", categories]})
+		
 		category_list = get_item_list('Category', filters)
-		category_list = [{'values': get_sub_cat(cat, allowed_categories=categories), **cat} for cat in category_list]
+		
+		category_list = [{
+			'url': prepare_url("product-category", cat['slug'], parent=None),
+			'values': get_sub_cat(cat, allowed_categories=categories),
+			**cat
+		} for cat in category_list]
+		
 		return category_list
+
 	except Exception as e:
 		frappe.logger('registration').exception(e)
 		return error_response(e)
