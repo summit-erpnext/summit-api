@@ -860,20 +860,21 @@ def vehicle_child_filters(filters):
 
 
 
+import frappe
+import traceback
+
 @frappe.whitelist(allow_guest=True)
-def product_search(kwargs):
+def item_search(kwargs):
     create_user_tracking(kwargs, "Product Search")
-    
     search_value = kwargs.get('search_value')
     if not search_value:
         return error_response("Missing 'search_value' parameter")
     items = frappe.get_list(
-        "Item",
-        or_filters=[
-            {"name": search_value}, 
-            {"bom_factory_code": search_value}  
-        ],
-        fields=["name", "category", "slug"]
-    )
-
-    
+                "Item",
+                filters={
+                    "category": ["like", f"%{search_value}%"]
+                },
+                fields=['*']
+            )
+    item_fields = get_processed_list(None,items,None,None)
+    return success_response(item_fields)
