@@ -96,6 +96,7 @@ def create_user(kwargs):
 		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'phone': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
 		'roles': [{"doctype": "Has Role", "role": role}],
+		'role_profile_name': "Customer Summit" if role == "Customer" else "",
 		"api_key" : frappe.generate_hash(length=15), 
 		"summit_website_user": 1, 
 		"api_secret" : frappe.generate_hash(length=15) 
@@ -120,7 +121,7 @@ def create_customer(kwargs):
 		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("Webshop Settings","default_customer_group")),
 		'territory': 'All Territories',
 		'custom_sales_person': kwargs.get('sales_person'),
-		'account_manager':account_manager
+		'account_manager':account_manager,
 		})
 	customer_doc.insert(ignore_permissions=True)
 	return customer_doc
