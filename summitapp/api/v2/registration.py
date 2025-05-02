@@ -122,6 +122,8 @@ def create_customer(kwargs):
 		'territory': 'All Territories',
 		'custom_sales_person': kwargs.get('sales_person'),
 		'account_manager':account_manager,
+		'latitude': kwargs.get('latitude'),
+		'longitude': kwargs.get('longitude')
 		})
 	customer_doc.insert(ignore_permissions=True)
 	return customer_doc
