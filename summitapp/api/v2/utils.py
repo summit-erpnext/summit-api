@@ -88,12 +88,10 @@ def get_field_names(product_type):
     )
 
 def get_processed_list(currency,items, customer_id, url_type = "product"):
-    print("ITEMS",items)
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names)
-        print("ITEM FIELDS",item_fields)
         processed_items.append(item_fields)
     return processed_items
 

@@ -9,7 +9,8 @@
   "section_break_x2dl",
   "description",
   "tag_image",
-  "set_product_limit"
+  "set_product_limit",
+  "sequence"
  ],
  "fields": [
   {
@@ -31,14 +32,21 @@
    "fieldname": "set_product_limit",
    "fieldtype": "Int",
    "label": "Set Product Limit"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "label": "Sequence",
+   "unique": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-13 13:01:12.347829",
+ "modified": "2025-05-05 16:03:29.239117",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Featured Collection",
+ "naming_rule": "Set by user",
  "owner": "Administrator",
  "permissions": [
   {
@@ -54,6 +62,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

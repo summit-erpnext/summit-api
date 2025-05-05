@@ -51,7 +51,7 @@ def get_list(kwargs):
                 item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
                 if item_value:
                     filter_args["name"] = item_value
-            if sort_by not in ["low_to_high", "high_to_low", "oldest", "latest"]:
+            if sort_by not in ["low_to_high", "high_to_low", "oldest", "latest","item_classification"]:
                 tag_data = frappe.db.sql(
                     f"""
                     SELECT
@@ -343,7 +343,9 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         if sort_by == "oldest":
             order_by = "modified asc"
         elif sort_by == "latest":
-            order_by = "modified desc"
+            order_by = "modified desc"    
+        elif sort_by == "item_classification":
+            order_by = get_item_classification()
     else:
         order_by = order_by
 
@@ -878,3 +880,13 @@ def item_search(kwargs):
             )
     item_fields = get_processed_list(None,items,None,None)
     return success_response(item_fields)
+
+
+def get_item_classification():
+    item_classification = frappe.get_all(
+        "Featured Collection",
+        fields=['name', 'sequence'],
+        order_by='sequence'
+    )
+    print("ITEM CLASS", item_classification)
+    return item_classification
