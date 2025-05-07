@@ -57,10 +57,9 @@ def verify_otp(kwargs):
         if email:
             key = f"{email}_otp"
         if phone:
-            key = f"{phone}_otp"
+            key = f"+{phone}_otp"
         else:
             key = f"{'user_phone_number'}_otp"
-
         otp = kwargs.get("otp")
         rs = frappe.cache()
         stored_otp = rs.get_value(key)
@@ -107,6 +106,41 @@ def send_twilio_sms(user, phone_number, otp):
         'response': response.json() if response.status_code == 201 else response.text,
         'phone': phone_number
     }
+
+@frappe.whitelist(allow_guest=True)
+def send_twilio_otp(kwargs):
+    twilio_details=frappe.get_doc('Twilio Sms Settings')
+    account_sid=twilio_details.account_sid
+    auth_token=twilio_details.auth_token
+    twilio_phone_number=twilio_details.twilio_phone_number
+    twilio_api_url=twilio_details.twilio_api_url+f'2010-04-01/Accounts/{account_sid}/Messages.json'
+    phone = kwargs.get("phone")
+    phone_number = f"+{phone}"
+    otp_length = 6
+    otp = "".join([f"{random.randint(0, 9)}" for _ in range(otp_length)])
+    key = f"{phone_number}_otp"
+    otp_json = {
+        "id": key,
+        "otp": otp,
+        "timestamp": str(frappe.utils.get_datetime().utcnow()),
+    }
+    rs = frappe.cache()
+    rs.set_value(key, json.dumps(otp_json))
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    data = {
+        'To': phone_number,
+        'From': twilio_phone_number,
+        'Body': f'Your Otp is {otp}',
+    }
+    auth = (account_sid, auth_token)
+    response = requests.post(twilio_api_url, headers=headers, data=data, auth=auth)
+    if response.status_code == 201:
+        # frappe.msgprint(f"SMS sent: {response.json().get('sid')}")
+        return success_response("OTP sent on your phone number!")
+    else:
+        frappe.msgprint(f"Failed to send SMS: {response.status_code}, {response.text}")
 
 @frappe.whitelist(allow_guest=True)
 def send_whatsapp_otp(user, summit_mobile_app_settings, phone_number, otp):

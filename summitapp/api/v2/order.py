@@ -271,6 +271,7 @@ def get_processed_order(orders, customer):
 			'total_weight': lambda: {"total_weight": format(order.total_weight, ".3f")},
 			'transaction_date': lambda: {"transaction_date": format_date(order.transaction_date)},
    			'image': lambda: {"image": frappe.db.get_all("Sales Order Item", {"parent": order.name}, "image", pluck="image")},
+			'sales_order_pdf':  lambda: {"sales_order_pdf": get_sales_order_print_url(order.name)},
         }
         charges_fields = {}
         for field_name in field_names:
@@ -616,3 +617,25 @@ def cancel_order(kwargs):
 	except Exception as e:
 			frappe.logger("order").exception(e)
 			return error_response(e)
+
+def get_sales_order_pdf_link(voucher_type, voucher_no, print_format = "Standard"):
+	if not print_format:
+		print_format = frappe.db.get_value(
+			"Property Setter",
+			dict(property="default_print_format", doc_type=voucher_type),
+			"value",
+		)
+	if print_format:
+		return f"{frappe.utils.get_url()}/api/method/frappe.utils.print_format.download_pdf?doctype={voucher_type}&name={voucher_no}&format={print_format}"
+	return "#"
+
+
+def get_sales_order_print_url(sales_order):
+	if sales_order:
+		return get_sales_order_pdf_link("Sales Order", sales_order)
+	else:
+		return "#"
+	
+
+
+
