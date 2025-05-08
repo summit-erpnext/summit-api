@@ -31,7 +31,7 @@ def get_website_user(kwargs=None):
     customers = frappe.get_all(
         "Customer",
         filters={"customer_group": ["in", child_customer_groups]},
-        fields=["name", "customer_name", "email", "customer_group", "loyalty_program"]
+        fields=["name", "customer_name", "email", "customer_group"]
     )
 
     result = []
@@ -93,27 +93,30 @@ def get_company(customer_name):
 
 def get_loyalty_collection_factor(customer_name):
     # Get loyalty program from Customer
-    loyalty_program = frappe.db.get_value("Customer", customer_name, "loyalty_program")
-    if not loyalty_program:
-        return {
-            "collection_factor": 0,
-            "conversion_factor": 0,
-        }
+    loyalty_points = frappe.db.get_value("Customer", customer_name, "loyalty_points")
+    return {"loyalty_points":loyalty_points}
+   
 
-    # Get conversion factor from Loyalty Program
-    conversion_factor = frappe.db.get_value("Loyalty Program", loyalty_program, "conversion_factor") or 0
+@frappe.whitelist(allow_guest=True)
+def get_mechanic(kwargs):
+    mechanics = frappe.get_list("Customer",filters={"customer_group":"Mechanic"},fields=["name"])
+    return success_response(mechanics)
 
-    # Get collection factor from Loyalty Program Collection (first row assumed)
-    collection_data = frappe.get_all(
-        "Loyalty Program Collection",
-        filters={"parent": loyalty_program},
-        fields=["collection_factor"],
-        limit_page_length=1
-    )
+from frappe import _
 
-    collection_factor = collection_data[0]["collection_factor"] if collection_data else 0
+@frappe.whitelist(allow_guest=True)
+def update_mechanic_in_customer(kwargs):
+    email_id = kwargs.get("email_id")
+    mechanic = kwargs.get("mechanic")
 
-    return {
-        "collection_factor": collection_factor,
-        "conversion_factor": conversion_factor
-    }
+    if not email_id or not mechanic:
+        return {"status": "error", "message": "email_id and mechanic are required."}
+
+    customer = frappe.get_value("Customer", {"email_id": email_id}, "name")
+    if not customer:
+        return {"status": "error", "message": f"No customer found with email: {email_id}"}
+
+    doc = frappe.get_doc("Customer", customer)
+    doc.mechanic = mechanic
+    doc.save(ignore_permissions=True)
+    return {"status": "success", "message": "Mechanic updated successfully", "customer": doc.name}
