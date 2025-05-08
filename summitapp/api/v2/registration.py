@@ -109,6 +109,7 @@ def create_user(kwargs):
 def create_customer(kwargs):
 	# create customer document
 	account_manager = check_user_exists(kwargs.get('email'))
+	is_mechanic = 1 if kwargs.get("customer_group") == "Mechanic" else 0
 	customer_doc = frappe.get_doc({
 		'doctype':"Customer",
 		'salutation':kwargs.get('salutation'),
@@ -123,7 +124,8 @@ def create_customer(kwargs):
 		'custom_sales_person': kwargs.get('sales_person'),
 		'account_manager':account_manager,
 		'latitude': kwargs.get('latitude'),
-		'longitude': kwargs.get('longitude')
+		'longitude': kwargs.get('longitude'),
+		'is_mechanic': is_mechanic
 		})
 	customer_doc.insert(ignore_permissions=True)
 	return customer_doc
