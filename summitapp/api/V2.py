@@ -72,7 +72,7 @@ class V2():
             "website_interface":["publish_website_interface"],
             "e_tag":["get_product_list"],
             "blog_post":["get_blog_post_list","get_blog_post_detail"],
-            "user":["get_website_user"],
+            "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "customer_group":["get_customer_group"]
         }
 
