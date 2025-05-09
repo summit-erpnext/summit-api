@@ -99,7 +99,7 @@ def get_loyalty_collection_factor(customer_name):
 
 @frappe.whitelist(allow_guest=True)
 def get_mechanic(kwargs):
-    mechanics = frappe.get_list("Customer",filters={"customer_group":"Mechanic"},fields=["name"])
+    mechanics = frappe.get_list("Customer",filters={"customer_group":"Mechanic"},fields=["name","email_id"])
     return success_response(mechanics)
 
 from frappe import _
