@@ -935,28 +935,49 @@ def get_vehicle_detail(item):
 
 def get_customer_wise_loyalty_points(email_id, currency):
     try:
+        from decimal import Decimal, ROUND_HALF_UP
         from summitapp.api.v2.utils import get_item_price, get_price_list
+
         summit_settings = frappe.get_doc("Summit Settings")
         enable_loyalty_points = summit_settings.enable_loyalty_points 
-        if enable_loyalty_points == 1:
-            customer = frappe.get_list("Customer", filters={"name": email_id}, fields=["name", "loyalty_program"])
-            if not customer:
-                return {}
-            loyalty_program_collections = frappe.get_all(
-                "Loyalty Program Collection",
-                filters={"parent": customer[0].loyalty_program},
-                fields=["item", "collection_factor"]
+
+        if enable_loyalty_points != 1:
+            return {}
+
+        customer = frappe.get_list(
+            "Customer",
+            filters={"name": email_id},
+            fields=["name", "loyalty_program"]
+        )
+
+        if not customer:
+            return {}
+
+        loyalty_program_collections = frappe.get_all(
+            "Loyalty Program Collection",
+            filters={"parent": customer[0].loyalty_program},
+            fields=["item", "collection_factor"]
+        )
+
+        loyalty_points = {}
+
+        for collection in loyalty_program_collections:
+            item_price = get_item_price(
+                currency,
+                collection.item,
+                customer[0].name,
+                get_price_list(customer[0].name)
             )
-            loyalty_points = {}
-            for collection in loyalty_program_collections:
-                item_price = get_item_price(currency, collection.item, customer[0].name, get_price_list(customer[0].name))
-                if item_price[0] and collection.collection_factor:
-                    item_loyalty_point = item_price[0] / collection.collection_factor
-                    loyalty_points[collection.item] = item_loyalty_point
-                else:
-                    loyalty_points[collection.item] = 0
-            return loyalty_points
-        return {}
+
+            if item_price[0] and collection.collection_factor:
+                item_loyalty_point = item_price[0] / collection.collection_factor
+                rounded_points = int(Decimal(item_loyalty_point).to_integral_value(rounding=ROUND_HALF_UP))
+                loyalty_points[collection.item] = rounded_points
+            else:
+                loyalty_points[collection.item] = 0
+
+        return loyalty_points
+
     except Exception as e:
         frappe.logger('Loyalty').exception(e)
         return error_response(str(e))

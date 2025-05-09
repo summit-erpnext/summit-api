@@ -31,7 +31,7 @@ def get_website_user(kwargs=None):
     customers = frappe.get_all(
         "Customer",
         filters={"customer_group": ["in", child_customer_groups]},
-        fields=["name", "customer_name", "email", "customer_group"]
+        fields=["name", "customer_name", "email", "customer_group","mechanic"]
     )
 
     result = []
