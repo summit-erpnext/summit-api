@@ -148,35 +148,53 @@ def get_details(kwargs):
         currency = kwargs.get('currency')
         if not item_slug:
             return error_response(_("Invalid key 'item'"))
-        customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
-        user_email = frappe.db.get_value("Customer", customer_id,"email")
+
+        customer_id = kwargs.get('customer_id') or (
+            frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
+            if frappe.session.user != "Guest" else None
+        )
+        user_email = frappe.db.get_value("Customer", customer_id, "email") if customer_id else None
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
+
         count, item = get_list_data(None, None, filters, None, None, None, limit=1)
         field_names = get_field_names('Details')
+
+        translated_item_fields = {}  # ✅ Ensure it's always defined
         processed_items = []
+
         if item:
             item_fields = get_item_field_values(currency, item, customer_id, None, field_names)
-            translated_item_fields = {}
+
             for fieldname, value in item_fields.items():
                 if fieldname == 'name':
                     data = frappe.db.exists("Ecommerce Item Rejection Details", {"parent": value, 'user': user_email})
-                    if data:
-                        translated_item_fields["reject_button_value"] = 1
-                    else:
-                        translated_item_fields["reject_button_value"] = 0
- 
-                if fieldname == 'image' and value in ("",None):
+                    translated_item_fields["reject_button_value"] = 1 if data else 0
+
+                if fieldname == 'image' and value in ("", None):
                     if frappe.db.exists("Item", item.variant_of):
                         data = frappe.get_doc("Item", item.variant_of)
                         value = data.image
-                        
+
                 translated_item_fields[fieldname] = _(value)
+
             if translated_item_fields:
-                translated_item_fields['previous_item'] = frappe.db.get_value("Item",{"modified": (">", item.modified),"category": item.category,"show_on_website": 1,"disabled": 0}, "name", order_by="modified asc")
-                translated_item_fields['next_item'] = frappe.db.get_value("Item", {"modified": ("<", item.modified),"category": item.category,"show_on_website": 1,"disabled": 0},"name",order_by="modified desc")
-            processed_items.append(translated_item_fields) 
-        return {'msg':('Success'), 'data': translated_item_fields}
-    
+                translated_item_fields['previous_item'] = frappe.db.get_value(
+                    "Item",
+                    {"modified": (">", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
+                    "name",
+                    order_by="modified asc"
+                )
+                translated_item_fields['next_item'] = frappe.db.get_value(
+                    "Item",
+                    {"modified": ("<", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
+                    "name",
+                    order_by="modified desc"
+                )
+
+            processed_items.append(translated_item_fields)
+
+        return {'msg': 'Success', 'data': translated_item_fields}
+
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
