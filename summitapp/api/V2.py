@@ -52,7 +52,7 @@ class V2():
                       'recently_bought', 'cancel_order'],
             "product": ['get_list', 'get_details', 'get_cyu_categories', 'get_variants', 'get_recommendation', 'get_top_categories', 
                         "get_tagged_products", "check_availability", "get_categories",'get_default_currency', 'quick_order', 
-                        'get_variants_for_listing','product_search','item_search'],
+                        'get_variants_for_listing','product_search','item_search','get_customer_wise_loyalty_points'],
             "variant":["get_variants"],
             "registration": ['add_subscriber','customer_signup', 'change_password', 'reset_password', 'send_reset_link', 'create_registration'],
             "seller": ['get'],

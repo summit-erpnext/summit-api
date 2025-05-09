@@ -5,7 +5,11 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "features_section",
   "enable_user_based_menu",
+  "column_break_ghl8",
+  "enable_loyalty_points",
+  "ui_view_settings_section",
   "variant_type",
   "header_component",
   "font_family",
@@ -80,12 +84,32 @@
    "fieldname": "socket_site_url",
    "fieldtype": "Data",
    "label": "Socket Site URL"
+  },
+  {
+   "fieldname": "ui_view_settings_section",
+   "fieldtype": "Section Break",
+   "label": "UI View Settings"
+  },
+  {
+   "fieldname": "features_section",
+   "fieldtype": "Section Break",
+   "label": "Features"
+  },
+  {
+   "fieldname": "column_break_ghl8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_loyalty_points",
+   "fieldtype": "Check",
+   "label": "Enable Loyalty Points"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-03-06 13:30:01.293848",
+ "modified": "2025-05-09 11:17:57.592171",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Summit Settings",
@@ -102,6 +126,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
