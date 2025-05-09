@@ -175,7 +175,7 @@ def get_details(kwargs):
                 translated_item_fields['previous_item'] = frappe.db.get_value("Item",{"modified": (">", item.modified),"category": item.category,"show_on_website": 1,"disabled": 0}, "name", order_by="modified asc")
                 translated_item_fields['next_item'] = frappe.db.get_value("Item", {"modified": ("<", item.modified),"category": item.category,"show_on_website": 1,"disabled": 0},"name",order_by="modified desc")
             processed_items.append(translated_item_fields) 
-        return {'msg':('Success'), 'data': processed_items}
+        return {'msg':('Success'), 'data': translated_item_fields}
     
     except Exception as e:
         frappe.logger('product').exception(e)
