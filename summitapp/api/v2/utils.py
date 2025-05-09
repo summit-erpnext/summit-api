@@ -88,20 +88,21 @@ def get_field_names(product_type):
     )
 
 def get_processed_list(currency,items, customer_id, url_type = "product"):
-    print("ITEMS",items)
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
-        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names)
-        print("ITEM FIELDS",item_fields)
+        loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+        print("LOYALTY",loyalty_points_map)
+        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
         processed_items.append(item_fields)
     return processed_items
 
-def get_item_field_values(currency, item, customer_id, url_type, field_names):
+def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
     filters = {'item_code':item.get('variant_of')}
     variant_list = get_variant_details(filters)
     variant_info = get_variant_info(variant_list)
     attributes= get_item_varient_attribute(item.name)
+    loyalty_points_map = loyalty_points_map or {}
     try:
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
@@ -110,6 +111,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names):
             'brand_img': lambda: {'brand_img': frappe.get_value('Brand', item.get('brand'), ['image']) or None},
             'mrp_price': lambda: {'mrp_price': get_item_price(currency, item.get("name"), customer_id, get_price_list(customer_id))[1]},
             'price': lambda: {'price': get_item_price(currency, item.get("name"), customer_id, get_price_list(customer_id))[0]},
+            'loyalty_points': lambda: {'loyalty_points': loyalty_points_map.get(item.get("name"), 0)},
             'currency': lambda: {'currency': get_currency(currency)},
             'currency_symbol': lambda: {'currency_symbol': get_currency_symbol(currency)},
             'display_tag': lambda: {
@@ -184,7 +186,6 @@ def get_product_url(item_detail, url_type = "product"):
 
 
 def get_price_list(customer=None):
-    print("CUSTOMER",customer)
     selling_settings = frappe.get_cached_value(
         "Web Settings", None, "default_price_list")
     if customer:
@@ -205,13 +206,11 @@ def get_item_price(currency, item_name, customer_id=None, price_list=None, valua
     if customer_id:
         item_filter['customer'] = customer_id
         price, mrp_price = frappe.db.get_value("Item Price", item_filter, ['price_list_rate', 'strikethrough_rate']) or (0, 0)
-        print("PRICE MRP",price,mrp_price)
         if price:
             return convert_currency(price, currency), convert_currency(mrp_price, currency)
 
     item_filter['customer'] = ["is", "null"]
     price, mrp_price = frappe.get_value('Item Price', item_filter, ['price_list_rate', 'strikethrough_rate']) or (0, 0)
-    print("PRICE 2",price,mrp_price)
     return convert_currency(price, currency), convert_currency(mrp_price, currency)
 
 
@@ -500,11 +499,13 @@ def get_logged_user():
 
 def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
-    
-    if not customer_id and frappe.request.headers:
+    email_id = kwargs.get('email')
+    if email_id:
+        customer_id = frappe.db.get_value("Customer", {"email": email_id}, 'name')
+    if not customer_id and frappe.request.headers and not email_id:
         email = get_logged_user()
         # email = frappe.session.user
-        customer_id = frappe.db.get_value("Customer", {"email": email}, 'name')
+        customer_id = frappe.db.get_value("Customer", {"email": email}, 'name')    
     return customer_id
 
 
@@ -929,3 +930,33 @@ def get_category_size(parent_category):
 def get_vehicle_detail(item):
     vehicle_detail = frappe.get_all("Vehicle Detail", filters={"parent":item},fields=['vehicle','cc','model','year','model_comments'])
     return vehicle_detail
+
+
+
+def get_customer_wise_loyalty_points(email_id, currency):
+    try:
+        from summitapp.api.v2.utils import get_item_price, get_price_list
+        summit_settings = frappe.get_doc("Summit Settings")
+        enable_loyalty_points = summit_settings.enable_loyalty_points 
+        if enable_loyalty_points == 1:
+            customer = frappe.get_list("Customer", filters={"name": email_id}, fields=["name", "loyalty_program"])
+            if not customer:
+                return {}
+            loyalty_program_collections = frappe.get_all(
+                "Loyalty Program Collection",
+                filters={"parent": customer[0].loyalty_program},
+                fields=["item", "collection_factor"]
+            )
+            loyalty_points = {}
+            for collection in loyalty_program_collections:
+                item_price = get_item_price(currency, collection.item, customer[0].name, get_price_list(customer[0].name))
+                if item_price[0] and collection.collection_factor:
+                    item_loyalty_point = item_price[0] / collection.collection_factor
+                    loyalty_points[collection.item] = item_loyalty_point
+                else:
+                    loyalty_points[collection.item] = 0
+            return loyalty_points
+        return {}
+    except Exception as e:
+        frappe.logger('Loyalty').exception(e)
+        return error_response(str(e))
