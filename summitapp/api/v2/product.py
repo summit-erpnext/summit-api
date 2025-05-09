@@ -99,7 +99,7 @@ def get_list(kwargs):
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
 
-        add_item_description(data)
+        # add_item_description(data)
             
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
@@ -878,25 +878,3 @@ def item_search(kwargs):
             )
     item_fields = get_processed_list(None,items,None,None)
     return success_response(item_fields)
-
-
-
-def get_customer_wise_loyalty_points(kwargs):
-    try:
-        from summitapp.api.v2.utils import get_item_price, get_price_list
-        email_id = kwargs.get("email_id")
-        summit_settings = frappe.get_doc("Summit Settings")
-        enable_loyalty_points = summit_settings.enable_loyalty_points 
-        if enable_loyalty_points == 1:
-            customer = frappe.get_list("Customer",filters={"email_id":email_id},fields=["name","loyalty_program"])
-            print("customer",customer[0].name)
-            loyalty_program_collections = frappe.get_all("Loyalty Program Collection",filters={"parent":customer[0].loyalty_program},fields=["item","collection_factor"])
-            print("LOYALTY Program",loyalty_program_collections)
-            for collection in loyalty_program_collections:
-                item_price = get_item_price(kwargs.get("currency"), collection.item, customer[0].name, get_price_list(customer[0].name))[1],
-                print("ITEM PRICE",item_price)
-                item_loyalty_point = item_price / collection.collection_factor
-                return item_loyalty_point
-    except Exception as e:
-        frappe.logger('Loyalty').exception(e)
-        return error_response(str(e))
