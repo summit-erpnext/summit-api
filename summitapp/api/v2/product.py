@@ -79,7 +79,9 @@ def get_list(kwargs):
         translated_item_fields = translate_result(result)
         if internal_call:
             return translated_item_fields
-        return {'msg': 'success', 'data': translated_item_fields, 'total_count': total_count}
+        frappe.response["msg"] = "success"
+        frappe.response["data"] = translated_item_fields
+        frappe.response["total_count"] = total_count
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))

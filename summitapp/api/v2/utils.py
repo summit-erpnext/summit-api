@@ -97,7 +97,6 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
                 data = frappe.get_doc("Item",item.variant_of) 
                 item.image = data.image
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names)
-        print("ITEM Fields",item_fields)
         processed_items.append(item_fields)
     return processed_items
 
