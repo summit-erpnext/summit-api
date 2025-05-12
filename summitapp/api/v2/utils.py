@@ -7,6 +7,7 @@ from frappe.utils import nowdate
 import requests
 from frappe.utils.data import get_url
 import json
+from summitapp.api.v2.item_wise_sales_history import get_monthly_target_qty, get_yearly_target_qty
 
 def validate_pincode(kwargs):
 	pincode = True if frappe.db.exists(
@@ -92,7 +93,6 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     processed_items = []
     for item in items:
         loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-        print("LOYALTY",loyalty_points_map)
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
         processed_items.append(item_fields)
     return processed_items
@@ -139,6 +139,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'category_size': lambda: {'category_size':get_category_size(item.get('category'))},
             'vehicle_details':lambda:{'vehicle_details':get_vehicle_detail(item.get("name"))},
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
+            'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
+            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))}
         }
 
         item_fields = {}
@@ -981,3 +983,4 @@ def get_customer_wise_loyalty_points(email_id, currency):
     except Exception as e:
         frappe.logger('Loyalty').exception(e)
         return error_response(str(e))
+    
