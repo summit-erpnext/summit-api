@@ -33,7 +33,7 @@ import summitapp.api.v2.variant as variant
 import summitapp.api.v2.user as user
 import summitapp.api.v2.customer_group as customer_group
 import summitapp.api.v2.item_wise_sales_history as item_wise_sales_history
-
+import summitapp.api.v2.whatsapp_msg as whatsapp_msg
 
 class V2():
     def __init__(self):
@@ -75,7 +75,8 @@ class V2():
             "blog_post":["get_blog_post_list","get_blog_post_detail"],
             "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "customer_group":["get_customer_group"],
-            "item_wise_sales_history":["get_item_wise_sales_history"]
+            "item_wise_sales_history":["get_item_wise_sales_history"],
+            "whatsapp_msg": ["send_otp_whatsapp"]
         }
 
     def class_map(self, kwargs):
