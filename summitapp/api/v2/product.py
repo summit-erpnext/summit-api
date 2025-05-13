@@ -12,7 +12,7 @@ from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filt
 									   get_processed_list, get_item_field_values, 
 									   get_field_names, create_user_tracking,
 									   get_default_variant, variant_thumbnail_reqd,
-                                    	get_list_product_limit,get_customer_id)
+                                    	get_list_product_limit,get_customer_id,get_customer_wise_loyalty_points)
 from werkzeug.wrappers import Response
 import datetime
 
@@ -210,7 +210,8 @@ def get_details(kwargs):
         field_names = get_field_names('Details')
         translated_item_fields = {}
         if item:
-            item_fields = get_item_field_values(currency, item, customer_id, None, field_names)
+            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+            item_fields = get_item_field_values(currency, item, customer_id, None, field_names,loyalty_points_map)
             for fieldname, value in item_fields.items():
                 translated_item_fields[fieldname] = _(value)
             translated_item_fields["variants"] = []
