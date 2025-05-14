@@ -18,69 +18,69 @@ def get_filters(kwargs):
 from frappe.query_builder import DocType
 from frappe import _
 
-@frappe.whitelist(allow_guest=True)
-def get_vehicle_filters(kwargs):
-    try:
-        # Default response structure (raw)
-        raw_response = {
-            "Vehicle Company": frappe.get_list("Vehicle Company", fields=["name"]),
-            "Vehicle": [],
-            "CC": [],
-            "Model": [],
-            "Year": [],
-            "Model Comments": []
-        }
+# @frappe.whitelist(allow_guest=True)
+# def get_vehicle_filters(kwargs):
+#     try:
+#         # Default response structure (raw)
+#         raw_response = {
+#             "Vehicle Company": frappe.get_list("Vehicle Company", fields=["name"]),
+#             "Vehicle": [],
+#             "CC": [],
+#             "Model": [],
+#             "Year": [],
+#             "Model Comments": []
+#         }
 
-        if kwargs.get("vehicle_company"):
-            vehicle_company = kwargs.get("vehicle_company")
+#         if kwargs.get("vehicle_company"):
+#             vehicle_company = kwargs.get("vehicle_company")
 
-            # Get Vehicle Details Data doc name
-            parent_doc = frappe.get_doc("Vehicle Details Data", vehicle_company)
-            parent_name = parent_doc.name
+#             # Get Vehicle Details Data doc name
+#             parent_doc = frappe.get_doc("Vehicle Details Data", vehicle_company)
+#             parent_name = parent_doc.name
 
-            # Define Vehicle Detail as DocType
-            VehicleDetail = DocType("Vehicle Detail")
+#             # Define Vehicle Detail as DocType
+#             VehicleDetail = DocType("Vehicle Detail")
 
-            # Query unique values using QB
-            def get_distinct_field(field_name):
-                results = (
-                    frappe.qb.from_(VehicleDetail)
-                    .select(VehicleDetail[field_name].as_('name'))
-                    .where(VehicleDetail.parent == parent_name)
-                    .run(as_dict=True)
-                )
-                return [row.get("name") for row in results if row.get("name")]
+#             # Query unique values using QB
+#             def get_distinct_field(field_name):
+#                 results = (
+#                     frappe.qb.from_(VehicleDetail)
+#                     .select(VehicleDetail[field_name].as_('name'))
+#                     .where(VehicleDetail.parent == parent_name)
+#                     .run(as_dict=True)
+#                 )
+#                 return [row.get("name") for row in results if row.get("name")]
 
-            # Populate filters from Vehicle Detail child table
-            raw_response["Vehicle"] = get_distinct_field("vehicle")
-            raw_response["CC"] = get_distinct_field("cc")
-            raw_response["Model"] = get_distinct_field("model")
-            raw_response["Year"] = get_distinct_field("year")
-            raw_response["Model Comments"] = get_distinct_field("model_comments")
+#             # Populate filters from Vehicle Detail child table
+#             raw_response["Vehicle"] = get_distinct_field("vehicle")
+#             raw_response["CC"] = get_distinct_field("cc")
+#             raw_response["Model"] = get_distinct_field("model")
+#             raw_response["Year"] = get_distinct_field("year")
+#             raw_response["Model Comments"] = get_distinct_field("model_comments")
 
-        else:
-            # Populate all values if no company filter
-            raw_response["Vehicle"] = [row["name"] for row in frappe.get_list("Vehicle Variant Name", fields=["name"])]
-            raw_response["CC"] = [row["name"] for row in frappe.get_list("Engine CC", fields=["name"])]
-            raw_response["Model"] = [row["name"] for row in frappe.get_list("Model", fields=["name"])]
-            raw_response["Year"] = [row["name"] for row in frappe.get_list("Model Year", fields=["name"])]
-            raw_response["Model Comments"] = [row["name"] for row in frappe.get_list("Model Comments", fields=["name"])]
+#         else:
+#             # Populate all values if no company filter
+#             raw_response["Vehicle"] = [row["name"] for row in frappe.get_list("Vehicle Variant Name", fields=["name"])]
+#             raw_response["CC"] = [row["name"] for row in frappe.get_list("Engine CC", fields=["name"])]
+#             raw_response["Model"] = [row["name"] for row in frappe.get_list("Model", fields=["name"])]
+#             raw_response["Year"] = [row["name"] for row in frappe.get_list("Model Year", fields=["name"])]
+#             raw_response["Model Comments"] = [row["name"] for row in frappe.get_list("Model Comments", fields=["name"])]
 
-        # Format final response
-        filters = []
-        for key, values in raw_response.items():
-            filters.append({
-                "section": "Vehicle Company" if key == "Vehicle Company" else key,
-                "values": [v["name"] if isinstance(v, dict) else v for v in values]
-            })
+#         # Format final response
+#         filters = []
+#         for key, values in raw_response.items():
+#             filters.append({
+#                 "section": "Vehicle Company" if key == "Vehicle Company" else key,
+#                 "values": [v["name"] if isinstance(v, dict) else v for v in values]
+#             })
 
-        return {
-            "filters": filters,
-        }
+#         return {
+#             "filters": filters,
+#         }
 
-    except Exception as e:
-        frappe.logger('filter').exception(e)
-        return frappe._dict({"status": "error", "message": str(e)})
+#     except Exception as e:
+#         frappe.logger('filter').exception(e)
+#         return frappe._dict({"status": "error", "message": str(e)})
 
 
 
@@ -111,4 +111,82 @@ def get_filters_without_category(kwargs):
     result = {
         "filters": filters
     }
+    return success_response(result)
+
+
+import frappe
+import json
+from frappe import _
+
+@frappe.whitelist(allow_guest=True)
+def get_vehicle_filters(kwargs):
+   
+    vehicle_company_filter = frappe.form_dict.get("vehicle_company")
+    vehicle_name_filter = frappe.form_dict.get("vehicle_name")
+
+    # Parse JSON strings into lists
+    try:
+        vehicle_company_list = json.loads(vehicle_company_filter) if vehicle_company_filter else []
+    except Exception:
+        vehicle_company_list = []
+
+    try:
+        vehicle_name_list = json.loads(vehicle_name_filter) if vehicle_name_filter else []
+    except Exception:
+        vehicle_name_list = []
+
+    # Build filters dynamically
+    filters = {}
+    if vehicle_company_list:
+        filters["vehicle_company"] = ["in", vehicle_company_list]
+    if vehicle_name_list:
+        filters["vehicle_name"] = ["in", vehicle_name_list]
+
+    vehicles = frappe.get_all(
+        "Vehicle Variant Name",
+        filters=filters,
+        fields=["name", "vehicle_company", "vehicle_name"]
+    )
+
+    vehicle_companies = set()
+    vehicle_names = set()
+    cc_values = set()
+    model_values = set()
+    year_values = set()
+    model_comment_values = set()
+
+    for v in vehicles:
+        vehicle_companies.add(v.vehicle_company)
+        vehicle_names.add(v.vehicle_name)
+
+        # If vehicle_name is passed, we only want details of matching vehicles
+        if not vehicle_name_list or v.vehicle_name in vehicle_name_list:
+            details = frappe.get_all(
+                "Vehicle Detail",
+                filters={"parent": v.name},
+                fields=["*"]
+            )
+            for d in details:
+                if d.cc:
+                    cc_values.add(d.cc)
+                if d.model:
+                    model_values.add(d.model)
+                if d.year:
+                    year_values.add(d.year)
+                if d.model_comments:
+                    model_comment_values.add(d.model_comments)
+
+    filters_response = [
+        {"section": "Vehicle Company", "values": sorted(vehicle_companies)},
+        {"section": "Vehicle", "values": sorted(vehicle_names)},
+        {"section": "CC", "values": sorted(cc_values)},
+        {"section": "Model", "values": sorted(model_values)},
+        {"section": "Year", "values": sorted(year_values)},
+        {"section": "Model Comments", "values": sorted(model_comment_values)},
+    ]
+
+    result = {
+        "filters":filters_response
+    }
+
     return success_response(result)
