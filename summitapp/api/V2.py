@@ -47,7 +47,7 @@ class V2():
             "customer_address": ['get', 'put','create_guest_to_customer'],
             "dealer": ['get_dealer'],
             "profile": ['get_profile','customer_inquiry', 'ageing_report', 'get_transporters'],
-            "filter": ['get_filters','get_vehicle_filters'],
+            "filter": ['get_filters','get_vehicle_filters', 'get_filters_without_category'],
             "mega_menu": ['get', 'breadcrums','get_mega_menu','get_navbar_data','get_menu'],
             "order": ['get_list', 'get_summary', 'get_order_id', 'place_order', 'return_replace_item', 'get_razorpay_payment_url', 'get_order_details', 
                       'recently_bought', 'cancel_order'],
