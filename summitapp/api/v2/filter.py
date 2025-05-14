@@ -81,3 +81,34 @@ def get_vehicle_filters(kwargs):
     except Exception as e:
         frappe.logger('filter').exception(e)
         return frappe._dict({"status": "error", "message": str(e)})
+
+
+
+def get_filters_without_category(kwargs):
+    # Define the fields you want to filter on
+    filter_fields = ["brand", "colour", "item_classification"]
+
+    filters = []
+
+    for field in filter_fields:
+        values = frappe.get_all(
+            "Item",
+            filters={},  # You can apply custom filters here using kwargs
+            distinct=True,
+            pluck=field
+        )
+        # Remove None or empty strings
+        values = list(filter(None, values))
+
+        # Format field names into sections
+        section_name = field.replace("_", " ").title()
+
+        filters.append({
+            "section": section_name,
+            "values": sorted(values)
+        })
+
+    result = {
+        "filters": filters
+    }
+    return success_response(result)

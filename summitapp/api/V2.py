@@ -33,7 +33,7 @@ import summitapp.api.v2.variant as variant
 import summitapp.api.v2.user as user
 import summitapp.api.v2.customer_group as customer_group
 import summitapp.api.v2.item_wise_sales_history as item_wise_sales_history
-
+import summitapp.api.v2.whatsapp_msg as whatsapp_msg
 
 class V2():
     def __init__(self):
@@ -47,7 +47,7 @@ class V2():
             "customer_address": ['get', 'put','create_guest_to_customer'],
             "dealer": ['get_dealer'],
             "profile": ['get_profile','customer_inquiry', 'ageing_report', 'get_transporters'],
-            "filter": ['get_filters','get_vehicle_filters'],
+            "filter": ['get_filters','get_vehicle_filters', 'get_filters_without_category'],
             "mega_menu": ['get', 'breadcrums','get_mega_menu','get_navbar_data','get_menu'],
             "order": ['get_list', 'get_summary', 'get_order_id', 'place_order', 'return_replace_item', 'get_razorpay_payment_url', 'get_order_details', 
                       'recently_bought', 'cancel_order'],
@@ -75,7 +75,8 @@ class V2():
             "blog_post":["get_blog_post_list","get_blog_post_detail"],
             "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "customer_group":["get_customer_group"],
-            "item_wise_sales_history":["get_item_wise_sales_history"]
+            "item_wise_sales_history":["get_item_wise_sales_history"],
+            "whatsapp_msg": ["send_otp_whatsapp"]
         }
 
     def class_map(self, kwargs):

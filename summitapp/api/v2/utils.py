@@ -482,6 +482,7 @@ def get_list_product_limit(user_role, customer_id):
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
     elif customer_id:
+        print("CUSTOMER ID",customer_id)
         grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
         if grp:
             # customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
@@ -497,6 +498,7 @@ def get_logged_user():
     header = {"Authorization": frappe.request.headers.get('Authorization')}
     response = requests.post(get_url() + "/api/method/frappe.auth.get_logged_user", headers=header)
     user = response.json().get("message")
+    print("USER",user)
     return user
 
 def get_customer_id(kwargs):
