@@ -119,12 +119,10 @@ import json
 from frappe import _
 
 @frappe.whitelist(allow_guest=True)
-def get_vehicle_filters(kwargs):
-   
+def get_vehicle_filters(kwargs=None):
     vehicle_company_filter = frappe.form_dict.get("vehicle_company")
     vehicle_name_filter = frappe.form_dict.get("vehicle_name")
 
-    # Parse JSON strings into lists
     try:
         vehicle_company_list = json.loads(vehicle_company_filter) if vehicle_company_filter else []
     except Exception:
@@ -135,7 +133,6 @@ def get_vehicle_filters(kwargs):
     except Exception:
         vehicle_name_list = []
 
-    # Build filters dynamically
     filters = {}
     if vehicle_company_list:
         filters["vehicle_company"] = ["in", vehicle_company_list]
@@ -148,8 +145,10 @@ def get_vehicle_filters(kwargs):
         fields=["name", "vehicle_company", "vehicle_name"]
     )
 
+    # Fetch all vehicle names for filter regardless of filter condition
+    all_vehicle_names = frappe.get_all("Vehicle Variant Name", pluck="vehicle_name", distinct=True)
+
     vehicle_companies = set()
-    vehicle_names = set()
     cc_values = set()
     model_values = set()
     year_values = set()
@@ -157,9 +156,8 @@ def get_vehicle_filters(kwargs):
 
     for v in vehicles:
         vehicle_companies.add(v.vehicle_company)
-        vehicle_names.add(v.vehicle_name)
 
-        # If vehicle_name is passed, we only want details of matching vehicles
+        # If vehicle_name is passed, only then filter CC/Model/Year based on it
         if not vehicle_name_list or v.vehicle_name in vehicle_name_list:
             details = frappe.get_all(
                 "Vehicle Detail",
@@ -178,7 +176,7 @@ def get_vehicle_filters(kwargs):
 
     filters_response = [
         {"section": "Vehicle Company", "values": sorted(vehicle_companies)},
-        {"section": "Vehicle", "values": sorted(vehicle_names)},
+        {"section": "Vehicle", "values": sorted(all_vehicle_names)},
         {"section": "CC", "values": sorted(cc_values)},
         {"section": "Model", "values": sorted(model_values)},
         {"section": "Year", "values": sorted(year_values)},
@@ -186,7 +184,8 @@ def get_vehicle_filters(kwargs):
     ]
 
     result = {
-        "filters":filters_response
+        "filters": filters_response
     }
 
     return success_response(result)
+
