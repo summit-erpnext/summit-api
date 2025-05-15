@@ -254,7 +254,19 @@ def get_details(kwargs):
                                          })
                     colours.append(varient["Colour"])
             translated_item_fields["thumbnail_images"] = thumbnail_images
-
+            if translated_item_fields:
+                translated_item_fields['previous_item'] = frappe.db.get_value(
+                    "Item",
+                    {"modified": (">", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
+                    "name",
+                    order_by="modified asc"
+                )
+                translated_item_fields['next_item'] = frappe.db.get_value(
+                    "Item",
+                    {"modified": ("<", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
+                    "name",
+                    order_by="modified desc"
+                )
         
         return {'msg':('Success'), 'data': translated_item_fields}
     
