@@ -1,6 +1,7 @@
 import frappe
 from summitapp.utils import error_response, success_response
 import json
+from frappe import _
 
 def get_filters(kwargs):
     try:
@@ -15,8 +16,6 @@ def get_filters(kwargs):
         frappe.logger('filter').exception(e)
         return error_response(e)
     
-from frappe.query_builder import DocType
-from frappe import _
 
 # @frappe.whitelist(allow_guest=True)
 # def get_vehicle_filters(kwargs):
@@ -114,9 +113,7 @@ def get_filters_without_category(kwargs):
     return success_response(result)
 
 
-import frappe
-import json
-from frappe import _
+
 
 @frappe.whitelist(allow_guest=True)
 def get_vehicle_filters(kwargs=None):
@@ -133,59 +130,66 @@ def get_vehicle_filters(kwargs=None):
     except Exception:
         vehicle_name_list = []
 
-    filters = {}
+    # All Vehicle Companies (unfiltered)
+    all_vehicle_companies = frappe.get_all(
+        "Vehicle Variant Name", pluck="vehicle_company", distinct=True
+    )
+
+    # Filtered vehicle list for display (with both fields)
+    vehicle_filter_for_list = {}
     if vehicle_company_list:
-        filters["vehicle_company"] = ["in", vehicle_company_list]
+        vehicle_filter_for_list["vehicle_company"] = ["in", vehicle_company_list]
+
+    filtered_vehicle_records = frappe.get_all(
+        "Vehicle Variant Name",
+        filters=vehicle_filter_for_list,
+        fields=["vehicle_company", "vehicle_name"],
+        distinct=True
+    )
+
+    # Filter dependent values
+    dependent_filters = {}
+    if vehicle_company_list:
+        dependent_filters["vehicle_company"] = ["in", vehicle_company_list]
     if vehicle_name_list:
-        filters["vehicle_name"] = ["in", vehicle_name_list]
+        dependent_filters["vehicle_name"] = ["in", vehicle_name_list]
 
     vehicles = frappe.get_all(
         "Vehicle Variant Name",
-        filters=filters,
+        filters=dependent_filters,
         fields=["name", "vehicle_company", "vehicle_name"]
     )
 
-    # Fetch all vehicle names for filter regardless of filter condition
-    all_vehicle_names = frappe.get_all("Vehicle Variant Name", pluck="vehicle_name", distinct=True)
-
-    vehicle_companies = set()
     cc_values = set()
     model_values = set()
     year_values = set()
     model_comment_values = set()
 
     for v in vehicles:
-        vehicle_companies.add(v.vehicle_company)
-
-        # If vehicle_name is passed, only then filter CC/Model/Year based on it
-        if not vehicle_name_list or v.vehicle_name in vehicle_name_list:
-            details = frappe.get_all(
-                "Vehicle Detail",
-                filters={"parent": v.name},
-                fields=["*"]
-            )
-            for d in details:
-                if d.cc:
-                    cc_values.add(d.cc)
-                if d.model:
-                    model_values.add(d.model)
-                if d.year:
-                    year_values.add(d.year)
-                if d.model_comments:
-                    model_comment_values.add(d.model_comments)
+        details = frappe.get_all(
+            "Vehicle Detail",
+            filters={"parent": v.name},
+            fields=["*"]
+        )
+        for d in details:
+            if d.cc:
+                cc_values.add(d.cc)
+            if d.model:
+                model_values.add(d.model)
+            if d.year:
+                year_values.add(d.year)
+            if d.model_comments:
+                model_comment_values.add(d.model_comments)
 
     filters_response = [
-        {"section": "Vehicle Company", "values": sorted(vehicle_companies)},
-        {"section": "Vehicle", "values": sorted(all_vehicle_names)},
+        {"section": "Vehicle Company", "values": sorted(set(all_vehicle_companies))},
+        {"section": "Vehicle", "values": sorted(filtered_vehicle_records, key=lambda x: x["vehicle_name"])},
         {"section": "CC", "values": sorted(cc_values)},
         {"section": "Model", "values": sorted(model_values)},
         {"section": "Year", "values": sorted(year_values)},
         {"section": "Model Comments", "values": sorted(model_comment_values)},
     ]
-
     result = {
         "filters": filters_response
-    }
-
+        }
     return success_response(result)
-
