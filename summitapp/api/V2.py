@@ -34,7 +34,7 @@ import summitapp.api.v2.user as user
 import summitapp.api.v2.customer_group as customer_group
 import summitapp.api.v2.item_wise_sales_history as item_wise_sales_history
 import summitapp.api.v2.whatsapp_msg as whatsapp_msg
-# import summitapp.api.v2.promotional_scheme as promotional_scheme
+import summitapp.api.v2.promotional_scheme as promotional_scheme
 
 class V2():
     def __init__(self):
@@ -78,7 +78,7 @@ class V2():
             "customer_group":["get_customer_group"],
             "item_wise_sales_history":["get_item_wise_sales_history"],
             "whatsapp_msg": ["send_otp_whatsapp"],
-            # "promotional_scheme": ["get_promotional_scheme", "get_promotional_scheme_items"]
+            "promotional_scheme": ["get_promotional_scheme", "get_promotional_scheme_items"]
         }
 
     def class_map(self, kwargs):
