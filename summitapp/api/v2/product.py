@@ -99,7 +99,7 @@ def get_list(kwargs):
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
 
-        # add_item_description(data)
+        add_item_description(data)
             
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
