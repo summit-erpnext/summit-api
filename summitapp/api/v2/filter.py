@@ -85,7 +85,7 @@ def get_filters(kwargs):
 
 def get_filters_without_category(kwargs):
     # Define the fields you want to filter on
-    filter_fields = ["brand", "colour", "item_classification"]
+    filter_fields = ["brand", "colour", "item_classification", "item_group"]
 
     filters = []
 
@@ -99,8 +99,11 @@ def get_filters_without_category(kwargs):
         # Remove None or empty strings
         values = list(filter(None, values))
 
-        # Format field names into sections
-        section_name = field.replace("_", " ").title()
+        # Set section name, replacing label only for item_group
+        if field == "item_group":
+            section_name = "Manufacturer"
+        else:
+            section_name = field.replace("_", " ").title()
 
         filters.append({
             "section": section_name,
@@ -111,8 +114,6 @@ def get_filters_without_category(kwargs):
         "filters": filters
     }
     return success_response(result)
-
-
 
 
 @frappe.whitelist(allow_guest=True)
