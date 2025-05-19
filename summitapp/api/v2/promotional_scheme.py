@@ -1,6 +1,6 @@
 import frappe
 from summitapp.api.v2.utils import success_response, error_response
-from summitapp.api.v2.product import get_details
+from summitapp.api.v2.product import get_details, get_count
 
 @frappe.whitelist(allow_guest=True)
 def get_promotional_scheme_items(kwargs):
@@ -22,11 +22,15 @@ def get_promotional_scheme_items(kwargs):
                 "item": item.item_code
             }
             item_detail = get_details(item_kwargs)
-            # Ensure it returns data properly and filter errors
+           
             if item_detail and item_detail.get("msg") == "Success":
                 detailed_items.append(item_detail.get("data"))
-
-        return success_response(detailed_items)
+            response_body = {
+                'msg': 'success',
+                'data': detailed_items,
+                'total_count': len(detailed_items)
+            }
+        return response_body
 
     except Exception as e:
         frappe.logger('product').exception(e)
