@@ -552,29 +552,31 @@ def get_tagged_products(kwargs):
         return error_response(str(e))
 
 
-def get_detailed_item_list(currency, items, customer_id=None, filters={}, product_limit=None):
+def get_detailed_item_list(currency, items, customer_id=None, filters=None, product_limit=None):
+    from itertools import islice
+
+    filters = filters or {}
+    customer_id = customer_id or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
     access_level = get_access_level(customer_id)
-    filter = {"name": ["in", items], "access_level": access_level}
-    if filters:
-        filter.update(filters)
     
-    if not customer_id:
-        customer_id = frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
+    item_filters = {
+        "name": ["in", items],
+        "access_level": access_level,
+        "disabled": 0
+    }
+    item_filters.update(filters)
 
     user_role = frappe.session.user
     apply_product_limit = get_tagged_product_limit(user_role, customer_id)
-    data = frappe.get_list('Item', filter, "*", ignore_permissions=True)
 
-    if product_limit is not None and apply_product_limit == 1:
-        limited_data = []
-        for item in data:
-            if len(limited_data) >= product_limit:
-                break
-            limited_data.append(item)
-        data = limited_data
+    data = frappe.get_list('Item', filters=item_filters, fields="*", ignore_permissions=True)
+
+    if product_limit and apply_product_limit == 1:
+        data = list(islice(data, product_limit))  
+
     result = get_processed_list(currency, data, customer_id, "product")
-    translated_item_fields = translate_result(result)
-    return translated_item_fields
+    return translate_result(result)
+
 
 
 def get_tagged_product_limit(user_role, customer_id):

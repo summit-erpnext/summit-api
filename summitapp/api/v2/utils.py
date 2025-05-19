@@ -92,7 +92,12 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
-        loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+        summit_settings = frappe.get_doc("Summit Settings")
+        enable_loyalty_points = summit_settings.enable_loyalty_points 
+        if enable_loyalty_points == 1:
+            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+        else:
+            loyalty_points_map = {}
         item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
         processed_items.append(item_fields)
     return processed_items
@@ -942,12 +947,7 @@ def get_customer_wise_loyalty_points(email_id, currency):
         from decimal import Decimal, ROUND_HALF_UP
         from summitapp.api.v2.utils import get_item_price, get_price_list
 
-        summit_settings = frappe.get_doc("Summit Settings")
-        enable_loyalty_points = summit_settings.enable_loyalty_points 
-
-        if enable_loyalty_points != 1:
-            return {}
-
+        
         customer = frappe.get_list(
             "Customer",
             filters={"name": email_id},
