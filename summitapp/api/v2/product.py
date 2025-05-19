@@ -335,9 +335,8 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         filters['access_level'] = 0
 
     # Inject category and brand filtering logic
-    if not filters:
-        if categories := get_allowed_categories(filters.get("category")):
-            filters["category"] = ["in", categories]
+    if categories := get_allowed_categories(filters.get("category")):
+        filters["category"] = ["in", categories]
 
     if brands := get_allowed_brands():
         if not (filters.get("brand") and filters.get("brand") in brands):
