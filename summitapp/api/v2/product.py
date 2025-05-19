@@ -25,8 +25,10 @@ def get_list(kwargs):
         page_no = cint(kwargs.get('page_no', 1)) - 1
         customer_id = get_customer_id(kwargs)
         user_role = frappe.session.user
-        product_limit = get_list_product_limit(user_role, customer_id)
-        limit = product_limit if product_limit != 0 else kwargs.get('limit', 20)
+        limit = kwargs.get('limit', 20)
+        if not limit:
+            product_limit = get_list_product_limit(user_role, customer_id)
+            limit = product_limit 
         if kwargs.get('limit') == "get_all_products":
             limit = None
 
@@ -44,7 +46,7 @@ def get_list(kwargs):
             filter_args = {"access_level": access_level}
             if category_slug:
                 child_categories = get_child_categories(category_slug)
-                filter_args["category"] = child_categories
+                filter_args["category"] = ['in', child_categories]
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
             if kwargs.get('item'):
@@ -69,7 +71,7 @@ def get_list(kwargs):
                     tag_records.append(item_value)
                     filter_args["name"] = ['in', tag_records]
 
-            filters = get_filter_listing(filter_args)
+            filters = get_filter_listing(user_role,filter_args)
             type = 'brand-product' if check_brand_exist(filters) else 'product'
             if field_filters:
                 field_filters = json.loads(field_filters)
@@ -93,11 +95,11 @@ def get_list(kwargs):
                 vehicle_filter_conditions = parse_vehicle_filter(vehicle_filters)
                 filters.update(vehicle_filter_conditions)
             debug = kwargs.get("debug_query", 0)
-            count, data = get_list_data(order_by, sort_by, filters, price_range, None, page_no, vehicle_filters,limit,or_filters=or_filters, debug=debug)
+            count, data = get_list_data(kwargs,order_by, sort_by, filters, price_range, None, page_no, vehicle_filters,limit,or_filters=or_filters, debug=debug)
         else:
             type = 'product'
             global_items = search(search_text, doctype='Item')
-            count, data = get_list_data(None, None, {}, price_range, global_items, page_no, limit)
+            count, data = get_list_data(kwargs,None, None, {}, price_range, global_items, page_no, None, limit)
 
         add_item_description(data)
             
@@ -206,7 +208,12 @@ def get_details(kwargs):
             return error_response(_("Invalid key 'item'"))
         customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
         filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
-        count, item = get_list_data(None, None, filters, None, None, None, None, limit=1)
+        item_list = frappe.get_list("Item", filters=filters, fields=["*"])
+        if not item_list:
+            return error_response(_("Item not found"))
+
+        item = item_list[0]  # Now item is a dict, not a list
+
         field_names = get_field_names('Details')
         translated_item_fields = {}
         if item:
@@ -324,7 +331,7 @@ def get_top_categories(kwargs):
 	return success_response(res)
 
 
-def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no, vehicle_filters, limit, or_filters={}, debug=0):
+def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, page_no, vehicle_filters, limit, or_filters={}, debug=0):
     offset = 0
     if page_no is not None:
         if limit is None:
@@ -335,13 +342,14 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
         filters['access_level'] = 0
 
     # Inject category and brand filtering logic
-    if not filters:
+    if not kwargs.get("category"):
         if categories := get_allowed_categories(filters.get("category")):
             filters["category"] = ["in", categories]
 
-    if brands := get_allowed_brands():
-        if not (filters.get("brand") and filters.get("brand") in brands):
-            filters["brand"] = ["in", brands]
+    if not kwargs.get("brand"):
+        if brands := get_allowed_brands():
+            if not (filters.get("brand") and filters.get("brand") in brands):
+                filters["brand"] = ["in", brands]
 
     # Dynamically fetch all fields from Vehicle Detail child table
     if vehicle_filters:
@@ -360,7 +368,6 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
             order_by = "modified desc"
     else:
         order_by = order_by
-
     data = frappe.get_list('Item',
                            filters=filters,
                            or_filters=or_filters,
@@ -376,7 +383,6 @@ def get_list_data(order_by, sort_by, filters, price_range, global_items, page_no
 
     if limit == 1:
         data = data[0] if data else []
-
     return count, data
 
 
@@ -758,30 +764,6 @@ def custom_response(data, headers=None):
     return response
 
 
-    
-
-def translate_result(result):
-    translated_result = []
-    for item in result:
-        translated_item = {}
-        for fieldname, value in item.items():
-            translated_item[fieldname] = _(value)
-        translated_result.append(translated_item)
-    return translated_result
-
-# def translate_results(result):
-#     translated_result = []
-#     for item in result:
-#         translated_item = {}
-#         for fieldname, value in item.items():
-#             translated_item[fieldname] = _(value)
-#             if fieldname == "variant_of":
-#                 data = get_variants_for_listing(item=value,show_variant_on_product_card=True)
-#                 translated_item["variant"] = data['data']['variants']
-#                 translated_item["attributes"] = data['data']['attributes']
-#             # translated_item["variants"] = []
-#         translated_result.append(translated_item)
-#     return translated_result
 
 @frappe.whitelist(allow_guest=True)
 def product_search(kwargs):

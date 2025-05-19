@@ -50,15 +50,16 @@ def check_brand_exist(filters):
 
 #     return filters
 
-def get_filter_listing(kwargs):
+def get_filter_listing(user_role, kwargs):
     filters = {
         "disabled": 0
     }
-    display_both_item_and_variant = int(frappe.db.get_value("Web Settings", "Web Settings", "display_both_item_and_variant"))
-    
-    if display_both_item_and_variant == 1:
-        filters['has_variants'] = 0
-        filters['show_on_website'] = 1
+    if user_role == "Guest":
+        web_settings = frappe.get_single("Web Settings")
+        display_both_item_and_variant= web_settings.display_both_item_and_variant 
+        if display_both_item_and_variant == 1:
+            filters['has_variants'] = 0
+            filters['show_on_website'] = 1
     elif kwargs.get("category"):
         filters['show_on_website'] = 1
         filters['has_variants'] = 0
@@ -103,12 +104,13 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     return processed_items
 
 def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
-    filters = {'item_code':item.get('variant_of')}
-    variant_list = get_variant_details(filters)
-    variant_info = get_variant_info(variant_list)
-    attributes= get_item_varient_attribute(item.name)
-    loyalty_points_map = loyalty_points_map or {}
     try:
+        filters = {'item_code':item.get('variant_of')}
+        variant_list = get_variant_details(filters)
+        variant_info = get_variant_info(variant_list)
+        attributes= get_item_varient_attribute(item.name)
+        loyalty_points_map = loyalty_points_map or {}
+    
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
             'status': lambda: {'status': 'template' if item.get('has_variants') else 'published'},
@@ -161,7 +163,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
     except Exception as e:
         frappe.logger('product').exception("Error in get_item_field_values")
         return error_response(f"An error occurred: {str(e)}")
-  
+
 
 def get_category_slug(item_detail):
 	if not item_detail:
@@ -487,7 +489,6 @@ def get_list_product_limit(user_role, customer_id):
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
     elif customer_id:
-        print("CUSTOMER ID",customer_id)
         grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
         if grp:
             # customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
@@ -503,7 +504,6 @@ def get_logged_user():
     header = {"Authorization": frappe.request.headers.get('Authorization')}
     response = requests.post(get_url() + "/api/method/frappe.auth.get_logged_user", headers=header)
     user = response.json().get("message")
-    print("USER",user)
     return user
 
 def get_customer_id(kwargs):
