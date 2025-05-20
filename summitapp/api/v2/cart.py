@@ -157,6 +157,8 @@ def put_products(kwargs):
 			fields["purity"] = purity
 		if party_name:=kwargs.get("party_name"):
 			fields["party_name"] = party_name
+		if custom_party_name:=kwargs.get("custom_party_name"):
+			fields["custom_party_name"] = custom_party_name	
 		added_to_cart = add_item_to_cart(item_list, access_token, kwargs.get("currency"),fields)
 		if added_to_cart == "Currency cannot be changed for the same cart.":
 			return error_response(added_to_cart)
