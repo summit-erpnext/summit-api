@@ -74,7 +74,7 @@
    "fieldname": "product_category_page_layout",
    "fieldtype": "Select",
    "label": "Product Category Page Layout",
-   "options": "\nDefault Layout\nCollapsible Layout\nTop Filters Layout\nFixed Filters Layout"
+   "options": "\nDefault Layout\nCollapsible Layout\nTop Filters Layout\nFixed Filters Layout\nDual Filters Layout"
   },
   {
    "depends_on": "eval: doc.page_type=='Product Category Page'",
@@ -88,7 +88,7 @@
    "fieldname": "product_card_components",
    "fieldtype": "Select",
    "label": "Product Card Components",
-   "options": "\nCard with no Variants\nCard with Variant Images\nCard with Color Variants"
+   "options": "\nCard with no Variants\nCard with Variant Images\nCard with Color Variants\nCards With Quantity Editor"
   },
   {
    "depends_on": "eval: doc.page_type == 'Product Category Page' || doc.page_type == 'Product Page' ;",
@@ -120,7 +120,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-17 15:08:47.753953",
+ "modified": "2025-05-20 12:16:58.760962",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Interface",
