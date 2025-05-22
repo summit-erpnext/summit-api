@@ -98,8 +98,8 @@ def get(kwargs):
             banner.clear()
             banner.update(filtered_banner)
 
-        banners_data =  success_response(banners)
-        return custom_response(banners_data)
+        return success_response(banners)
+        # return custom_response(banners_data)
         
     except Exception as e:
         frappe.logger("banner").exception(e)
