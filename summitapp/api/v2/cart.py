@@ -382,7 +382,7 @@ def create_cart(currency,accees_token, party_name = None):
 		quot_doc = frappe.get_doc('Quotation', quot[0].get('name'))
 	else:
 		quot_doc = frappe.new_doc('Quotation')
-		quot_doc.order_type = "Shopping Cart"
+		quot_doc.order_type = "Sales"
 		quot_doc.party_name = party_name
 		quot_doc.session_id = accees_token
 		quot_doc.currency = currency

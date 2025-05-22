@@ -21,7 +21,7 @@ def get_items(kwargs):
         item_list = get_item_list(catalog)
         results = []
         for item in item_list:
-            result = get_item_details({'item': item}).get('data')
+            result = get_item_details({'item': item}).get("data")
             results.extend(result)  # Use extend() instead of append() to add the dictionaries directly
             for item_dict in result:
                 item_dict['url'] = f"/catalog-product/{catalog_slug}/{item_dict.get('slug')}"
