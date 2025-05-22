@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": ".product_type.-.####",
+ "autoname": "format:{product_type}",
  "creation": "2023-05-18 15:15:00.049711",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -26,11 +26,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-23 17:14:45.565072",
+ "modified": "2025-05-21 13:52:13.778325",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Product Page Field",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -46,6 +46,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

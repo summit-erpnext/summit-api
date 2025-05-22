@@ -228,6 +228,7 @@ def get_access_level(customer_id=None):
 def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 	categories = []
 	user = frappe.session.user
+	print("user",user)
 	# Changes email to email_id
 	if enable_user_based_menu == 1:
 		if user != "Guest":
@@ -305,12 +306,14 @@ def get_parent_categories(category, is_name = False, excluded = [], name_only = 
 		(cat.lft, cat.rgt),
 		as_dict=True,
 	)
+	print("parent",parent_categories)
 	if name_only:
 		return [row.name for row in parent_categories] if parent_categories else []
 	return parent_categories
 
 def get_child_categories(category, is_name = False, with_parent = False):
 	filters = category if is_name else {"slug":category} 
+	print("filters",filters)
 	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
 	category_list = []
 	if not (cat and filters):
@@ -324,6 +327,7 @@ def get_child_categories(category, is_name = False, with_parent = False):
 		as_dict=True,
 	)
 	category_list = [child.name for child in child_categories]
+	print("11",category_list)
 	if category_list and with_parent:
 		for category in category_list:
 			category_list += get_parent_categories(category, True, category_list, True)
