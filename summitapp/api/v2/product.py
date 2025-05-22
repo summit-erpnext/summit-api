@@ -108,13 +108,8 @@ def get_list(kwargs):
         translated_item_fields = translate_result(result)
         response_data = json.dumps(translated_item_fields, default=json_handler)
 
-        # ETag Logic Integration
-        etag = handle_etag(response_data)
-        if etag is None:
-            return
-
         if internal_call:
-            return handle_response(response_data, etag=etag)
+            return response_data
 
         if sort_by == "low_to_high" or sort_by == "high_to_low":
             translated_item_fields = sort_item_by_price(translated_item_fields, sort_by)
@@ -126,7 +121,7 @@ def get_list(kwargs):
             'data': translated_item_fields,
             'total_count': total_count
         }
-        return handle_response(response_body, etag=etag)
+        return response_body
 
     except Exception as e:
         frappe.logger('product').exception(e)
@@ -378,7 +373,7 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
                            order_by=order_by,
                            ignore_permissions=ignore_permissions,
                            debug=debug)
-
+    
     count = get_count("Item", filters=filters, or_filters=or_filters,
                       ignore_permissions=ignore_permissions)
 

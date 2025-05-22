@@ -145,7 +145,7 @@ def place_order(kwargs):
 		return order
 	except Exception as e:
 		frappe.logger('order').exception(e)
-		return error_response(f"Cart Does Not Exists /{e}")
+
 
 def get_summary_details(quot_doc):
 	charges = get_charges_from_table(quot_doc)
@@ -364,7 +364,6 @@ def get_address_detail_json(type, customer, address_doc):
 		}
 
 def submit_quotation(quot_doc, billing_address_id, shipping_address_id, payment_date,company_gstin):
-    print("quote doc", quot_doc)
     quot_doc.customer_address = billing_address_id
     quot_doc.shipping_address_name = shipping_address_id
     quot_doc.payment_schedule = []
@@ -373,26 +372,24 @@ def submit_quotation(quot_doc, billing_address_id, shipping_address_id, payment_
     return create_sales_order(quot_doc, payment_date,company_gstin)
 
 def create_sales_order(quot_doc, payment_date,company_gstin):
-    print("quotation create so", quot_doc)
-    so_doc = make_sales_order(quot_doc.name)
-    if payment_date:
-        payment_date = datetime.strptime(payment_date, "%d/%m/%Y").strftime("%Y-%m-%d")
-        so_doc.delivery_date = datetime.strptime(payment_date, "%Y-%m-%d")
-    else:
-        transaction_date = datetime.strptime(so_doc.transaction_date, "%Y-%m-%d")
-        so_doc.delivery_date = (transaction_date + timedelta(days=7)).date()
-    so_doc.company_gstin = company_gstin
-    so_doc.custom_session_id = quot_doc.session_id
-    so_doc.payment_schedule = []
-    
-    so_doc.flags.ignore_permissions = True
-    so_doc.save()
-    
-    return confirm_order(so_doc)
+	so_doc = make_sales_order(quot_doc.name)
+	if payment_date:
+		payment_date = datetime.strptime(payment_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+		so_doc.delivery_date = datetime.strptime(payment_date, "%Y-%m-%d")
+	else:
+		transaction_date = datetime.strptime(so_doc.transaction_date, "%Y-%m-%d")
+		so_doc.delivery_date = (transaction_date + timedelta(days=7)).date()
+	so_doc.company_gstin = company_gstin
+	so_doc.custom_session_id = quot_doc.session_id
+	so_doc.payment_schedule = []
+
+	so_doc.flags.ignore_permissions = True
+	so_doc.save()
+
+	return confirm_order(so_doc)
 
 
 def confirm_order(so_doc):
-    print("sodoc", so_doc)
     with contextlib.suppress(Exception):
         so_doc.flags.ignore_permissions = True
         so_doc.payment_schedule = []

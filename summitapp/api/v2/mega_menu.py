@@ -14,7 +14,6 @@ def get(kwargs):
 			filters.update({"name": ["in", categories]})
 		
 		category_list = get_item_list('Category', filters)
-		
 		category_list = [{
 			'url': prepare_url("product-category", cat['slug'], parent=None),
 			'values': get_sub_cat(cat, allowed_categories=categories),
