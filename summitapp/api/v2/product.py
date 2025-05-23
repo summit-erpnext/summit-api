@@ -5,7 +5,7 @@ from frappe import _
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils.global_search import search
 from frappe.utils import flt, cint, today, add_days
-from summitapp.api.v2.translation import translate_result
+from summitapp.api.v2.translation import translate_keys
 from summitapp.api.v2.e_tag import handle_etag, handle_response
 from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
                                        get_item_images, get_stock_info, 
@@ -20,6 +20,7 @@ import datetime
 def get_list(kwargs):
     try:
         create_user_tracking(kwargs, "Product Listing")
+        user_language = kwargs.get("language")
         internal_call = kwargs.get("internal", 0)
         category_slug = kwargs.get('category')
         page_no = cint(kwargs.get('page_no', 1)) - 1
@@ -105,7 +106,7 @@ def get_list(kwargs):
             
         result = get_processed_list(currency, data, customer_id, type)
         total_count = count
-        translated_item_fields = translate_result(result)
+        translated_item_fields = translate_keys(result, user_language)
         response_data = json.dumps(translated_item_fields, default=json_handler)
 
         if internal_call:
