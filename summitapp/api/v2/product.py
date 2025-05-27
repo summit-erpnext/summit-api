@@ -138,6 +138,7 @@ def add_item_description(data):
             "Item Description Detail",
             {"parent": item["category"], "for_web": 1},
             ["field_name", "label_name"],
+            order_by="idx asc",
         )
 
         for row in item_description:
