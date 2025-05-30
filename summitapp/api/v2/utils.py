@@ -50,12 +50,11 @@ def check_brand_exist(filters):
 
 #     return filters
 
-def get_filter_listing(user_role, kwargs):
+def get_filter_listing(user_role, kwargs, web_settings):
     filters = {
         "disabled": 0
     }
     if user_role == "Guest":
-        web_settings = frappe.get_single("Web Settings")
         display_both_item_and_variant= web_settings.display_both_item_and_variant 
         if display_both_item_and_variant == 1:
             filters['has_variants'] = 0
@@ -92,8 +91,8 @@ def get_field_names(product_type):
 def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
+    summit_settings = frappe.get_cached_doc("Summit Settings")
     for item in items:
-        summit_settings = frappe.get_doc("Summit Settings")
         enable_loyalty_points = summit_settings.enable_loyalty_points 
         if enable_loyalty_points == 1:
             loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
@@ -105,12 +104,7 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
 
 def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
     try:
-        filters = {'item_code':item.get('variant_of')}
-        variant_list = get_variant_details(filters)
-        variant_info = get_variant_info(variant_list)
-        attributes= get_item_varient_attribute(item.name)
-        loyalty_points_map = loyalty_points_map or {}
-    
+       
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
             'status': lambda: {'status': 'template' if item.get('has_variants') else 'published'},
@@ -126,9 +120,9 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             },
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            'variant': lambda: {'variant': variant_info},
+            # 'variant': lambda: {'variant': variant_info},
             'variant_of': lambda: {'variant_of': item.get('variant_of')},
-            'attributes': lambda: {'attributes':attributes},
+            # 'attributes': lambda: {'attributes':attributes},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
@@ -483,21 +477,16 @@ def create_user_tracking(kwargs, page):
 # 			i[key] = val
 # 	return item	
 
-def get_list_product_limit(user_role, customer_id):
+def get_list_product_limit(user_role, customer_group, web_settings):
     if user_role == "Guest":
-        web_settings = frappe.get_single("Web Settings")
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
-    elif customer_id:
-        grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
-        if grp:
-            # customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
-            # apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
-            customer_group_details = frappe.get_value("Customer Group", grp, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
-            customer_group_limit = customer_group_details.get("customer_group_limit")
-            apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
-            if customer_group_limit is not None and apply_customer_group_limit == 1:
-                return customer_group_limit
+    elif customer_group:
+        customer_group_details = frappe.get_value("Customer Group", customer_group, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
+        customer_group_limit = customer_group_details.get("customer_group_limit")
+        apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
+        if customer_group_limit is not None and apply_customer_group_limit == 1:
+            return customer_group_limit
     return 0
 
 def get_logged_user():
@@ -510,12 +499,13 @@ def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
     email_id = kwargs.get('email')
     if email_id:
-        customer_id = frappe.db.get_value("Customer", {"email": email_id}, 'name')
+        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'])
     if not customer_id and frappe.request.headers and not email_id:
-        email = get_logged_user()
-        # email = frappe.session.user
-        customer_id = frappe.db.get_value("Customer", {"email": email}, 'name')    
-    return customer_id
+        # email = get_logged_user()
+        email = frappe.session.user
+        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email}, ['name', 'customer_group']) 
+
+    return customer_id, customer_group
 
 
 def get_guest_user(auth_header):
@@ -750,7 +740,7 @@ def get_variant_attributes(item):
 
 def get_variant_details(filters):
 	ignore_perm = frappe.session.user == "Guest"
-	return frappe.get_list('Item', {'variant_of': filters.get('item_code'),"show_on_website":1}, ignore_permissions=ignore_perm)
+	return frappe.get_list('Item', {"has_variants":0,'variant_of': filters.get('item_code'),"show_on_website":1,"disabled":0}, ignore_permissions=ignore_perm)
 	
 
 def get_variant_info(variant_list):
@@ -781,7 +771,6 @@ def get_item_varient_attribute(item_code):
         item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
         item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
     return item_varient_details
-
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
