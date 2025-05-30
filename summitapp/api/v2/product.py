@@ -19,19 +19,19 @@ import datetime
 @frappe.whitelist(allow_guest=True)
 def get_list(kwargs):
     try:
-        create_user_tracking(kwargs, "Product Listing")
-        internal_call = kwargs.get("internal", 0)
+        create_user_tracking(kwargs, "Product Listing") # new doc + commit
+        internal_call = kwargs.get("internal", 0) 
         category_slug = kwargs.get('category')
         page_no = cint(kwargs.get('page_no', 1)) - 1
-        customer_id = get_customer_id(kwargs)
+        web_settings = frappe.get_cached_doc("Web Settings")
+        customer_id, customer_group = get_customer_id(kwargs) # db call customer + get_logged user api call
+        kwargs["customer_id"] = customer_id
+        kwargs["customer_group"] = customer_group
         user_role = frappe.session.user
         limit = kwargs.get('limit', 20)
         if not limit:
-            product_limit = get_list_product_limit(user_role, customer_id)
+            product_limit = get_list_product_limit(user_role, customer_group, web_settings) # web settings doc + customer and customer group db call
             limit = product_limit 
-        if kwargs.get('limit') == "get_all_products":
-            limit = None
-
         filter_list = kwargs.get('filter')
         field_filters = kwargs.get("field_filters")
         or_filters = kwargs.get("or_filters")
@@ -39,39 +39,22 @@ def get_list(kwargs):
         search_text = kwargs.get('search_text')
         currency = kwargs.get('currency')
         sort_by = kwargs.get('sort_by')
-        access_level = get_access_level(customer_id)
+        access_level = get_access_level(customer_group) #db call csutomer + customer group
         vehicle_filters = kwargs.get('vehicle_filters')
         if not search_text:
             order_by = None
             filter_args = {"access_level": access_level}
             if category_slug:
-                child_categories = get_child_categories(category_slug)
+                child_categories = get_child_categories(category_slug) # 4 db calls on category
                 filter_args["category"] = ['in', child_categories]
             if kwargs.get('brand'):
                 filter_args["brand"] = frappe.get_value('Brand', {'slug': kwargs.get('brand')})
             if kwargs.get('item'):
-                item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
+                item_value = frappe.get_value('Item', {'name': kwargs.get('item')}) #recheck use case
                 if item_value:
                     filter_args["name"] = item_value
-            if sort_by not in ["low_to_high", "high_to_low", "oldest", "latest"]:
-                tag_data = frappe.db.sql(
-                    f"""
-                    SELECT
-                        tm.parent
-                    FROM
-                        `tabTags MultiSelect` as tm
-                    WHERE
-                        tm.tag = '{sort_by}'
-                    """,
-                    as_dict=True,
-                )
-                tag_records = [item_name.parent for item_name in tag_data]
-                if kwargs.get('item'):
-                    item_value = frappe.get_value('Item', {'name': kwargs.get('item')})
-                    tag_records.append(item_value)
-                    filter_args["name"] = ['in', tag_records]
 
-            filters = get_filter_listing(user_role,filter_args)
+            filters = get_filter_listing(user_role,filter_args, web_settings) # web settings
             type = 'brand-product' if check_brand_exist(filters) else 'product'
             if field_filters:
                 field_filters = json.loads(field_filters)
@@ -101,18 +84,18 @@ def get_list(kwargs):
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(kwargs,None, None, {}, price_range, global_items, page_no, None, limit)
 
-        add_item_description(data)
+        add_item_description(data) # db call and nested loop per row
             
-        result = get_processed_list(currency, data, customer_id, type)
+        result = get_processed_list(currency, data, customer_id, type) # summit settings doc per row dyanamic fields values and variants
         total_count = count
-        translated_item_fields = translate_result(result)
+        translated_item_fields = translate_result(result) #nested loop for transalation
         response_data = json.dumps(translated_item_fields, default=json_handler)
 
         if internal_call:
             return response_data
 
         if sort_by == "low_to_high" or sort_by == "high_to_low":
-            translated_item_fields = sort_item_by_price(translated_item_fields, sort_by)
+            translated_item_fields = sort_item_by_price(translated_item_fields, sort_by) 
         else:
             translated_item_fields = sort_item_by_price(translated_item_fields, price_range)
 
@@ -128,6 +111,26 @@ def get_list(kwargs):
         return error_response(str(e))
 
 
+# def add_item_description(data):
+#     print("DATA",data)
+#     categories = [item.get("category") for item in data]
+#     descriptions = frappe.db.get_all(
+#             "Item Description Detail",
+#             {"for_web": 1,"parent":["in",categories]},
+#             ["field_name", "label_name","parent"],
+#             order_by="idx asc",
+#         )
+#     item_description_map = {}
+#     for desc in descriptions:
+#         item_description_map.get(desc.parent,[]).append(desc) 
+#     for item in data:
+#         item["item_description"] = {}
+#         item_description =  item_description_map.get(item.get("category"),[])
+#         for row in item_description:
+#             del row["parent"]
+#             row["value"] = item.get(row["field_name"])
+#         item["item_description"] = item_description
+
 def add_item_description(data):
     for item in data:
         item["item_description"] = {}
@@ -135,12 +138,12 @@ def add_item_description(data):
             "Item Description Detail",
             {"parent": item["category"], "for_web": 1},
             ["field_name", "label_name"],
+            order_by="idx asc",
         )
 
         for row in item_description:
             row["value"] = item.get(row["field_name"])
         item["item_description"] = item_description
-
 
 def get_kwargs(kwargs):
     kwargs_list=[]
@@ -339,11 +342,11 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
     # Inject category and brand filtering logic
 
     if not kwargs.get("category"):
-        if categories := get_allowed_categories(filters.get("category")):
+        if categories := get_allowed_categories(filters.get("category")): # same as brand
             filters["category"] = ["in", categories]
 
     if not kwargs.get("brand"):
-        if brands := get_allowed_brands():
+        if brands := get_allowed_brands(kwargs.get("customer_id"),kwargs.get("customer_group")):
             if not (filters.get("brand") and filters.get("brand") in brands):
                 filters["brand"] = ["in", brands]
 
@@ -404,8 +407,9 @@ def get_items_via_search(global_items, filters):
 
 # Get Variants Helper Functions
 def get_variant_details(filters):
-	ignore_perm = frappe.session.user == "Guest"
-	return frappe.get_list('Item', {'variant_of': filters.get('item_code')}, ignore_permissions=ignore_perm)
+    ignore_perm = frappe.session.user == "Guest"
+    variants = frappe.get_list('Item', {'variant_of': filters.get('item_code')}, ignore_permissions=ignore_perm)
+    return variants
 	
 
 def get_variant_size(item_code):
@@ -445,9 +449,8 @@ def append_applied_filters(filters, filter_list):
     filters_list = list(filters.items())  # Convert filters to a list of key-value tuples
     sort_order = None  # Initialize sort_order variable
     for section in section_list:
-        doc_name = frappe.db.get_value('Filter Section Setting', {'filter_section_name': section['name']}, 'doctype_name')
+        doc_name, field_val = frappe.db.get_value('Filter Section Setting', {'filter_section_name': section['name']}, ["doctype_name","field"] )
         if doc_name == 'Item':
-            field_val = frappe.db.get_value('Filter Section Setting', {'filter_section_name': section['name']}, 'field')
             filters_list.append((field_val, ['in', section['value']]))
             if field_val == 'sequence':
                 # Get the sort order value from the section's value list

@@ -217,18 +217,16 @@ def autofill_slug(doc, method=None):
 		doc.slug = frappe.utils.slug(doc.name)
 
 
-def get_access_level(customer_id=None):
-	if customer_id:
-		grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
+def get_access_level(customer_group=None):
+	if customer_group:
 		access_level = frappe.db.get_value(
-			"Customer Group", grp, "access_level") or 0
+			"Customer Group", customer_group, "access_level") or 0
 		return access_level
 	return 0
 
 def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 	categories = []
 	user = frappe.session.user
-	print("user",user)
 	# Changes email to email_id
 	if enable_user_based_menu == 1:
 		if user != "Guest":
@@ -257,18 +255,16 @@ def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 	return filtered_category or (allowed_categories if categories else category_list)
 
 
-def get_allowed_brands():
+def get_allowed_brands(customer_id,customer_group):
 	brands = []
 	user = frappe.session.user
 	if user != "Guest":
-		cust = frappe.db.get_value("Customer", {"email": user}, [
-								   "name", "customer_group"], as_dict=1)
-		if cust:
+		if customer_id:
 			brands = frappe.db.get_values(
-				"Brand Multiselect", {"parent": cust["name"]}, "name1", pluck=1)
-			if not brands and cust.get("customer_group"):
+				"Brand Multiselect", {"parent": customer_id}, "name1", pluck=1)
+			if not brands and customer_group:
 				brands = frappe.db.get_values(
-					"Brand Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
+					"Brand Multiselect", {"parent": customer_group}, "name1", pluck=1)
 	if not brands:
 		brands = frappe.db.get_values(
 			"Brand Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)
@@ -306,14 +302,12 @@ def get_parent_categories(category, is_name = False, excluded = [], name_only = 
 		(cat.lft, cat.rgt),
 		as_dict=True,
 	)
-	print("parent",parent_categories)
 	if name_only:
 		return [row.name for row in parent_categories] if parent_categories else []
 	return parent_categories
 
 def get_child_categories(category, is_name = False, with_parent = False):
 	filters = category if is_name else {"slug":category} 
-	print("filters",filters)
 	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
 	category_list = []
 	if not (cat and filters):
@@ -327,7 +321,6 @@ def get_child_categories(category, is_name = False, with_parent = False):
 		as_dict=True,
 	)
 	category_list = [child.name for child in child_categories]
-	print("11",category_list)
 	if category_list and with_parent:
 		for category in category_list:
 			category_list += get_parent_categories(category, True, category_list, True)

@@ -157,19 +157,21 @@ def validate_category_lvl_4(self):
 
       
 def validate_attribute_value(self):
-    for attribute in self.attributes:
-        if (
-            self.has_variants == 0
-            and attribute.attribute
-            and attribute.attribute_value
-            and frappe.db.get_value(
-                "Item Attribute", attribute.attribute, "numeric_values"
-            )
-            == 1
-        ):
-            if not isinstance(attribute.attribute_value, (int, float)):
-                frappe.throw(
-                    _(
-                        f"Attribute Value must be a number for attribute {attribute.attribute}"
-                    )
-                )
+	for attribute in self.attributes:
+		if (
+			self.has_variants == 0
+			and attribute.attribute
+			and attribute.attribute_value
+			and frappe.db.get_value(
+				"Item Attribute", attribute.attribute, "numeric_values"
+			)
+			== 1
+		):
+			try:
+				float(attribute.attribute_value)
+			except (TypeError, ValueError):
+				frappe.throw(
+					_(
+						f"Attribute Value must be a number for attribute {attribute.attribute}"
+					)
+				)
