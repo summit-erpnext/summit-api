@@ -104,6 +104,11 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
 
 def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
     try:
+        filters = {'item_code':item.get('variant_of'),"variant_of":["is","!=",None]}
+        variant_list = get_variant_details(filters)
+        variant_info = get_variant_info(variant_list)
+        attributes= get_item_varient_attribute(item.name)
+        loyalty_points_map = loyalty_points_map or {}
        
         computed_fields = {
             'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
@@ -120,9 +125,9 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             },
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            # 'variant': lambda: {'variant': variant_info},
+            'variant': lambda: {'variant': variant_info},
             'variant_of': lambda: {'variant_of': item.get('variant_of')},
-            # 'attributes': lambda: {'attributes':attributes},
+            'attributes': lambda: {'attributes':attributes},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
