@@ -25,28 +25,11 @@ def validate(self, method=None):
 	set_parent_category(self)
 	set_sub_category(self)
 	set_custom_attributes(self)
-	specs_desc = ''
-	for row in (self.get("item_filters") or []):
-		specs_desc += f'{row.field_name} : {str(row.get("field_value"))}\n'
-	self.specification_description = specs_desc
-	add_synonym_desc(self)
 	add_model_no(self)
 	update_image(self)
 	validate_category_lvl_4(self)
 	validate_attribute_value(self)
 
-
-def add_synonym_desc(self):
-	synonym_desc = ''
-	desc = str(self.item_name) + str(self.description) + str(self.specification_description)
-	desc = desc.lower()
-	all_synonyms = frappe.get_list("Synonyms","*")
-	for synonym in all_synonyms:
-		if synonym.get('word').lower() in desc:
-			synonym_desc += f"{str(synonym.get('synonym'))} "
-		elif synonym.get('synonym').lower() in desc:
-			synonym_desc += f"{str(synonym.get('word'))} "
-	self.synonyms_description = synonym_desc
 
 def add_model_no(self):
 	if self.get("model_multiselect"):
