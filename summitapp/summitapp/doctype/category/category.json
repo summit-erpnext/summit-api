@@ -11,7 +11,6 @@
   "category_name",
   "label",
   "image",
-  "heading",
   "column_break_snyvc",
   "enable_category",
   "url",
@@ -76,7 +75,7 @@
   {
    "fieldname": "url",
    "fieldtype": "Data",
-   "label": "URL"
+   "label": "External URL"
   },
   {
    "fieldname": "sequence",
@@ -112,6 +111,7 @@
   {
    "fieldname": "old_parent",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Old Parent",
    "options": "Category"
   },
@@ -120,11 +120,6 @@
    "fieldtype": "Link",
    "label": "Parent Category",
    "options": "Category"
-  },
-  {
-   "fieldname": "heading",
-   "fieldtype": "Data",
-   "label": "Heading"
   },
   {
    "fieldname": "menu",
@@ -158,10 +153,11 @@
    "read_only_depends_on": "eval: doc.is_group===1;"
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-04-24 12:18:24.582811",
+ "modified": "2025-06-02 13:07:08.806763",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
@@ -182,6 +178,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
