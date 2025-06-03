@@ -126,6 +126,20 @@ fixtures = [
         [
             "module", "=", "SummitApp"
         ]
+    ]},
+    {"dt": "Role", "filters": [
+        [
+            "name",
+            "in",
+            ["System Admin","Merchandiser","Operations Head"],
+        ]
+    ]},
+    {"dt": "Custom DocPerm", "filters": [
+        [
+            "role",
+            "in",
+            ["System Admin","Merchandiser","Operations Head"],
+        ]
     ]}
 ]
 
