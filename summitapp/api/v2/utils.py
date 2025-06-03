@@ -111,7 +111,6 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
         loyalty_points_map = loyalty_points_map or {}
        
         computed_fields = {
-            'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
             'status': lambda: {'status': 'template' if item.get('has_variants') else 'published'},
             'in_stock_status': lambda: {'in_stock_status': get_stock_info(item.get('name'), 'stock_qty') != 0},
             'brand_img': lambda: {'brand_img': frappe.get_value('Brand', item.get('brand'), ['image']) or None},

@@ -1,7 +1,6 @@
 import frappe
 import json
 from frappe import _
-from webshop.webshop.redisearch_utils import insert_item_to_index
 from frappe.utils import now
 
 
@@ -16,10 +15,6 @@ def on_save(self, method):
 					"doctype": "Item Filters",
 					"field_name": field_name
 				})
-
-def on_update(self, method=None):
-	if self.published_in_website and frappe.flags.in_import:
-		make_website_item(self)
 
 def validate(self, method=None):
 	set_parent_category(self)
@@ -46,48 +41,6 @@ def toggle_variant_as_default(item_code, attribute, docname, value):
 			frappe.throw(_(f"Please toggle default of Item: {existing} first"))
 	frappe.db.set_value("Item Variant Attribute", docname, "is_default", value)
 
-@frappe.whitelist()
-def make_website_item(doc, save=True):
-	"Make Website Item from Item. Used via Form UI or patch."
-
-	if not doc:
-		return
-
-	if isinstance(doc, str):
-		doc = json.loads(doc)
-
-	if frappe.db.exists("Website Item", {"item_code": doc.get("item_code")}):
-		return
-	
-	website_item = frappe.new_doc("Website Item")
-	website_item.web_item_name = doc.get("item_name")
-
-	fields_to_map = [
-		"item_code",
-		"item_name",
-		"item_group",
-		"stock_uom",
-		"brand",
-		"has_variants",
-		"variant_of",
-		"description",
-	]
-	for field in fields_to_map:
-		website_item.update({field: doc.get(field)})
-
-	# Needed for publishing/mapping via Form UI only
-	if not frappe.flags.in_migrate and (doc.get("image") and not website_item.website_image):
-		website_item.website_image = doc.get("image")
-
-	if not save:
-		return website_item
-
-	website_item.save()
-
-	# Add to search cache
-	insert_item_to_index(website_item)
-
-	return [website_item.name, website_item.web_item_name]
 
 def set_custom_attributes(doc):
     colour = None
