@@ -119,7 +119,7 @@ fixtures = [
     ]},
     {"dt": "Property Setter", "filters": [
         [
-            "name", "=", "Sales Order-main-links_order"
+            "module", "=", "SummitApp"
         ]
     ]},
     {"dt": "Workspace", "filters": [
