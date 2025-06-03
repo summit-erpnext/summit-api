@@ -771,6 +771,7 @@ def product_search(kwargs):
         return error_response("Missing 'search_value' parameter")
     items = frappe.get_list(
         "Item",
+        filters = { "disabled": 0},
         or_filters=[
             {"name": search_value}, 
             {"bom_factory_code": search_value}  
