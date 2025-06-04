@@ -464,34 +464,28 @@ def create_user_tracking(kwargs, page):
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-# def get_variant_details(item_code):
-# 	if not item_code:
-# 		return []
-# 	item = frappe.db.get_all('Item', filters={'variant_of': item_code}, fields=['name as item_code'])
-# 	for i in item:
-# 		item_doc = frappe.get_doc('Item', i)
-# 		i['attr'] = {}
-# 		for attr in item_doc.attributes:
-# 			if attr.attribute == "Category":
-# 				attr_abbr = frappe.db.get_value('Item Attribute Value', {'parent': attr.attribute, 'attribute_value': attr.attribute_value}, "abbr")
-# 			else:
-# 				attr_abbr = attr.attribute_value
-# 			i['attr'][attr.attribute] = attr_abbr
-# 		for key, val in i['attr'].items():
-# 			i[key] = val
-# 	return item	
 
 def get_list_product_limit(user_role, customer_group, web_settings):
+    # If the user is a Guest and global product limit is applied
     if user_role == "Guest":
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
+
+    # If the user belongs to a customer group and group-specific limit is applied
     elif customer_group:
-        customer_group_details = frappe.get_value("Customer Group", customer_group, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
-        customer_group_limit = customer_group_details.get("customer_group_limit")
-        apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
-        if customer_group_limit is not None and apply_customer_group_limit == 1:
-            return customer_group_limit
+        customer_group_details = frappe.get_value(
+            "Customer Group",
+            customer_group,
+            ["set_product_limit", "apply_the_product_limit"],
+            as_dict=True
+        ) or {}
+
+        if customer_group_details.get("apply_the_product_limit") is not None and customer_group_details.get("apply_the_product_limit") == 1:
+            return customer_group_details.get("set_product_limit", 0)
+
+    # Default: no limit applied
     return 0
+
 
 def get_logged_user():
     header = {"Authorization": frappe.request.headers.get('Authorization')}
@@ -502,14 +496,28 @@ def get_logged_user():
 def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
     email_id = kwargs.get('email')
-    if email_id:
-        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'])
-    if not customer_id and frappe.request.headers and not email_id:
-        # email = get_logged_user()
-        email = frappe.session.user
-        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email}, ['name', 'customer_group']) 
 
-    return customer_id, customer_group
+    # First preference: Use email_id from kwargs if available
+    if email_id:
+        customer = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Second preference: Use customer_id from kwargs if available
+    if customer_id:
+        customer = frappe.db.get_value("Customer", customer_id, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Third preference: Use the logged-in user's email if not Guest
+    if frappe.session.user and frappe.session.user != "Guest":
+        customer = frappe.db.get_value("Customer", {"email": frappe.session.user}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Default: Nothing found
+    return None, None
+
 
 
 def get_guest_user(auth_header):

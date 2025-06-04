@@ -24,14 +24,16 @@ def get_list(kwargs):
         category_slug = kwargs.get('category')
         page_no = cint(kwargs.get('page_no', 1)) - 1
         web_settings = frappe.get_cached_doc("Web Settings")
+        user_role = frappe.session.user
         customer_id, customer_group = get_customer_id(kwargs) # db call customer + get_logged user api call
+        print("11",customer_id,customer_group)
         kwargs["customer_id"] = customer_id
         kwargs["customer_group"] = customer_group
-        user_role = frappe.session.user
         limit = kwargs.get('limit', 20)
-        if not limit:
+        if not kwargs.get('limit'):
             product_limit = get_list_product_limit(user_role, customer_group, web_settings) # web settings doc + customer and customer group db call
             limit = product_limit 
+            print("LIMIT",limit)
         filter_list = kwargs.get('filter')
         field_filters = kwargs.get("field_filters")
         or_filters = kwargs.get("or_filters")

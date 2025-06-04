@@ -11,25 +11,12 @@
   "menu",
   "label",
   "image",
-  "heading",
   "slug",
-  "menu_image_1",
-  "menu_image_3",
   "description",
   "column_break_y33pq",
   "enable_category",
   "url",
-  "sequence",
-  "mega_image_1_url",
-  "mega_image_2_url",
-  "mega_image_3_url",
-  "column_break_jtsih",
-  "lft",
-  "rgt",
-  "is_group",
-  "old_parent",
-  "parent_category",
-  "is_product_category"
+  "sequence"
  ],
  "fields": [
   {
@@ -43,24 +30,9 @@
    "label": "Image"
   },
   {
-   "fieldname": "heading",
-   "fieldtype": "Data",
-   "label": "Heading "
-  },
-  {
    "fieldname": "slug",
    "fieldtype": "Data",
    "label": "Slug"
-  },
-  {
-   "fieldname": "menu_image_1",
-   "fieldtype": "Attach",
-   "label": "Menu Image 1"
-  },
-  {
-   "fieldname": "menu_image_3",
-   "fieldtype": "Attach",
-   "label": "Menu Image 3"
   },
   {
    "fieldname": "description",
@@ -80,7 +52,7 @@
   {
    "fieldname": "url",
    "fieldtype": "Data",
-   "label": "URL"
+   "label": "External URL"
   },
   {
    "fieldname": "sequence",
@@ -88,74 +60,15 @@
    "label": "Sequence"
   },
   {
-   "fieldname": "mega_image_1_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 1 URL"
-  },
-  {
-   "fieldname": "mega_image_2_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 2 URL"
-  },
-  {
-   "fieldname": "mega_image_3_url",
-   "fieldtype": "Data",
-   "label": "Mega Image 3 URL"
-  },
-  {
-   "fieldname": "column_break_jtsih",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_group",
-   "fieldtype": "Check",
-   "label": "Is Group"
-  },
-  {
-   "fieldname": "old_parent",
-   "fieldtype": "Link",
-   "label": "Old Parent",
-   "options": "Website Navigation Menu"
-  },
-  {
-   "fieldname": "parent_category",
-   "fieldtype": "Link",
-   "label": "Parent Category",
-   "options": "Website Navigation Menu"
-  },
-  {
    "fieldname": "menu",
    "fieldtype": "Data",
    "label": "Menu",
    "unique": 1
-  },
-  {
-   "fieldname": "lft",
-   "fieldtype": "Int",
-   "hidden": 1,
-   "label": "Left",
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "rgt",
-   "fieldtype": "Int",
-   "hidden": 1,
-   "label": "Right",
-   "no_copy": 1,
-   "read_only": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "is_product_category",
-   "fieldtype": "Check",
-   "label": "Is Prodcut Category"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-14 13:37:45.304895",
+ "modified": "2025-06-04 13:41:09.078910",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Website Navigation Menu",
@@ -175,6 +88,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
