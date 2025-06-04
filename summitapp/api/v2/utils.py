@@ -91,23 +91,21 @@ def get_field_names(product_type):
 def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
-    summit_settings = frappe.get_cached_doc("Summit Settings")
     for item in items:
-        enable_loyalty_points = summit_settings.enable_loyalty_points 
-        if enable_loyalty_points == 1:
-            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-        else:
-            loyalty_points_map = {}
-        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
+        variant_info = []
+        item_description = add_item_description(item) 
+        loyalty_points_map = get_loyalty_points(customer_id,currency)
+        if item.get("variant_of") is not None:
+            filters = {'item_code':item.get('variant_of')}
+            variant_list = get_variant_details(filters)
+            variant_info = get_variant_info(variant_list)
+        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map, item_description, variant_info)
         processed_items.append(item_fields)
     return processed_items
 
-def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
+def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map, item_description,variant_info):
     try:
-        # filters = {'item_code':item.get('variant_of'),"variant_of":["is","!=",None]}
-        # variant_list = get_variant_details(filters)
-        # variant_info = get_variant_info(variant_list)
-        # attributes= get_item_varient_attribute(item.name)
+        attributes= get_item_varient_attribute(item.name)
         loyalty_points_map = loyalty_points_map or {}
        
         computed_fields = {
@@ -124,9 +122,9 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             },
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            # 'variant': lambda: {'variant': variant_info},
+            'variant': lambda: {'variant': variant_info},
             'variant_of': lambda: {'variant_of': item.get('variant_of')},
-            # 'attributes': lambda: {'attributes':attributes},
+            'attributes': lambda: {'attributes':attributes},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
@@ -145,7 +143,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'vehicle_details':lambda:{'vehicle_details':get_vehicle_detail(item.get("name"))},
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
             'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
-            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))}
+            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))},
+            'item_description': lambda:{'item_description':item_description}
         }
 
         item_fields = {}
@@ -987,3 +986,26 @@ def get_customer_wise_loyalty_points(email_id, currency):
         frappe.logger('Loyalty').exception(e)
         return error_response(str(e))
     
+
+def add_item_description(item):
+    item_description = frappe.db.get_all(
+        "Item Description Detail",
+        {"parent": item.get("category"), "for_web": 1},
+        ["field_name", "label_name"],
+        order_by="idx asc",
+    )
+
+    for row in item_description:
+        row["value"] = item.get(row["field_name"])
+
+    return item_description
+
+
+def get_loyalty_points(customer_id,currency):
+    summit_settings = frappe.get_cached_doc("Summit Settings")
+    enable_loyalty_points = summit_settings.enable_loyalty_points 
+    if enable_loyalty_points == 1:
+        loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+    else:
+        loyalty_points_map = {}
+    return loyalty_points_map

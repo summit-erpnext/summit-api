@@ -26,14 +26,12 @@ def get_list(kwargs):
         web_settings = frappe.get_cached_doc("Web Settings")
         user_role = frappe.session.user
         customer_id, customer_group = get_customer_id(kwargs) # db call customer + get_logged user api call
-        print("11",customer_id,customer_group)
         kwargs["customer_id"] = customer_id
         kwargs["customer_group"] = customer_group
         limit = kwargs.get('limit', 20)
         if not kwargs.get('limit'):
             product_limit = get_list_product_limit(user_role, customer_group, web_settings) # web settings doc + customer and customer group db call
             limit = product_limit 
-            print("LIMIT",limit)
         filter_list = kwargs.get('filter')
         field_filters = kwargs.get("field_filters")
         or_filters = kwargs.get("or_filters")
@@ -85,8 +83,6 @@ def get_list(kwargs):
             type = 'product'
             global_items = search(search_text, doctype='Item')
             count, data = get_list_data(kwargs,None, None, {}, price_range, global_items, page_no, None, limit)
-
-        add_item_description(data) # db call and nested loop per row
             
         result = get_processed_list(currency, data, customer_id, type) # summit settings doc per row dyanamic fields values and variants
         total_count = count
@@ -113,45 +109,7 @@ def get_list(kwargs):
         return error_response(str(e))
 
 
-# def add_item_description(data):
-#     print("DATA",data)
-#     categories = [item.get("category") for item in data]
-#     descriptions = frappe.db.get_all(
-#             "Item Description Detail",
-#             {"for_web": 1,"parent":["in",categories]},
-#             ["field_name", "label_name","parent"],
-#             order_by="idx asc",
-#         )
-#     item_description_map = {}
-#     for desc in descriptions:
-#         item_description_map.get(desc.parent,[]).append(desc) 
-#     for item in data:
-#         item["item_description"] = {}
-#         item_description =  item_description_map.get(item.get("category"),[])
-#         for row in item_description:
-#             del row["parent"]
-#             row["value"] = item.get(row["field_name"])
-#         item["item_description"] = item_description
 
-def add_item_description(data):
-    for item in data:
-        item["item_description"] = {}
-        item_description = frappe.db.get_all(
-            "Item Description Detail",
-            {"parent": item["category"], "for_web": 1},
-            ["field_name", "label_name"],
-            order_by="idx asc",
-        )
-
-        for row in item_description:
-            row["value"] = item.get(row["field_name"])
-        item["item_description"] = item_description
-
-def get_kwargs(kwargs):
-    kwargs_list=[]
-    category=kwargs_list.append(kwargs.get(category)) 
-    
-    
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
 def get_variants(kwargs):
@@ -180,15 +138,6 @@ def get_variants(kwargs):
                 "default_value": get_default_variant(item_code, attribute), 
                 "display_thumbnail": variant_thumbnail_reqd(item_code, attribute)
             })
-        stock_len = len([var.get('stock') for var in variant_info if var.get('stock')])
-        summit_setting =  frappe.get_doc("Summit Settings","show_variant_on_product_card")
-        # if summit_setting.show_variant_on_product_card == 1:
-        #     variant_attribute_on_product_card = summit_setting.variant_attribute_on_product_card
-        #     attr_dict = {'item_code': item_code,
-        #                     'variants': get_variant_info_limited(variant_list,variant_attribute_on_product_card),
-        #                     'attributes': attributes_list}
-        #     return success_response(data=attr_dict)
-        # else:
         attr_dict = {'item_code': item_code,
                         'variants': get_variant_info(variant_list),
                         'attributes': attributes_list}
@@ -218,7 +167,7 @@ def get_details(kwargs):
         translated_item_fields = {}
         if item:
             loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-            item_fields = get_item_field_values(currency, item, customer_id, None, field_names,loyalty_points_map)
+            item_fields = get_item_field_values(currency, item, customer_id, None, field_names,loyalty_points_map,None,None)
             for fieldname, value in item_fields.items():
                 translated_item_fields[fieldname] = _(value)
             translated_item_fields["variants"] = []
