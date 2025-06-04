@@ -19,8 +19,7 @@ doc_events = {
 	},
 	"Item":{
 		"before_save": "summitapp.overrides.item.on_save",
-		"validate": "summitapp.overrides.item.validate",
-        "on_update": "summitapp.overrides.item.on_update"
+		"validate": "summitapp.overrides.item.validate"
 	},
 	"Customer":{
 		"on_update": "summitapp.overrides.customer.on_update",
