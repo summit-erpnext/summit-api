@@ -137,7 +137,28 @@ fixtures = [
         [
             "role",
             "in",
-            ["System Admin","Merchandiser","Operations Head"],
+            ["System Admin","Merchandiser","Operations Head","Guest"],
+        ]
+    ]},
+    {"dt": "Workflow", "filters": [
+        [
+            "name",
+            "in",
+            ["Sales Order Status"],
+        ]
+    ]},
+    {"dt": "Workflow State", "filters": [
+        [
+            "name",
+            "in",
+            ["Cancelled"],
+        ]
+    ]},
+    {"dt": "Workflow Action Master", "filters": [
+        [
+            "name",
+            "in",
+            ["Cancel"],
         ]
     ]}
 ]

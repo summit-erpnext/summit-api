@@ -91,23 +91,21 @@ def get_field_names(product_type):
 def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
-    summit_settings = frappe.get_cached_doc("Summit Settings")
     for item in items:
-        enable_loyalty_points = summit_settings.enable_loyalty_points 
-        if enable_loyalty_points == 1:
-            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-        else:
-            loyalty_points_map = {}
-        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
+        variant_info = []
+        item_description = add_item_description(item) 
+        loyalty_points_map = get_loyalty_points(customer_id,currency)
+        if item.get("variant_of") is not None:
+            filters = {'item_code':item.get('variant_of')}
+            variant_list = get_variant_details(filters)
+            variant_info = get_variant_info(variant_list)
+        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map, item_description, variant_info)
         processed_items.append(item_fields)
     return processed_items
 
-def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
+def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map, item_description,variant_info):
     try:
-        # filters = {'item_code':item.get('variant_of'),"variant_of":["is","!=",None]}
-        # variant_list = get_variant_details(filters)
-        # variant_info = get_variant_info(variant_list)
-        # attributes= get_item_varient_attribute(item.name)
+        attributes= get_item_varient_attribute(item.name)
         loyalty_points_map = loyalty_points_map or {}
        
         computed_fields = {
@@ -124,9 +122,9 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             },
             'url': lambda: {'url': get_product_url(item, url_type)},
             'category_slug': lambda: {'category_slug': get_category_slug(item)},
-            # 'variant': lambda: {'variant': variant_info},
+            'variant': lambda: {'variant': variant_info},
             'variant_of': lambda: {'variant_of': item.get('variant_of')},
-            # 'attributes': lambda: {'attributes':attributes},
+            'attributes': lambda: {'attributes':attributes},
             'equivalent': lambda: {'equivalent': bool(item.get('equivalent') == '1')},
             'alternate': lambda: {'alternate': bool(item.get('alternate') == '1')},
             'mandatory': lambda: {'mandatory': bool(item.get('mandatory') == '1')},
@@ -145,7 +143,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'vehicle_details':lambda:{'vehicle_details':get_vehicle_detail(item.get("name"))},
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
             'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
-            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))}
+            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))},
+            'item_description': lambda:{'item_description':item_description}
         }
 
         item_fields = {}
@@ -464,34 +463,28 @@ def create_user_tracking(kwargs, page):
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-# def get_variant_details(item_code):
-# 	if not item_code:
-# 		return []
-# 	item = frappe.db.get_all('Item', filters={'variant_of': item_code}, fields=['name as item_code'])
-# 	for i in item:
-# 		item_doc = frappe.get_doc('Item', i)
-# 		i['attr'] = {}
-# 		for attr in item_doc.attributes:
-# 			if attr.attribute == "Category":
-# 				attr_abbr = frappe.db.get_value('Item Attribute Value', {'parent': attr.attribute, 'attribute_value': attr.attribute_value}, "abbr")
-# 			else:
-# 				attr_abbr = attr.attribute_value
-# 			i['attr'][attr.attribute] = attr_abbr
-# 		for key, val in i['attr'].items():
-# 			i[key] = val
-# 	return item	
 
 def get_list_product_limit(user_role, customer_group, web_settings):
+    # If the user is a Guest and global product limit is applied
     if user_role == "Guest":
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
+
+    # If the user belongs to a customer group and group-specific limit is applied
     elif customer_group:
-        customer_group_details = frappe.get_value("Customer Group", customer_group, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
-        customer_group_limit = customer_group_details.get("customer_group_limit")
-        apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
-        if customer_group_limit is not None and apply_customer_group_limit == 1:
-            return customer_group_limit
+        customer_group_details = frappe.get_value(
+            "Customer Group",
+            customer_group,
+            ["set_product_limit", "apply_the_product_limit"],
+            as_dict=True
+        ) or {}
+
+        if customer_group_details.get("apply_the_product_limit") is not None and customer_group_details.get("apply_the_product_limit") == 1:
+            return customer_group_details.get("set_product_limit", 0)
+
+    # Default: no limit applied
     return 0
+
 
 def get_logged_user():
     header = {"Authorization": frappe.request.headers.get('Authorization')}
@@ -502,14 +495,28 @@ def get_logged_user():
 def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
     email_id = kwargs.get('email')
-    if email_id:
-        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'])
-    if not customer_id and frappe.request.headers and not email_id:
-        # email = get_logged_user()
-        email = frappe.session.user
-        customer_id, customer_group = frappe.db.get_value("Customer", {"email": email}, ['name', 'customer_group']) 
 
-    return customer_id, customer_group
+    # First preference: Use email_id from kwargs if available
+    if email_id:
+        customer = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Second preference: Use customer_id from kwargs if available
+    if customer_id:
+        customer = frappe.db.get_value("Customer", customer_id, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Third preference: Use the logged-in user's email if not Guest
+    if frappe.session.user and frappe.session.user != "Guest":
+        customer = frappe.db.get_value("Customer", {"email": frappe.session.user}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Default: Nothing found
+    return None, None
+
 
 
 def get_guest_user(auth_header):
@@ -979,3 +986,26 @@ def get_customer_wise_loyalty_points(email_id, currency):
         frappe.logger('Loyalty').exception(e)
         return error_response(str(e))
     
+
+def add_item_description(item):
+    item_description = frappe.db.get_all(
+        "Item Description Detail",
+        {"parent": item.get("category"), "for_web": 1},
+        ["field_name", "label_name"],
+        order_by="idx asc",
+    )
+
+    for row in item_description:
+        row["value"] = item.get(row["field_name"])
+
+    return item_description
+
+
+def get_loyalty_points(customer_id,currency):
+    summit_settings = frappe.get_cached_doc("Summit Settings")
+    enable_loyalty_points = summit_settings.enable_loyalty_points 
+    if enable_loyalty_points == 1:
+        loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+    else:
+        loyalty_points_map = {}
+    return loyalty_points_map

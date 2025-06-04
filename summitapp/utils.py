@@ -238,8 +238,7 @@ def get_allowed_categories(category_list = [],enable_user_based_menu = None):
 				if not categories and cust.get("customer_group"):
 					categories = frappe.db.get_values(
 						"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
-	
-		if not categories:
+		else:
 			categories = frappe.db.get_values(
 				"Category Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)		
 	
