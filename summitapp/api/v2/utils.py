@@ -144,7 +144,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
             'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
             'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))},
-            'item_description': lambda:{'item_description':item_description}
+            'item_description': lambda:{'item_description':item_description},
+            'category_specification': lambda: {'category_specification':category_specification(item.get('category'))},
         }
 
         item_fields = {}
@@ -1009,3 +1010,50 @@ def get_loyalty_points(customer_id,currency):
     else:
         loyalty_points_map = {}
     return loyalty_points_map
+
+
+
+import json
+
+def category_specification(parent_category):
+    item_specification_detail = frappe.get_all(
+        "Item Specification Detail",
+        filters={"parent": parent_category},
+        fields=["specification"]
+    )
+    if not item_specification_detail:
+        return []
+
+    label_names = [item["specification"] for item in item_specification_detail]
+
+    item_specification = frappe.get_list(
+        "Item Specification",
+        filters={"name": ["in", label_names]},
+        fields=["name", "data_type", "value"]
+    )
+
+    category_specification = []
+
+    for item in item_specification:
+        raw_value = item.get("value")
+
+        # Default to raw value
+        processed_value = raw_value
+
+        # Try to parse JSON if it's a string that looks like a list
+        if isinstance(raw_value, str) and raw_value.strip().startswith("[") and raw_value.strip().endswith("]"):
+            try:
+                parsed = json.loads(raw_value)
+                if isinstance(parsed, list):
+                    processed_value = parsed
+            except json.JSONDecodeError:
+                pass  # Leave as-is if it's not valid JSON
+
+        category_specification.append({
+            "specification": item["name"],
+            "data_type": item["data_type"],
+            "value": processed_value
+        })
+
+    return category_specification
+
