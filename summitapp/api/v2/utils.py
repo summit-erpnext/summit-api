@@ -1038,7 +1038,7 @@ def category_specification(parent_category):
         raw_value = item.get("value")
         processed_value = raw_value
 
-        # Try to parse JSON if it's a list-like string
+        # Parse value if it's a JSON string
         if isinstance(raw_value, str) and raw_value.strip().startswith("[") and raw_value.strip().endswith("]"):
             try:
                 parsed = json.loads(raw_value)
@@ -1053,11 +1053,21 @@ def category_specification(parent_category):
             "value": processed_value
         }
 
-        # Include value_2 only for formula type
+        # Parse value_2 similarly if it's for a formula
         if item["data_type"] == "formula":
-            spec_data["value_2"] = item.get("value_2")
+            raw_value_2 = item.get("value_2")
+            processed_value_2 = raw_value_2
+
+            if isinstance(raw_value_2, str) and raw_value_2.strip().startswith("[") and raw_value_2.strip().endswith("]"):
+                try:
+                    parsed2 = json.loads(raw_value_2)
+                    if isinstance(parsed2, list):
+                        processed_value_2 = parsed2
+                except json.JSONDecodeError:
+                    pass
+
+            spec_data["value_2"] = processed_value_2
 
         category_specification.append(spec_data)
 
     return category_specification
-
