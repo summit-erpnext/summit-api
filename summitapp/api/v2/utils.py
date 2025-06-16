@@ -1048,7 +1048,7 @@ def category_specification(parent_category):
                 pass
 
         spec_data = {
-            "specification": item["name"],
+            "specification": (item["name"]).lower(),
             "data_type": item["data_type"],
             "value": processed_value
         }
