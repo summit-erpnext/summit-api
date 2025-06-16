@@ -1029,31 +1029,35 @@ def category_specification(parent_category):
     item_specification = frappe.get_list(
         "Item Specification",
         filters={"name": ["in", label_names]},
-        fields=["name", "data_type", "value"]
+        fields=["name", "data_type", "value", "value_2"]
     )
 
     category_specification = []
 
     for item in item_specification:
         raw_value = item.get("value")
-
-        # Default to raw value
         processed_value = raw_value
 
-        # Try to parse JSON if it's a string that looks like a list
+        # Try to parse JSON if it's a list-like string
         if isinstance(raw_value, str) and raw_value.strip().startswith("[") and raw_value.strip().endswith("]"):
             try:
                 parsed = json.loads(raw_value)
                 if isinstance(parsed, list):
                     processed_value = parsed
             except json.JSONDecodeError:
-                pass  # Leave as-is if it's not valid JSON
+                pass
 
-        category_specification.append({
+        spec_data = {
             "specification": item["name"],
             "data_type": item["data_type"],
             "value": processed_value
-        })
+        }
+
+        # Include value_2 only for formula type
+        if item["data_type"] == "formula":
+            spec_data["value_2"] = item.get("value_2")
+
+        category_specification.append(spec_data)
 
     return category_specification
 
