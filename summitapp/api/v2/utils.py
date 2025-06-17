@@ -887,11 +887,11 @@ def get_item_characteristics(category):
     item_characteristics = {}
     for row in characteristics:
         label_name = row["label_name"]
-        if label_name == "Size":
+        if label_name in ["Size","size"]:
             try:
-                item_characteristics["Size"] = json.loads(row["value"])
+                item_characteristics["size"] = json.loads(row["value"])
             except (TypeError, json.JSONDecodeError):
-                item_characteristics["Size"] = row["value"]
+                item_characteristics["size"] = row["value"]
         else:
             item_characteristics[label_name] = row["value"]
     return item_characteristics
