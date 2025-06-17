@@ -8,6 +8,7 @@ import requests
 from frappe.utils.data import get_url
 import json
 from summitapp.api.v2.item_wise_sales_history import get_monthly_target_qty, get_yearly_target_qty
+from pypika.enums import Order
 
 def validate_pincode(kwargs):
 	pincode = True if frappe.db.exists(
@@ -1016,24 +1017,28 @@ def get_loyalty_points(customer_id,currency):
 import json
 
 def category_specification(parent_category):
-    item_specification_detail = frappe.get_all(
-        "Item Specification Detail",
-        filters={"parent": parent_category},
-        fields=["specification"]
-    )
-    if not item_specification_detail:
+    if not parent_category:
         return []
+    
+    ISD = frappe.qb.DocType("Item Specification Detail")
+    IS = frappe.qb.DocType("Item Specification")
 
-    label_names = [item["specification"] for item in item_specification_detail]
-
-    item_specification = frappe.get_list(
-        "Item Specification",
-        filters={"name": ["in", label_names]},
-        fields=["name", "data_type", "value", "value_2"]
+    item_specification_query = (
+        frappe.qb.from_(ISD)
+        .join(IS)
+        .on(ISD.specification == IS.name)
+        .select(
+            IS.name,IS.data_type,IS.value,IS.value_2
+        )
+        .where(ISD.parent == parent_category)
+        .orderby(ISD.idx, order=Order.asc)
     )
 
+    item_specification = item_specification_query.run(as_dict=True)
     category_specification = []
 
+    if not item_specification:
+        return []
     for item in item_specification:
         raw_value = item.get("value")
         processed_value = raw_value
