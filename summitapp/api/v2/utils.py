@@ -8,6 +8,7 @@ import requests
 from frappe.utils.data import get_url
 import json
 from summitapp.api.v2.item_wise_sales_history import get_monthly_target_qty, get_yearly_target_qty
+from pypika.enums import Order
 
 def validate_pincode(kwargs):
 	pincode = True if frappe.db.exists(
@@ -147,7 +148,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'vehicle_details':lambda:{'vehicle_details':get_vehicle_detail(item.get("name"))},
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
             'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
-            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))}
+            'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))},
+            'category_specification': lambda: {'category_specification':category_specification(item.get('category'))},
         }
 
         item_fields = {}
@@ -986,3 +988,64 @@ def get_customer_wise_loyalty_points(email_id, currency):
         frappe.logger('Loyalty').exception(e)
         return error_response(str(e))
     
+
+def category_specification(parent_category):
+    if not parent_category:
+        return []
+    
+    ISD = frappe.qb.DocType("Item Specification Detail")
+    IS = frappe.qb.DocType("Item Specification")
+
+    item_specification_query = (
+        frappe.qb.from_(ISD)
+        .join(IS)
+        .on(ISD.specification == IS.name)
+        .select(
+            IS.name,IS.data_type,IS.value,IS.value_2
+        )
+        .where(ISD.parent == parent_category)
+        .orderby(ISD.idx, order=Order.asc)
+    )
+
+    item_specification = item_specification_query.run(as_dict=True)
+    category_specification = []
+
+    if not item_specification:
+        return []
+    for item in item_specification:
+        raw_value = item.get("value")
+        processed_value = raw_value
+
+        # Parse value if it's a JSON string
+        if isinstance(raw_value, str) and raw_value.strip().startswith("[") and raw_value.strip().endswith("]"):
+            try:
+                parsed = json.loads(raw_value)
+                if isinstance(parsed, list):
+                    processed_value = parsed
+            except json.JSONDecodeError:
+                pass
+
+        spec_data = {
+            "specification": (item["name"]).lower(),
+            "data_type": item["data_type"],
+            "value": processed_value
+        }
+
+        # Parse value_2 similarly if it's for a formula
+        if item["data_type"] == "formula":
+            raw_value_2 = item.get("value_2")
+            processed_value_2 = raw_value_2
+
+            if isinstance(raw_value_2, str) and raw_value_2.strip().startswith("[") and raw_value_2.strip().endswith("]"):
+                try:
+                    parsed2 = json.loads(raw_value_2)
+                    if isinstance(parsed2, list):
+                        processed_value_2 = parsed2
+                except json.JSONDecodeError:
+                    pass
+
+            spec_data["value_2"] = processed_value_2
+
+        category_specification.append(spec_data)
+
+    return category_specification    

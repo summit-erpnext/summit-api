@@ -28,7 +28,8 @@
   "is_product_category",
   "section_break_tlfu",
   "custom_item_characteristics",
-  "custom_item_description"
+  "custom_item_description",
+  "item_specification"
  ],
  "fields": [
   {
@@ -156,12 +157,18 @@
    "label": "Item Description",
    "options": "Item Description Detail",
    "read_only_depends_on": "eval: doc.is_group===1;"
+  },
+  {
+   "fieldname": "item_specification",
+   "fieldtype": "Table",
+   "label": "Item Specification",
+   "options": "Item Specification Detail"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-04-24 12:18:24.582811",
+ "modified": "2025-06-20 13:01:39.106623",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
@@ -182,6 +189,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
