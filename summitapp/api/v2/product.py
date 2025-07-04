@@ -323,6 +323,7 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
     else:
         order_by = order_by
         frappe.log_error("Else",order_by)
+    frappe.log_error("Order By",order_by)
     data = frappe.get_list('Item',
                            filters=filters,
                            or_filters=or_filters,
@@ -333,6 +334,7 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
                            ignore_permissions=ignore_permissions,
                            debug=debug)
     
+    frappe.log_error("Item List",data)
     count = get_count("Item", filters=filters, or_filters=or_filters,
                       ignore_permissions=ignore_permissions)
 
