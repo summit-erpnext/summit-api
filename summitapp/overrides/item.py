@@ -58,7 +58,7 @@ def set_custom_attributes(doc):
                 elif variant.attribute == "Stone":
                     stone = value_row.abbr
 
-    doc.colour = colour
+    doc.custom_colour = colour
     doc.custom_size = size
     doc.custom_stone = stone
 
