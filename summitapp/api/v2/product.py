@@ -318,7 +318,6 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
             order_by = "modified desc"
         elif sort_by == "creation":
             order_by = "creation desc"
-
     else:
         order_by = order_by
     data = frappe.get_list('Item',

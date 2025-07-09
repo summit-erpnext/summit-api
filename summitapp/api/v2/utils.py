@@ -989,6 +989,7 @@ def get_customer_wise_loyalty_points(email_id, currency):
         return error_response(str(e))
     
 
+
 def add_item_description(item):
     item_description = frappe.db.get_all(
         "Item Description Detail",
@@ -1076,3 +1077,4 @@ def category_specification(parent_category):
         category_specification.append(spec_data)
 
     return category_specification
+
