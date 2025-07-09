@@ -5,7 +5,7 @@ from summitapp.utils import error_response, success_response, get_allowed_catego
 @frappe.whitelist(allow_guest=True)
 def get(kwargs):
 	try:
-		summit_settings = frappe.get_doc("Summit Settings")
+		summit_settings = frappe.get_cached_doc("Summit Settings")
 		enable_user_based_menu = summit_settings.enable_user_based_menu 
 		filters = {'parent_category': ['is', 'not set']}
 		
@@ -116,38 +116,18 @@ def prepare_url(prefix, category, parent=None):
 
 def get_menu(kwargs):
 	try:
-		filters = {'parent_category':['is','not set']}
-		categories = get_allowed_categories()
-		if categories:
-			filters.update({"name": ["in", categories]})
+		filters = {'enable_category':"Yes"}
 		category_list = get_item_menu('Website Navigation Menu', filters)
-		category_list = [{
-			'url': create_url(cat['slug'],cat['is_product_category'],parent= None), 
-			'values': get_sub_menu(cat,allowed_categories=categories), 
-					**cat} for cat in category_list]
 		return category_list
 	except Exception as e:
 		frappe.logger('registration').exception(e)
 		return error_response(e)
-	
-def get_sub_menu(cat, allowed_categories = None):
-	filters = {'parent_category': cat['name']}
-	if allowed_categories:
-		filters.update({"name": ["in", allowed_categories]})
-	sub_cat_list = get_item_menu('Website Navigation Menu', filters=filters)
-	sub_cat_list = [{
-						'url': create_url(sub_cat['slug'],sub_cat['is_product_category'],cat['slug']), 
-						'values': get_sub_menu(sub_cat, allowed_categories=allowed_categories), 
-						**sub_cat
-					} for sub_cat in sub_cat_list]
-	
-	return sub_cat_list
 
 def get_item_menu(doctype, filters):
 	ignore_permissions = frappe.session.user == "Guest"
 	return frappe.get_list(doctype,
 						   filters=filters,
-						   fields=['name', 'label', 'sequence as seq', 'slug', 'image','is_product_category'],
+						   fields=['name', 'label', 'sequence as seq', 'slug', 'image','url'],
 						   order_by='sequence', ignore_permissions=ignore_permissions)
 
 def create_url(prefix, pc, parent=None):
@@ -163,12 +143,13 @@ def create_url(prefix, pc, parent=None):
 @frappe.whitelist(allow_guest=True)
 def get_mega_menu(kwargs):
 	try:
-		web_settings = frappe.get_doc("Web Settings")
-		if web_settings.use_pc_as_menu == 1:
-			menu = get(kwargs)
-		else:
+		summit_settings = frappe.get_doc("Summit Settings")
+		if summit_settings.enable_website_navigation_menu == 1:
 			menu = get_menu(kwargs)
-		return success_response(data=menu)	
+			return success_response(data=menu)
+		else:
+			menu = get(kwargs)
+			return success_response(data=menu)	
 	except Exception as e:
 		frappe.logger('mega menu').exception(e)
 		return error_response(e)	

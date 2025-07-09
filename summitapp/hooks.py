@@ -19,8 +19,7 @@ doc_events = {
 	},
 	"Item":{
 		"before_save": "summitapp.overrides.item.on_save",
-		"validate": "summitapp.overrides.item.validate",
-        "on_update": "summitapp.overrides.item.on_update"
+		"validate": "summitapp.overrides.item.validate"
 	},
 	"Customer":{
 		"on_update": "summitapp.overrides.customer.on_update",
@@ -119,12 +118,47 @@ fixtures = [
     ]},
     {"dt": "Property Setter", "filters": [
         [
-            "name", "=", "Sales Order-main-links_order"
+            "module", "=", "SummitApp"
         ]
     ]},
     {"dt": "Workspace", "filters": [
         [
             "module", "=", "SummitApp"
+        ]
+    ]},
+    {"dt": "Role", "filters": [
+        [
+            "name",
+            "in",
+            ["System Admin","Merchandiser","Operations Head"],
+        ]
+    ]},
+    {"dt": "Custom DocPerm", "filters": [
+        [
+            "role",
+            "in",
+            ["System Admin","Merchandiser","Operations Head","Guest"],
+        ]
+    ]},
+    {"dt": "Workflow", "filters": [
+        [
+            "name",
+            "in",
+            ["Sales Order Status"],
+        ]
+    ]},
+    {"dt": "Workflow State", "filters": [
+        [
+            "name",
+            "in",
+            ["Cancelled"],
+        ]
+    ]},
+    {"dt": "Workflow Action Master", "filters": [
+        [
+            "name",
+            "in",
+            ["Cancel"],
         ]
     ]}
 ]

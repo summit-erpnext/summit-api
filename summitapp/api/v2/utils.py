@@ -51,12 +51,11 @@ def check_brand_exist(filters):
 
 #     return filters
 
-def get_filter_listing(user_role, kwargs):
+def get_filter_listing(user_role, kwargs, web_settings):
     filters = {
         "disabled": 0
     }
     if user_role == "Guest":
-        web_settings = frappe.get_single("Web Settings")
         display_both_item_and_variant= web_settings.display_both_item_and_variant 
         if display_both_item_and_variant == 1:
             filters['has_variants'] = 0
@@ -94,26 +93,23 @@ def get_processed_list(currency,items, customer_id, url_type = "product"):
     field_names = get_field_names('List')
     processed_items = []
     for item in items:
-        summit_settings = frappe.get_doc("Summit Settings")
-        enable_loyalty_points = summit_settings.enable_loyalty_points 
-        if enable_loyalty_points == 1:
-            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-        else:
-            loyalty_points_map = {}
-        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map)
+        variant_info = []
+        item_description = add_item_description(item) 
+        loyalty_points_map = get_loyalty_points(customer_id,currency)
+        if item.get("variant_of") is not None:
+            filters = {'item_code':item.get('variant_of')}
+            variant_list = get_variant_details(filters)
+            variant_info = get_variant_info(variant_list)
+        item_fields = get_item_field_values(currency,item, customer_id, url_type,field_names,loyalty_points_map, item_description, variant_info)
         processed_items.append(item_fields)
     return processed_items
 
-def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map):
+def get_item_field_values(currency, item, customer_id, url_type, field_names,loyalty_points_map, item_description,variant_info):
     try:
-        filters = {'item_code':item.get('variant_of')}
-        variant_list = get_variant_details(filters)
-        variant_info = get_variant_info(variant_list)
         attributes= get_item_varient_attribute(item.name)
         loyalty_points_map = loyalty_points_map or {}
-    
+       
         computed_fields = {
-            'image_url': lambda: {'image_url': get_default_slide_images(item, True, "size")},
             'status': lambda: {'status': 'template' if item.get('has_variants') else 'published'},
             'in_stock_status': lambda: {'in_stock_status': get_stock_info(item.get('name'), 'stock_qty') != 0},
             'brand_img': lambda: {'brand_img': frappe.get_value('Brand', item.get('brand'), ['image']) or None},
@@ -149,6 +145,7 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'item_characteristics': lambda: {'item_characteristics': get_item_characteristics(item.get('category'))},
             'monthly_target_qty': lambda: {'monthly_target_qty':get_monthly_target_qty(customer_id,item.get("item_code"))},
             'target_qty': lambda: {'taget_qty':get_yearly_target_qty(customer_id,item.get("item_code"))},
+            'item_description': lambda:{'item_description':item_description},
             'category_specification': lambda: {'category_specification':category_specification(item.get('category'))},
         }
 
@@ -468,39 +465,28 @@ def create_user_tracking(kwargs, page):
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-# def get_variant_details(item_code):
-# 	if not item_code:
-# 		return []
-# 	item = frappe.db.get_all('Item', filters={'variant_of': item_code}, fields=['name as item_code'])
-# 	for i in item:
-# 		item_doc = frappe.get_doc('Item', i)
-# 		i['attr'] = {}
-# 		for attr in item_doc.attributes:
-# 			if attr.attribute == "Category":
-# 				attr_abbr = frappe.db.get_value('Item Attribute Value', {'parent': attr.attribute, 'attribute_value': attr.attribute_value}, "abbr")
-# 			else:
-# 				attr_abbr = attr.attribute_value
-# 			i['attr'][attr.attribute] = attr_abbr
-# 		for key, val in i['attr'].items():
-# 			i[key] = val
-# 	return item	
 
-def get_list_product_limit(user_role, customer_id):
+def get_list_product_limit(user_role, customer_group, web_settings):
+    # If the user is a Guest and global product limit is applied
     if user_role == "Guest":
-        web_settings = frappe.get_single("Web Settings")
         if web_settings.product_limit is not None and web_settings.apply_product_limit == 1:
             return web_settings.product_limit
-    elif customer_id:
-        grp = frappe.db.get_value("Customer", customer_id, 'customer_group')
-        if grp:
-            # customer_group_limit = frappe.db.get_value("Customer Group", grp, "set_product_limit")
-            # apply_customer_group_limit = frappe.db.get_value("Customer Group", grp, "apply_the_product_limit")
-            customer_group_details = frappe.get_value("Customer Group", grp, ["set_product_limit", "apply_the_product_limit"], as_dict = 1) or {}
-            customer_group_limit = customer_group_details.get("customer_group_limit")
-            apply_customer_group_limit = customer_group_details.get("apply_customer_group_limit")
-            if customer_group_limit is not None and apply_customer_group_limit == 1:
-                return customer_group_limit
+
+    # If the user belongs to a customer group and group-specific limit is applied
+    elif customer_group:
+        customer_group_details = frappe.get_value(
+            "Customer Group",
+            customer_group,
+            ["set_product_limit", "apply_the_product_limit"],
+            as_dict=True
+        ) or {}
+
+        if customer_group_details.get("apply_the_product_limit") is not None and customer_group_details.get("apply_the_product_limit") == 1:
+            return customer_group_details.get("set_product_limit", 0)
+
+    # Default: no limit applied
     return 0
+
 
 def get_logged_user():
     header = {"Authorization": frappe.request.headers.get('Authorization')}
@@ -511,13 +497,28 @@ def get_logged_user():
 def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
     email_id = kwargs.get('email')
+
+    # First preference: Use email_id from kwargs if available
     if email_id:
-        customer_id = frappe.db.get_value("Customer", {"email": email_id}, 'name')
-    if not customer_id and frappe.request.headers and not email_id:
-        email = get_logged_user()
-        # email = frappe.session.user
-        customer_id = frappe.db.get_value("Customer", {"email": email}, 'name')    
-    return customer_id
+        customer = frappe.db.get_value("Customer", {"email": email_id}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Second preference: Use customer_id from kwargs if available
+    if customer_id:
+        customer = frappe.db.get_value("Customer", customer_id, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Third preference: Use the logged-in user's email if not Guest
+    if frappe.session.user and frappe.session.user != "Guest":
+        customer = frappe.db.get_value("Customer", {"email": frappe.session.user}, ['name', 'customer_group'], as_dict=True)
+        if customer:
+            return customer.name, customer.customer_group
+
+    # Default: Nothing found
+    return None, None
+
 
 
 def get_guest_user(auth_header):
@@ -752,7 +753,7 @@ def get_variant_attributes(item):
 
 def get_variant_details(filters):
 	ignore_perm = frappe.session.user == "Guest"
-	return frappe.get_list('Item', {'variant_of': filters.get('item_code'),"show_on_website":1}, ignore_permissions=ignore_perm)
+	return frappe.get_list('Item', {"has_variants":0,'variant_of': filters.get('item_code'),"show_on_website":1,"disabled":0}, ignore_permissions=ignore_perm)
 	
 
 def get_variant_info(variant_list):
@@ -783,7 +784,6 @@ def get_item_varient_attribute(item_code):
         item["abbr"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'abbr')
         item["attr_colour"] = frappe.db.get_value('Item Attribute Value', {"attribute_value": item["attribute_value"]}, 'attribute_colour')
     return item_varient_details
-
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
@@ -888,11 +888,11 @@ def get_item_characteristics(category):
     item_characteristics = {}
     for row in characteristics:
         label_name = row["label_name"]
-        if label_name == "Size":
+        if label_name in ["Size","size"]:
             try:
-                item_characteristics["Size"] = json.loads(row["value"])
+                item_characteristics["size"] = json.loads(row["value"])
             except (TypeError, json.JSONDecodeError):
-                item_characteristics["Size"] = row["value"]
+                item_characteristics["size"] = row["value"]
         else:
             item_characteristics[label_name] = row["value"]
     return item_characteristics
@@ -989,6 +989,34 @@ def get_customer_wise_loyalty_points(email_id, currency):
         return error_response(str(e))
     
 
+
+def add_item_description(item):
+    item_description = frappe.db.get_all(
+        "Item Description Detail",
+        {"parent": item.get("category"), "for_web": 1},
+        ["field_name", "label_name"],
+        order_by="idx asc",
+    )
+
+    for row in item_description:
+        row["value"] = item.get(row["field_name"])
+
+    return item_description
+
+
+def get_loyalty_points(customer_id,currency):
+    summit_settings = frappe.get_cached_doc("Summit Settings")
+    enable_loyalty_points = summit_settings.enable_loyalty_points 
+    if enable_loyalty_points == 1:
+        loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+    else:
+        loyalty_points_map = {}
+    return loyalty_points_map
+
+
+
+import json
+
 def category_specification(parent_category):
     if not parent_category:
         return []
@@ -1048,4 +1076,5 @@ def category_specification(parent_category):
 
         category_specification.append(spec_data)
 
-    return category_specification    
+    return category_specification
+

@@ -7,9 +7,7 @@ from summitapp.api.v2.customer_address import get_details as get_address_details
 from erpnext.selling.doctype.quotation.quotation import make_sales_order
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from webshop.webshop.shopping_cart.cart import _get_cart_quotation
-from summitapp.api.v2.cart import calculate_quot_taxes
-from summitapp.api.v2.utils import get_field_names,get_currency,get_currency_symbol,get_logged_user,get_guest_user,get_customer_id
+from summitapp.api.v2.utils import get_field_names,get_currency,get_currency_symbol
 import json
 
 @frappe.whitelist()
@@ -95,21 +93,18 @@ def razorpay_place_order(order_id=None, party_name=None, common_comment=None, pa
                 location=None, remarks=None,company_gstin=None):
 	try:
 		frappe.set_user("Administrator")
-		if not order_id:	
-			quotation = _get_cart_quotation()
-		else:
+		if order_id:	
 			quotation = frappe.get_doc('Quotation', order_id)
-			
-		quotation.common_comment = common_comment
-		quotation.transporter = transporter
-		quotation.door_delivery = door_delivery
-		quotation.godown_delivery = godown_delivery
-		quotation.location = location
-		quotation.remarks = remarks
-		quotation.transport_charges = transport_charges
-		quotation.party_name = party_name
-		order = submit_quotation(quotation, billing_address_id, shipping_address_id,payment_date,company_gstin)
-		return order
+			quotation.common_comment = common_comment
+			quotation.transporter = transporter
+			quotation.door_delivery = door_delivery
+			quotation.godown_delivery = godown_delivery
+			quotation.location = location
+			quotation.remarks = remarks
+			quotation.transport_charges = transport_charges
+			quotation.party_name = party_name
+			order = submit_quotation(quotation, billing_address_id, shipping_address_id,payment_date,company_gstin)
+			return order
 	except Exception as e:
 		frappe.logger('order').exception(e)
 		return error_response(f"Cart Does Not Exists /{e}")
@@ -129,20 +124,18 @@ def place_order(kwargs):
 		godown_delivery = kwargs.get('godown_delivery')
 		location = kwargs.get('location')
 		remarks = kwargs.get('remarks')
-		if not order_id:	
-			quotation = _get_cart_quotation()
-		else:
+		if order_id:	
 			quotation = frappe.get_doc('Quotation', order_id)
-		quotation.common_comment = common_comment
-		quotation.transporter = transporter
-		quotation.door_delivery = door_delivery
-		quotation.godown_delivery = godown_delivery
-		quotation.location = location
-		quotation.remarks = remarks
-		quotation.transport_charges = transport_charges
-		quotation.party_name = party_name
-		order = submit_quotation(quotation, billing_address_id, shipping_address_id,payment_date,None)
-		return order
+			quotation.common_comment = common_comment
+			quotation.transporter = transporter
+			quotation.door_delivery = door_delivery
+			quotation.godown_delivery = godown_delivery
+			quotation.location = location
+			quotation.remarks = remarks
+			quotation.transport_charges = transport_charges
+			quotation.party_name = party_name
+			order = submit_quotation(quotation, billing_address_id, shipping_address_id,payment_date,None)
+			return order
 	except Exception as e:
 		frappe.logger('order').exception(e)
 

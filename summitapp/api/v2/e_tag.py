@@ -3,8 +3,8 @@ import hashlib
 import json
 from werkzeug.wrappers import Response
 from datetime import datetime
-
-
+from summitapp.utils import success_response, error_response
+from summitapp.api.v2.utils import create_user_tracking, get_processed_list, get_customer_id, check_brand_exist
 
 @frappe.whitelist(allow_guest=True)
 def get_product_list(kwargs=None):
@@ -58,3 +58,23 @@ def handle_etag(response_data):
         return None
 
     return etag
+
+
+
+@frappe.whitelist(allow_guest=True)
+def product_list(kwargs):
+    try:
+        create_user_tracking(kwargs, "Product Listing")
+        filters = {"show_on_website": 1}
+        customer_id = get_customer_id(kwargs)
+        currency = kwargs.get("currency")
+        type = 'brand-product' if check_brand_exist(filters) else 'product'
+        products = frappe.get_list(
+            "Item",
+            fields=["*"],
+        )
+        return success_response(products)
+
+    except Exception as e:
+        frappe.log_error(f"Error in product_list: {str(e)}")
+       
