@@ -214,13 +214,13 @@ def get_details(kwargs):
                 translated_item_fields['previous_item'] = frappe.db.get_value(
                     "Item",
                     {"modified": (">", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
-                    "name",
+                    "slug",
                     order_by="modified asc"
                 )
                 translated_item_fields['next_item'] = frappe.db.get_value(
                     "Item",
                     {"modified": ("<", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
-                    "name",
+                    "slug",
                     order_by="modified desc"
                 )
         
