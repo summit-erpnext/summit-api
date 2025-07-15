@@ -165,3 +165,9 @@ fixtures = [
 
 # after_migrate = "summitapp.transalations.create_translations"
 after_migrate = "summitapp.migrate.after_migrate"
+
+before_migrate = "summitapp.utils.create_fields_in_user_doctype"
+
+auth_hooks = [
+	"summitapp.utils.validate_user_activity"
+]

@@ -1,7 +1,8 @@
 import frappe
 from frappe.utils import random_string
 from frappe.utils.password import get_decrypted_password
-
+from frappe import AuthenticationError
+from frappe.utils import now_datetime
 # sport_network.utils.check_user_exists
 
 
@@ -324,3 +325,105 @@ def get_child_categories(category, is_name = False, with_parent = False):
 		for category in category_list:
 			category_list += get_parent_categories(category, True, category_list, True)
 	return category_list
+
+
+def validate_user_activity():
+	if frappe.db.exists("DocType", "Manufacturing API Credentials"):
+		from urllib.parse import urlparse,parse_qs
+		parsed_url = urlparse(frappe.request.url)
+		query_params = parse_qs(parsed_url.query)
+		if not query_params:
+			return
+		
+		parsed_url = urlparse(frappe.request.url)
+
+		user = frappe.session.user
+		redis = frappe.cache() 
+
+		catalog_front_end_url = frappe.db.get_single_value("Manufacturing API Credentials", "catalog_front_end_url")
+		origin = frappe.get_request_header("Origin") or frappe.get_request_header("Referer")
+
+		# if not user:
+		# 	return
+
+		# if ((origin == frappe.utils.get_url() or (origin != catalog_front_end_url))):
+		# 	return
+
+		query_params = parse_qs(parsed_url.query)
+
+		method , entity = "get_access_token" , "access_token"
+
+		if (method == query_params.get('method', [None])[0]  and entity == query_params.get('entity',[None])[0]):
+			query_params = parse_qs(parsed_url.query)
+			username = query_params.get('usr', [None])[0]
+	
+			redis_key = f"user:last_activity:{username}"
+			frappe.db.set_value("User", username, "last_activity", now_datetime(),update_modified=False)
+			redis.set_value(redis_key, now_datetime().isoformat(), expires_in_sec=3600)
+			frappe.db.commit()
+			return
+
+		if origin and catalog_front_end_url and ( origin != frappe.utils.get_url()):
+			now = now_datetime()
+
+			redis_key = f"user:last_activity:{user}"
+
+			cached_last_activity = redis.get_value(redis_key)
+
+			if cached_last_activity:
+				cached_last_activity = frappe.utils.get_datetime(cached_last_activity)
+				time_diff_minutes = (now - cached_last_activity).total_seconds() / 60
+
+				if time_diff_minutes > 60:
+					raise AuthenticationError("Session expired due to inactivity.")
+
+				elif time_diff_minutes > 5:
+					frappe.db.set_value("User", user, "last_activity", now,update_modified=False)
+					redis.set_value(redis_key, now.isoformat(), expires_in_sec=3600)
+			else:
+
+				last_activity_result = frappe.db.get_value("User", user, "last_activity")
+				if last_activity_result:
+					time_diff_minutes = (now - last_activity_result).total_seconds() / 60
+					if time_diff_minutes > 60:
+						raise AuthenticationError("Session expired due to inactivity.")
+
+				frappe.db.set_value("User", user, "last_activity", now,update_modified=False)
+				redis.set_value(redis_key, now.isoformat(), expires_in_sec=3600)
+
+			frappe.db.commit()
+
+def create_fields_in_user_doctype():
+	if frappe.db.exists("DocType", "Manufacturing API Credentials"):
+		user_doctyppe_custom_fields = [
+			{
+				"doctype": "Custom Field",
+				"dt": "User",
+				"label":"Last Activity Time",
+				"read_only":1,
+				"fieldtype":"Datetime",
+				"fieldname":"last_activity",
+				"insert_after":"redirect_to_backend",
+				"hidden":1
+			}
+		]
+		for user_custom_field in user_doctyppe_custom_fields:
+			if not frappe.db.exists(
+				"Custom Field",
+				{
+					"dt":user_custom_field.get("doctype"),
+					"fieldname":user_custom_field.get("doctype")
+				}
+			):
+				user_dt_new_field = frappe.get_doc({
+					"doctype": user_custom_field.get("doctype"),
+					"dt": user_custom_field.get("dt"),
+					"label": user_custom_field.get("label"),
+					"fieldtype": user_custom_field.get("fieldtype"),
+					"insert_after": user_custom_field.get("insert_after"),
+					"fieldname": user_custom_field.get("fieldname")
+				})
+				try:
+					user_dt_new_field.save()
+				except Exception as e:
+					frappe.log_error("User Custom Field Issue",e)
