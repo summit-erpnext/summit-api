@@ -14,7 +14,7 @@ frappe.ui.form.on('Sales Order', {
     },
     make_seller_order_confirmation(frm) {
         frappe.call({
-            method:"summitapp.summitapp.doc_events.sales_order.make_seller_order_confirmation",
+            method:"summitapp.summitapp.customizations.sales_order.utils.make_seller_order_confirmation",
             args:{'doc':frm.doc.name
             },
         callback: function(r) {

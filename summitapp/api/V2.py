@@ -1,9 +1,10 @@
-import frappe
-from summitapp.utils import success_response, error_response
+from summitapp.utils import error_response
+import summitapp.api.v2.access_token as access_token
 import summitapp.api.v2.banner as banner
+import summitapp.api.v2.blog_post as blog_post
 import summitapp.api.v2.brand as brand
-import summitapp.api.v2.otp as otp
 import summitapp.api.v2.cart as cart
+import summitapp.api.v2.otp as otp
 import summitapp.api.v2.catalog as catalog
 import summitapp.api.v2.coupon_code as coupon_code
 import summitapp.api.v2.customer_address as customer_address
@@ -22,13 +23,11 @@ import summitapp.api.v2.wishlist as wishlist
 import summitapp.api.v2.seo as seo
 import summitapp.api.v2.utils as utils
 import summitapp.api.v2.push_notification as push_notification
-import summitapp.api.v2.access_token as access_token
 import summitapp.api.v2.translation as translation
 import summitapp.api.v2.customer_review as customer_review
 import summitapp.api.v2.warranty_claim as warranty_claim
 import summitapp.api.v2.website_interface as website_interface
 import summitapp.api.v2.e_tag as e_tag
-import summitapp.api.v2.blog_post as blog_post
 import summitapp.api.v2.variant as variant
 import summitapp.api.v2.user as user
 import summitapp.api.v2.customer_group as customer_group
@@ -39,10 +38,12 @@ import summitapp.api.v2.promotional_scheme as promotional_scheme
 class V2():
     def __init__(self):
         self.methods = {
+            'access_token':['get_access_token'],
             'banner': ['get'],
+            'blog_post':['get_blog_post_list','get_blog_post_detail'],
+            'brand': ['get', 'get_product_list', 'get_product_details'],
+            'cart': ['get_list', 'put_products', 'delete_products', 'clear_cart','request_for_quotation','get_quotation_history'],
             'otp': ['send_otp', 'verify_otp','send_twilio_sms','send_email_otp','send_pinnacle_sms','login_with_mobile_otp',"send_otp_message","send_twilio_otp"],
-            "brand": ['get', 'get_product_list', 'get_product_details'],
-            "cart": ['get_list', 'put_products', 'delete_products', 'clear_cart','request_for_quotation','get_quotation_history'],
             "catalog": ['get', 'get_items','put','put_items','delete','delete_items'],
             "coupon_code": ['put', 'delete'],
             "customer_address": ['get', 'put','create_guest_to_customer'],
@@ -66,14 +67,12 @@ class V2():
             "utils": ["validate_pincode", "get_cities", 'get_states', 'get_countries','get_contact_us','get_about_us','get_home_page',
                       'get_marquee','get_testomonial','get_company_motto','get_product_specifications','get_pdf_attachments'],
             "push_notification":["get_notification"],
-            "access_token":['auth',"get_access_token","login"],
             "translation":["get_languages",'get_translation_text'],
             "customer_review":["get_customer_review","create_customer_review","create_customer_review_and_send_mail"],
             "warranty_claim":["get_warranty_claim","create_warranty_claim",
                               "get_sr_no_list","get_sr_no_details","get_cust_wc_details"],
             "website_interface":["publish_website_interface"],
             "e_tag":["get_product_list", "product_list"],
-            "blog_post":["get_blog_post_list","get_blog_post_detail"],
             "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "customer_group":["get_customer_group"],
             "item_wise_sales_history":["get_item_wise_sales_history"],

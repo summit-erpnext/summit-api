@@ -13,51 +13,51 @@ doctype_js = {"Sales Order" : "public/js/sales_order.js",
               "Item" : "public/js/item.js"}
 
 doc_events = {
-	"Quotation": {
-		"on_payment_authorized": "summitapp.overrides.quotation.on_payment_authorized",
-		"validate": "summitapp.overrides.quotation.validate"
-	},
-	"Item":{
-		"before_save": "summitapp.overrides.item.on_save",
-		"validate": "summitapp.overrides.item.validate"
-	},
-	"Customer":{
-		"on_update": "summitapp.overrides.customer.on_update",
-		"before_save": "summitapp.overrides.customer.on_save",
-		"validate": "summitapp.overrides.customer.validate"
+    "Address": {
+		"before_validate": "summitapp.customizations.address.address.before_validate"
 	},
     "Contact": {
-		"validate": "summitapp.overrides.contact.validate"
+		"validate": "summitapp.customizations.contact.contact.validate"
 	},
-	"Customer Group":{
-		"validate": "summitapp.overrides.customer_group.validate"
+	"Currency Exchange":{
+		"validate":"summitapp.customizations.currency_exchange.currency_exchange.validate"
+	},
+    "Customer Group":{
+		"validate": "summitapp.customizations.customer_group.customer_group.validate"
+	},
+	"Item":{
+		"before_save": "summitapp.summitapp.customizations.item.item.on_save",
+		"validate": "summitapp.summitapp.customizations.item.item.validate"
+	},
+	"Quotation": {
+		"on_payment_authorized": "summitapp.summitapp.customizations.quotation.utils.on_payment_authorized",
+		"validate": "summitapp.summitapp.customizations.quotation.quotation.validate"
+	},
+	"Customer":{
+		"on_update": "summitapp.summitapp.customizations.customer.customer.on_update",
+		"before_save": "summitapp.summitapp.customizations.customer.customer.on_save",
+		"validate": "summitapp.summitapp.customizations.customer.customer.validate"
 	},
 	"Sales Invoice":{
-		"on_cancel":"summitapp.overrides.sales_invoice.on_cancel",
-		"on_submit": "summitapp.overrides.sales_invoice.on_submit"
+		"on_cancel":"summitapp.summitapp.customizations.sales_invoice.sales_invoice.on_cancel",
+		"on_submit": "summitapp.summitapp.customizations.sales_invoice.sales_invoice.on_submit"
 	},
 	"Sales Order": {
-		"on_payment_authorized": "summitapp.overrides.sales_order.on_payment_authorized",
-		"on_submit": "summitapp.overrides.sales_order.on_submit",
-        "on_cancel": "summitapp.overrides.sales_order.on_cancel",
-        "validate": "summitapp.overrides.sales_order.validate" ,
-        "on_update_after_submit": "summitapp.overrides.sales_order.on_update_after_submit",
-        "autoname":"summitapp.overrides.sales_order.autoname"
+		"on_payment_authorized": "summitapp.summitapp.customizations.sales_order.utils.on_payment_authorized",
+		"on_submit": "summitapp.summitapp.customizations.sales_order.sales_order.on_submit",
+        "on_cancel": "summitapp.summitapp.customizations.sales_order.sales_order.on_cancel",
+        "validate": "summitapp.summitapp.customizations.sales_order.sales_order.validate" ,
+        "on_update_after_submit": "summitapp.summitapp.customizations.sales_order.sales_order.on_update_after_submit",
+        "autoname":"summitapp.summitapp.customizations.sales_order.sales_order.autoname"
 	},
 	"*": {
 		"validate": "summitapp.utils.autofill_slug"
-	},
-	"Address": {
-		"before_validate": "summitapp.overrides.address.before_validate"
-	},
-	"Currency Exchange":{
-		"validate":"summitapp.overrides.currency_exchange.validate"
 	}
 }
 
 
 override_whitelisted_methods = {
-	"erpnext.controllers.item_variant.get_variant": "summitapp.overrides.item_variant.get_variant",
+	"erpnext.controllers.item_variant.get_variant": "summitapp.summitapp.customizations.item_variant.utils.get_variant",
 }
 
 
@@ -94,7 +94,7 @@ jinja = {
 scheduler_events = {
 	"cron": {
 		"0 0 * * *":[
-			"summitapp.overrides.currency_exchange.create_currency_exchange_records"
+			"summitapp.summitappp.customizations.currency_exchange.utils.create_currency_exchange_records"
 		],
   		"*/5 * * * *": [
 			"summitapp.summitapp.scheduler.resize_image.resize_image",

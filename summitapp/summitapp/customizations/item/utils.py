@@ -4,7 +4,7 @@ from frappe import _
 from frappe.utils import now
 
 
-def on_save(self, method):
+def set_product_type_filter(self, method):
 	if self.get("product_type"):
 		pt_doc = frappe.get_doc('Product Type', self.product_type)
 		field_names = [field.field_name for field in pt_doc.product_type_field]
@@ -15,15 +15,6 @@ def on_save(self, method):
 					"doctype": "Item Filters",
 					"field_name": field_name
 				})
-
-def validate(self, method=None):
-	set_parent_category(self)
-	set_sub_category(self)
-	set_custom_attributes(self)
-	add_model_no(self)
-	update_image(self)
-	validate_category_lvl_4(self)
-	validate_attribute_value(self)
 
 
 def add_model_no(self):

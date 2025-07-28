@@ -1,8 +1,6 @@
 import frappe
 import requests
 
-def validate(self, method=None):
-        create_currency_exchange_records()
 
 def create_currency_exchange_records():
     api_url = "https://api.exchangerate-api.com/v4/latest/INR"

@@ -1,9 +1,29 @@
-import frappe
+import frappe, json, requests
 from summitapp.utils import make_payment_entry
-import requests
-import json
 
-def on_submit(self, method=None):
+@frappe.whitelist()
+def make_seller_order_confirmation(doc):
+    sales_order = frappe.get_doc("Sales Order", doc)
+    for row in sales_order.items:
+        seller_order_confirmation = frappe.get_doc({
+            'doctype': 'Seller Order Confirmation',
+            'sales_order':sales_order.name,
+            'item_code': row.item_code,
+            'amount': row.amount,
+            'quantity': row.qty,
+            'item_name': row.item_name,
+            'uom': row.uom,
+            'seller': row.seller,
+            'email' : row.email,
+            'status': "Pending",
+            })
+        seller_order_confirmation.insert()
+    sales_order.sales_order_confirmation_created = 1
+    sales_order.save()
+
+
+
+def on_submit_actions(self, method=None):
     if self.store_credit_used:
         balance = frappe.db.get_value("Customer", self.customer, "balance_amount")
         if self.store_credit_used > balance:
@@ -37,28 +57,30 @@ def on_submit(self, method=None):
     if self.workflow_state == "Approved":
         frappe.db.set_value("Sales Order",self.name, "order_status","Approved")
 
+
 def on_payment_authorized(self, *args, **kwargs):
 	try:
 		if args[1] == 'Authorized':
 			make_payment_entry(self.name)
-			# frappe.local.response['type'] = 'redirect'
-			# frappe.local.response['location'] = "http://localhost:3000/thankyou/SAL-ORD-2022-00525"
 			return "thankyou"
 		else:
 			return 'failed'
 	except Exception as e:
 		frappe.logger('utils').exception(e)
+          
 
-def on_cancel(self, method=None):
+def on_cancel_set_order_status(self, method=None):
     if self.workflow_state == "Cancelled":
         frappe.db.set_value("Sales Order",self.name,"order_status","Cancelled")
 
-def validate(self, method=None):
+
+def set_workflow_state_and_order_status(self, method=None):
     send_sales_order_api(self)
     if self.workflow_state == "Order Placed":
         self.order_status = "Pending for Approval"
 
-def on_update_after_submit(self, method=None):
+
+def on_update_after_submit_set_workflow_state(self, method=None):
     if self.workflow_state == "Billed":
         frappe.db.set_value("Sales Order",self.name,"order_status","Billed")
     elif self.workflow_state == "Delivery":
@@ -66,7 +88,8 @@ def on_update_after_submit(self, method=None):
     elif self.workflow_state == "Submitted":
         frappe.db.set_value("Sales Order",self.name,"order_status","Order Delivered")    
 
-def autoname(self,method=None):
+
+def set_autoname(self,method=None):
     if self.is_replacement:
         replacement_sales_order = len(frappe.db.get_all("Sales Order", filters={"parent_sales_order": self.parent_sales_order}, pluck="parent_sales_order"))
         return_replacement_request_sales_order = frappe.db.get_value(

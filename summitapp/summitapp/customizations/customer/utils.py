@@ -1,20 +1,22 @@
 import frappe
-from summitapp.summitapp.doctype.web_settings.web_settings import add_category_from_sub
+from summitapp.summitapp.doctype.web_settings.utils import add_category_from_sub
 from frappe import _
 
-def on_save(self, method):
+def set_email_id_and_mobile_no(self, method):
 	if self.email:
 		self.email_id = self.email
 	if self.mobile_number:
 		self.mobile_no = self.mobile_number 
 	
-def validate(self, method=None):
+
+def set_full_name_add_category(self, method=None):
 	if self.get("first_name") or self.get("last_name"):
 		self.full_name = f'{self.get("first_name")} {self.get("last_name")}'
 		self.full_name = self.full_name.strip()
 	add_category_from_sub(self, "select_sub_category", "select_category")
 
-def on_update(self, method=None):
+
+def on_update_create_shipping_address_and_user(self, method=None):
 	if self.flags.is_new_doc and self.get("s_address_title"):
 		self.shipping_add = create_shipping_address(self)
 	if self.flags.is_new_doc and self.get("is_user") and self.get("email") and not self.get("user"):
@@ -23,6 +25,7 @@ def on_update(self, method=None):
 		else:
 			user = create_user(self)
 		self.db_set("user", user)
+
 
 def create_user(self):
 	user_doc = frappe.get_doc({
