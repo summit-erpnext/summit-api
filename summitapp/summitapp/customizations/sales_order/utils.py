@@ -1,5 +1,12 @@
 import frappe, json, requests
+from frappe.utils import flt
+from erpnext.selling.doctype.quotation.quotation import make_sales_order
+import contextlib
+from datetime import datetime, timedelta
 from summitapp.utils import make_payment_entry
+from summitapp.utils import error_response, success_response
+from summitapp.api.v2.utils import get_currency_symbol
+from summitapp.api.v2.product import get_detailed_item_list
 
 @frappe.whitelist()
 def make_seller_order_confirmation(doc):
@@ -127,3 +134,184 @@ def send_sales_order_api(doc):
                 frappe.log_error(f"Error in Sales Order API: {response.text}", "Sales Order API Error")
         except Exception as e:
             frappe.log_error(f"Exception: {str(e)}", "Sales Order API Exception")            
+
+
+
+
+def get_sales_order_summary(kwargs):
+	try:
+		id = kwargs.get('id')
+		quot_doc = frappe.get_doc('Quotation', id)
+		symbol = get_currency_symbol(quot_doc.currency)
+		data = {'name':'Order Summary', 'id': id, "currency_symbol":symbol,'values': get_summary_details(quot_doc)}
+		return success_response(data = data)
+	except Exception as e:
+		frappe.logger('order').exception(e)
+		return error_response(e)   
+     
+
+
+def get_summary_details(quot_doc):
+	charges = get_charges_from_table(quot_doc)
+	tax_amt = charges.get("tax", 0)
+	summ_list = [get_summary_list_json("Subtotal Excluding Tax", quot_doc.total)]
+	summ_list.append(get_summary_list_json("Tax", tax_amt))
+	summ_list.append(get_summary_list_json("Shipping Charges", charges.get("shipping", 0)))
+	summ_list.append(get_summary_list_json("Assembly Charges", quot_doc.get("total_assembly_charges")))
+	summ_list.append(get_summary_list_json("Payment Gateway Charges", charges.get("gateway_charge", 0)))
+	summ_list.append(get_summary_list_json("Subtotal Including Tax", quot_doc.total + tax_amt))
+	summ_list.append(get_summary_list_json("Coupon Code", quot_doc.coupon_code))
+	summ_list.append(get_summary_list_json("Coupon Amount", quot_doc.discount_amount))
+	summ_list.append(get_summary_list_json("Store Credit", quot_doc.get("store_credit_used")))
+	summ_list.append(get_summary_list_json("Round Off", quot_doc.get("rounding_adjustment",0)))
+	summ_list.append(get_summary_list_json("Total", quot_doc.get("rounded_total",quot_doc.grand_total)-flt(quot_doc.get("store_credit_used",0))))
+	return summ_list
+
+def get_summary_list_json(name, value):
+	return {
+		'name': name,
+		'value': value
+	}
+
+
+def get_charges_from_table(doc,table=[]):
+	charges = {}
+	for row in doc.get('taxes',table):
+		if row.description == "Payment Gateway Charges":
+			charges["gateway_charge"] = row.get("tax_amount",0)
+		elif "Shipping" in row.description:
+			charges["shipping"] = row.get("tax_amount",0)
+		elif "Assembly" in row.description:
+			charges["assembly"] = row.get("tax_amount",0)
+		elif "CGST" in row.description:
+			charges['cgst'] = charges.get("cgst",0) + row.get("tax_amount",0)
+		elif "SGST" in row.description:
+			charges['sgst'] = charges.get("sgst",0) + row.get("tax_amount",0)
+		elif "IGST" in row.description:
+			charges['igst'] = charges.get("igst",0) + row.get("tax_amount",0)
+		else:
+			charges['others'] = charges.get("others",0) + row.get("tax_amount",0)
+		charges['total'] = charges.get("total",0) + row.get("tax_amount",0)
+	charges['tax'] = charges.get("total",0) - charges.get("gateway_charge",0) - charges.get("shipping",0) - charges.get("assembly",0)
+	return charges     
+
+
+def razorpay_payment_url(kwargs):
+	try:
+		email = frappe.session.user
+		kwargs['full_name'], kwargs['email'] = frappe.db.get_value('User', email, ['full_name','email']) or [None, None]
+		# Returns Checkout Url Of Razorpay for payments	
+		payment_details = get_payment_details(kwargs)
+		doc = frappe.get_doc("Razorpay Settings")
+		return doc.get_payment_url(**payment_details)
+	except Exception as e:
+		frappe.logger('utils').exception(e)
+		return error_response(e)
+
+
+def get_payment_details(kwargs):
+	return {
+		'amount': kwargs.get('amount'),
+		'title': f"Payment For {kwargs.get('order_id')}",
+		'description': f"Payment For {kwargs.get('order_id')}",
+		'payer_name': kwargs.get('full_name'),
+		'payer_email': kwargs.get('email'),
+		'reference_doctype': kwargs.get('document_type'),
+		'reference_docname': kwargs.get('order_id'),
+		'order_id': kwargs.get('order_id'),
+		'currency': 'INR',
+		'redirect_to': f"failed"
+	}
+
+
+
+def order_id(kwargs):
+	try:
+		email = frappe.session.user
+		session_id = kwargs.get('session_id')
+		customer = frappe.get_value("Customer",{'email':email}, 'name')
+		if customer:
+			order_id = frappe.db.get_value('Sales Order', {'customer': customer}, 'name')
+		else:
+			order_id = frappe.db.get_value('Sales Order', {'custom_session_id': session_id}, 'name')
+		return success_response(data=order_id)
+	except Exception as e:
+		frappe.logger('utils').exception(e)
+		return error_response(e)
+	
+
+
+def submit_quotation(quot_doc, billing_address_id, shipping_address_id, payment_date,company_gstin):
+    quot_doc.customer_address = billing_address_id
+    quot_doc.shipping_address_name = shipping_address_id
+    quot_doc.payment_schedule = []
+    quot_doc.save()
+    quot_doc.submit()
+    return create_sales_order(quot_doc, payment_date,company_gstin)    
+
+
+
+
+def create_sales_order(quot_doc, payment_date,company_gstin):
+	so_doc = make_sales_order(quot_doc.name)
+	if payment_date:
+		payment_date = datetime.strptime(payment_date, "%d/%m/%Y").strftime("%Y-%m-%d")
+		so_doc.delivery_date = datetime.strptime(payment_date, "%Y-%m-%d")
+	else:
+		transaction_date = datetime.strptime(so_doc.transaction_date, "%Y-%m-%d")
+		so_doc.delivery_date = (transaction_date + timedelta(days=7)).date()
+	so_doc.company_gstin = company_gstin
+	so_doc.custom_session_id = quot_doc.session_id
+	so_doc.payment_schedule = []
+
+	so_doc.flags.ignore_permissions = True
+	so_doc.save()
+
+	return confirm_order(so_doc)
+
+
+def confirm_order(so_doc):
+    with contextlib.suppress(Exception):
+        so_doc.flags.ignore_permissions = True
+        so_doc.payment_schedule = []
+        so_doc.save()
+    return so_doc.name
+
+
+
+def recently_bought_items(kwargs):
+	try:
+		if frappe.session.user == "Guest":
+			return error_response("Please login first")
+		customer = kwargs.get("customer_id")
+		if not customer:
+			customer = frappe.db.get_value("Customer", {"email":frappe.session.user}, "name")
+		if not customer:
+			return error_response("Customer not found")
+
+		orders = frappe.db.get_values("Sales Order",{"customer":customer},'name', pluck=1)
+		items = frappe.db.get_list("Sales Order Item",{'parent':["in",orders]}, pluck="item_code", distinct=1, limit_page_length=8, ignore_permissions=1) or []
+		res = []
+		res = get_detailed_item_list(items, customer)
+		return success_response(data = res)
+	except Exception as e:
+		frappe.logger("order").exception(e)
+		return error_response(e)
+
+
+
+
+def cancel_sales_order(kwargs):
+	try:
+		sales_order = kwargs.get("order_id")
+		if frappe.db.exists("Sales Order", {"name": sales_order, "workflow_state": ["!=", "Cancelled"]}):
+			frappe.db.set_value("Sales Order",sales_order,
+					   {"workflow_state": "Cancelled",
+		 				"order_status":"Cancelled",
+						"docstatus":2
+						})
+			return success_response(data = f"{sales_order} is been Cancelled Successful")
+		return error_response(f"{sales_order} doesn't exist")
+	except Exception as e:
+			frappe.logger("order").exception(e)
+			return error_response(e)

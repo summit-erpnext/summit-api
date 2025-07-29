@@ -8,6 +8,10 @@ from summitapp.summitapp.customizations.quotation.utils import (get_cart_list, p
 def put_products(kwargs):  
 	return put_cart_products(kwargs)
 
+# Get Cart List
+@frappe.whitelist(allow_guest=True)
+def get_list(kwargs):
+	return get_cart_list(kwargs)
 
 # Get Cart products
 @frappe.whitelist(allow_guest=True)
