@@ -5,18 +5,7 @@ from frappe.utils.password import get_decrypted_password
 # sport_network.utils.check_user_exists
 
 
-def check_user_exists(email):
-	"""
-	Check if a user with the provied Email. exists
-	"""
-	return frappe.db.exists('User', email)
 
-def check_user_exists_mobile(mobile):
-	"""
-	Check if a user with the provied mobile number.
-	"""
-	return frappe.db.get_list('User', filters={"mobile_no":mobile},
-			fields=['email','new_password','api_key','api_secret'])
 
 def success_response(data=None, id=None):
 	response = {'msg': 'success'}
@@ -31,66 +20,6 @@ def error_response(err_msg):
 		'msg': 'error',
 		'error': err_msg
 	}
-
-def resync_cart(session):
-    """
-    Resync User Session Cart With Logged In User Cart
-    Delete Session Cart After Transferring Items To User Cart.
-    """
-    try:
-        # Check if a Quotation with the given session ID and status "Draft" exists
-        name = frappe.db.exists('Quotation', {'session_id': session, "status": "Draft"})
-        
-        if name:
-            data = {"owner": frappe.session.user}
-            
-            customer = frappe.db.get_value("Customer", {"email": frappe.session.user}, "name")
-            if customer:
-                data["party_name"] = customer
-
-            # Check if an existing Quotation with status "Draft" is owned by the logged-in user
-            existing_doc = frappe.db.exists("Quotation", {"owner": frappe.session.user, "status": "Draft"})
-            
-            if existing_doc:
-                # Transfer items from the session's Quotation to the user's Quotation
-                items = frappe.db.sql(f"select item_code, qty from `tabQuotation Item` where parent = '{name}'", as_dict=True)
-                doc = frappe.get_doc("Quotation", existing_doc)
-
-                for item in items:
-                    quotation_items = [qi for qi in doc.get("items") if qi.item_code == item.item_code]
-                    if not quotation_items:
-                        doc.append("items", {
-                            "doctype": "Quotation Item",
-                            "item_code": item.item_code,
-                            "qty": item.qty
-                        })
-                    else:
-                        quotation_items[0].qty = item.qty
-
-                if customer and not doc.party_name:
-                    doc.party_name = customer
-
-                doc.flags.ignore_permissions = True
-                doc.save()
-
-                # Delete the session's Quotation after transferring items
-                frappe.delete_doc('Quotation', name, ignore_permissions=True)
-            else:
-                # Set the owner and party_name for the session's Quotation if it's not already owned by the user
-                frappe.db.set_value("Quotation", name, data)
-                frappe.db.commit()
-
-            # Get the guest user's email associated with the session and delete the guest user
-            guest_user = frappe.db.get_list("Access Token", filters={"token": session}, fields=['email'])
-            if guest_user:
-                frappe.delete_doc('User', guest_user[0].email, ignore_permissions=True, force=True)
-
-            return "success"
-        else:
-            return {"msg": "no quotation Found", "session": session, "f_session": frappe.session}
-    except Exception as e:
-        frappe.logger('utils').exception(e)
-        return None  # Return a consistent type in case of an error
 
 
 
@@ -224,50 +153,10 @@ def get_access_level(customer_group=None):
 		return access_level
 	return 0
 
-def get_allowed_categories(category_list = [],enable_user_based_menu = None):
-	categories = []
-	user = frappe.session.user
-	# Changes email to email_id
-	if enable_user_based_menu == 1:
-		if user != "Guest":
-			cust = frappe.db.get_value("Customer", {"email_id": user}, [
-									"name", "customer_group"], as_dict=1)
-			if cust:
-				categories = frappe.db.get_values(
-					"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
-				if not categories and cust.get("customer_group"):
-					categories = frappe.db.get_values(
-						"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
-		else:
-			categories = frappe.db.get_values(
-				"Category Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)		
-	
-	else:
-		categories = frappe.get_list("Category",filters={"old_parent":"","is_group": 1})
-	allowed_categories = []
-	for category in categories:
-		allowed_categories += get_child_categories(category,True,True)
-	filtered_category = []
-	if allowed_categories:
-		if category_list:
-			filtered_category = [category for category in allowed_categories if category in category_list]
-	return filtered_category or (allowed_categories if categories else category_list)
 
 
-def get_allowed_brands(customer_id,customer_group):
-	brands = []
-	user = frappe.session.user
-	if user != "Guest":
-		if customer_id:
-			brands = frappe.db.get_values(
-				"Brand Multiselect", {"parent": customer_id}, "name1", pluck=1)
-			if not brands and customer_group:
-				brands = frappe.db.get_values(
-					"Brand Multiselect", {"parent": customer_group}, "name1", pluck=1)
-	if not brands:
-		brands = frappe.db.get_values(
-			"Brand Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)
-	return brands
+
+
 
 
 def make_payment_entry(sales_order):
@@ -287,40 +176,3 @@ def make_payment_entry(sales_order):
 	payment_entry_doc.save(ignore_permissions=True)
 	payment_entry_doc.submit()
 
-def get_parent_categories(category, is_name = False, excluded = [], name_only = False):
-	filters = category if is_name else {"slug":category} 
-	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
-	if not (cat and category):
-		return []
-	excluded_cat = "', '".join(excluded)
-	parent_categories = frappe.db.sql(
-		f"""select name, slug, parent_category from `tabCategory`
-		where lft <= %s and rgt >= %s
-		and enable_category='Yes' and name not in ('{excluded_cat}')
-		order by lft asc""",
-		(cat.lft, cat.rgt),
-		as_dict=True,
-	)
-	if name_only:
-		return [row.name for row in parent_categories] if parent_categories else []
-	return parent_categories
-
-def get_child_categories(category, is_name = False, with_parent = False):
-	filters = category if is_name else {"slug":category} 
-	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
-	category_list = []
-	if not (cat and filters):
-		return []
-	child_categories = frappe.db.sql(
-		"""select name, slug, parent_category from `tabCategory`
-		where lft >= %s and rgt <= %s
-		and enable_category='Yes'
-		order by lft asc""",
-		(cat.lft, cat.rgt),
-		as_dict=True,
-	)
-	category_list = [child.name for child in child_categories]
-	if category_list and with_parent:
-		for category in category_list:
-			category_list += get_parent_categories(category, True, category_list, True)
-	return category_list

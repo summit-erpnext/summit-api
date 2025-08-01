@@ -1,5 +1,5 @@
 import frappe
-from summitapp.utils import error_response, success_response, get_allowed_categories, get_parent_categories
+from summitapp.utils import error_response, success_response
 
 
 def get(kwargs):
@@ -152,3 +152,87 @@ def mega_menu(kwargs):
 	except Exception as e:
 		frappe.logger('mega menu').exception(e)
 		return error_response(e)	
+	
+
+
+def get_allowed_categories(category_list = [],enable_user_based_menu = None):
+	categories = []
+	user = frappe.session.user
+	# Changes email to email_id
+	if enable_user_based_menu == 1:
+		if user != "Guest":
+			cust = frappe.db.get_value("Customer", {"email_id": user}, [
+									"name", "customer_group"], as_dict=1)
+			if cust:
+				categories = frappe.db.get_values(
+					"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
+				if not categories and cust.get("customer_group"):
+					categories = frappe.db.get_values(
+						"Category Multiselect", {"parent": cust["customer_group"]}, "name1", pluck=1)
+		else:
+			categories = frappe.db.get_values(
+				"Category Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)		
+	
+	else:
+		categories = frappe.get_list("Category",filters={"old_parent":"","is_group": 1})
+	allowed_categories = []
+	for category in categories:
+		allowed_categories += get_child_categories(category,True,True)
+	filtered_category = []
+	if allowed_categories:
+		if category_list:
+			filtered_category = [category for category in allowed_categories if category in category_list]
+	return filtered_category or (allowed_categories if categories else category_list)
+
+
+
+def get_parent_categories(category, is_name = False, excluded = [], name_only = False):
+	filters = category if is_name else {"slug":category} 
+	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
+	if not (cat and category):
+		return []
+	excluded_cat = "', '".join(excluded)
+	parent_categories = frappe.db.sql(
+		f"""select name, slug, parent_category from `tabCategory`
+		where lft <= %s and rgt >= %s
+		and enable_category='Yes' and name not in ('{excluded_cat}')
+		order by lft asc""",
+		(cat.lft, cat.rgt),
+		as_dict=True,
+	)
+	if name_only:
+		return [row.name for row in parent_categories] if parent_categories else []
+	return parent_categories
+
+def get_child_categories(category, is_name = False, with_parent = False):
+	filters = category if is_name else {"slug":category} 
+	cat = frappe.db.get_value("Category", filters, ['lft','rgt'], as_dict=1)
+	category_list = []
+	if not (cat and filters):
+		return []
+	child_categories = frappe.db.sql(
+		"""select name, slug, parent_category from `tabCategory`
+		where lft >= %s and rgt <= %s
+		and enable_category='Yes'
+		order by lft asc""",
+		(cat.lft, cat.rgt),
+		as_dict=True,
+	)
+	category_list = [child.name for child in child_categories]
+	if category_list and with_parent:
+		for category in category_list:
+			category_list += get_parent_categories(category, True, category_list, True)
+	return category_list
+
+
+
+
+def categories(kwargs):
+	filters = {
+		"enable_category": "Yes"
+	}
+	ignore_perm = frappe.session.user == "Guest"
+	return frappe.get_list('Category',
+							   filters=filters,
+							   fields=['name as category', 'image', 'slug', 'url as category_url', 'description'],
+							   ignore_permissions=ignore_perm)

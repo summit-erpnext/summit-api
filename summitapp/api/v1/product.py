@@ -1,6 +1,6 @@
-import frappe
-from summitapp.utils import error_response, success_response, get_access_level, get_allowed_categories, get_allowed_brands, get_child_categories
-import json
+import frappe, json
+from summitapp.utils import error_response, success_response, get_access_level
+from summitapp.summitapp.doctype.category.utils import get_allowed_categories, get_child_categories
 from frappe import _
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils.global_search import search

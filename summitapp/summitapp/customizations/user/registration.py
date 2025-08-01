@@ -1,0 +1,190 @@
+import frappe
+from summitapp.utils import error_response, success_response, check_user_exists, send_mail
+from frappe.exceptions import DuplicateEntryError
+
+def signup(kwargs):
+	try:
+		"""
+			Creates required documents when a customer registers
+			In case of any errors, it will delete the created documents
+		"""
+		if frappe.db.exists('User', kwargs.get('usr') or kwargs.get('email')):
+			return error_response('Customer Already Exists')
+		frappe.local.login_manager.login_as('Administrator')
+		create_user(kwargs)
+		customer_doc = create_customer(kwargs)
+		if not kwargs.get('via_google', False):
+			create_address(kwargs,customer_doc.name) # for billing
+			kwargs['address_type'] = "Shipping"
+			create_address(kwargs, customer_doc.name) # for shipping
+		frappe.local.login_manager.login_as(kwargs.get('usr') or kwargs.get('email'))
+		return success_response(data = customer_doc.name)
+	except Exception as e:
+		frappe.logger("registration").exception(e) 
+		# delete_documents(kwargs,customer_doc.name)
+		return error_response(e)
+
+def change_passwords(kwargs):
+	try:
+		email = frappe.session.user
+		if email == "Guest":
+			return error_response('Please Login As A Customer')
+
+		if not frappe.db.exists('User',email):
+			return error_response('please login to change password')
+		user = frappe.get_doc('User',email)
+		if frappe.local.login_manager.check_password(email, kwargs.get('old_password')):
+			user.new_password = kwargs.get('new_password')
+			user.save(ignore_permissions=True)
+			return success_response("Password Updated!")
+		return error_response("Incorrect Old Password!")
+	except Exception as e:
+		frappe.logger("registration").exception(e) 
+		return error_response(e)
+
+
+def delete_documents(kwargs,id):
+	# Delete existing documents in case of errors
+	frappe.local.login_manager.login_as('Administrator')
+	frappe.delete_doc("User",kwargs.get('email'),ignore_permissions=True, ignore_missing=1)
+	frappe.delete_doc("Customer",id,ignore_permissions=True)
+	frappe.delete_doc("Address",{'email':kwargs.get('email')},ignore_permissions=True)
+	#ToDo: Delete dynamic link associated with address
+
+
+def create_address(kwargs,id):
+	#Create an Address Document for the Customer
+	address_doc = frappe.get_doc({
+			'doctype': "Address",
+			'gstin': kwargs.get('gst_number'),
+			'state': kwargs.get('state'),
+			'gst_state': kwargs.get('state'),
+			'email_id': kwargs.get('email'),
+			'phone': kwargs.get('contact_no') or kwargs.get("contact"),
+			'city': kwargs.get('city'),
+			'address_type': kwargs.get("address_type","Billing"),
+			'address_line1': kwargs.get('address') or kwargs.get("address_line_1"),
+			'address_line2': kwargs.get("address_line_2"),
+			'address_title': id,
+			'pincode': kwargs.get('postal_code'),
+			'gst_category': 'Registered Regular' if kwargs.get('gst_number') else 'Unregistered',
+			'is_primary_address': bool(kwargs.get("address_type", "Billing") == "Billing"),
+			'is_shipping_address': bool(kwargs.get("address_type") == "Shipping")
+		})
+	address_doc.append("links",{
+		"link_doctype" :"Customer", 
+		"link_name" : id
+	})
+	address_doc.save(ignore_permissions=True)
+	
+	return address_doc
+
+def create_user(kwargs):
+	#Creates User Document for the Customer
+	role_profile = kwargs.get("role")
+	if role_profile:
+		role = role_profile
+	else:
+		role = "Customer"	
+	user_doc = frappe.get_doc({
+		"doctype": 'User',
+		'email': kwargs.get("usr") or kwargs.get('email'),
+		'send_welcome_email': False,
+		'new_password': kwargs.get("password") or frappe.generate_hash(),
+		'first_name': kwargs.get("name"),
+		'language':kwargs.get("language_code"),
+		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
+		'phone': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
+		'roles': [{"doctype": "Has Role", "role": role}],
+		'role_profile_name': "Customer Summit" if role == "Customer" else "",
+		"api_key" : frappe.generate_hash(length=15), 
+		"summit_website_user": 1, 
+		"api_secret" : frappe.generate_hash(length=15) 
+	})
+	api_key = user_doc.get("api_key")
+	api_secret = user_doc.get("api_secret")
+	user_doc.insert(ignore_permissions=True)
+	return api_key,api_secret
+
+def create_customer(kwargs):
+	# create customer document
+	account_manager = check_user_exists(kwargs.get('email'))
+	is_mechanic = 1 if kwargs.get("customer_group") == "Mechanic" else 0
+	customer_doc = frappe.get_doc({
+		'doctype':"Customer",
+		'salutation':kwargs.get('salutation'),
+		'customer_name': kwargs.get('name'),
+		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
+		'mobile_number': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
+		'email_id': kwargs.get('usr') or kwargs.get('email'),
+		'email': kwargs.get('usr') or kwargs.get('email'),
+		'customer_type': 'Individual', 
+		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("Webshop Settings","default_customer_group")),
+		'territory': 'All Territories',
+		'custom_sales_person': kwargs.get('sales_person'),
+		'account_manager':account_manager,
+		'latitude': kwargs.get('latitude'),
+		'longitude': kwargs.get('longitude'),
+		'is_mechanic': is_mechanic
+		})
+	customer_doc.insert(ignore_permissions=True)
+	return customer_doc
+
+def reset_passwords(kwargs):
+	try:
+		email = kwargs.get('email')
+		if not frappe.db.exists('User',email):
+			return error_response('User With this email Does Not Exists')
+		user = frappe.get_doc('User',email)
+		user.new_password = kwargs.get('new_password')
+		user.save(ignore_permissions=True)
+		return success_response(data="Password Changed")
+	except Exception as e:
+		frappe.logger("registration").exception(e) 
+		return error_response(e)
+
+def reset_link(kwargs):
+	try:
+		email = kwargs.get('email')
+		if not frappe.db.exists('User',email): return error_response('User With this email Does Not Exists')
+		if not kwargs.get('link'): return error_response('Please Send Redirection Link')
+		send_mail("Send Reset Link", [email], {'link': kwargs.get('link')})
+		return success_response(data="Reset Link Sent")
+	except Exception as e:
+		frappe.logger("registration").exception(e) 
+		return error_response(e)
+
+def registration(kwargs):
+	doc = frappe.new_doc("Registration Details")
+	doc.update({
+		"username": kwargs.get("name"),
+		"designation": kwargs.get("designation"),
+		"company_name": kwargs.get("company_name"),
+		"address": kwargs.get("address"),
+		"city": kwargs.get("city"),
+		"pincode": kwargs.get("postal_code"),
+		"state": kwargs.get("state"),
+		"gst_no": kwargs.get("gst_number"),
+		"email_id": kwargs.get("email"),
+		"contact_no": kwargs.get("contact_no"),
+		"is_existing": kwargs.get("existing_customer"),
+		"buy_parts_for": kwargs.get("buy_parts_for")
+	})
+	doc.insert(ignore_permissions=True)
+
+	return success_response(data=doc.name)
+
+def subscriber(kwargs):
+	if not kwargs.get("email"):
+		return error_response("Email is mandatory")
+	try:
+		doc = frappe.get_doc({
+			"doctype": "Subscriber",
+			"email": kwargs.get("email"),
+			"mobile_number": kwargs.get("mobile_no")
+		}).insert(ignore_permissions=1)
+		return success_response("Subscriber Added")
+	except DuplicateEntryError:
+		return success_response("Already subscribed")
+	except Exception as e:
+		return error_response("Something went wrong")

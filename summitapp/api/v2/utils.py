@@ -5,81 +5,47 @@ from frappe.utils import flt
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
 import requests
-from frappe.utils.data import get_url
 import json
 from summitapp.api.v2.item_wise_sales_history import get_monthly_target_qty, get_yearly_target_qty
 from pypika.enums import Order
+from summitapp.summitapp.doctype.pin_code.utils import val_pincode
+from summitapp.summitapp.doctype.city.utils import cities
+from summitapp.summitapp.doctype.state.utils import states, countries
+from summitapp.summitapp.customizations.contact.utils import contact_us
 
+# Validate pincode
+@frappe.whitelist()
 def validate_pincode(kwargs):
-	pincode = True if frappe.db.exists(
-		'Pin Code', kwargs.get('pincode')) else False
-	return success_response(data=pincode)
+	return val_pincode(kwargs)
 
 
+# Get Cities
+@frappe.whitelist()
 def get_cities(kwargs):
-	city_list = frappe.db.get_list('City', filters = {'state': kwargs.get('state')}, fields =['name', 'state', 'country'], ignore_permissions=True)
-	return success_response(data=city_list)
+	return cities(kwargs)
 
+
+# Get States
+@frappe.whitelist()
 def get_states(kwargs):
-	state_list = frappe.db.get_list('State', filters = {}, fields =['name', 'country'], ignore_permissions=True)
-	return success_response(state_list)
+	return states(kwargs)
 
 
+# Get Countries
+@frappe.whitelist()
 def get_countries(kwargs):
-	country_list = frappe.db.get_list('Country', filters = {}, fields =['name as country_name'], ignore_permissions=True)
-	return success_response(data = country_list)
+	return countries(kwargs)
+
+
+# Get Contact
+@frappe.whitelist()
+def get_contact_us(kwargs):
+    return contact_us(kwargs)  
 
 
 def check_brand_exist(filters):
 	return any('brand' in i for i in filters)
 
-# def get_filter_listing(kwargs):
-#     filters = {
-#         "disabled": 0
-#     }
-#     display_both_item_and_variant = int(frappe.db.get_value("Web Settings", "Web Settings", "display_both_item_and_variant"))
-    
-#     if display_both_item_and_variant == 1:
-#         filters['has_variants'] = 0
-#         filters['show_on_website'] = 1
-#     else:
-#        filters['variant_of'] = ['is', "not set"]
-       
-#     for key, val in kwargs.items():
-#         if val:
-#             filters.update({key: val})
-
-#     return filters
-
-def get_filter_listing(user_role, kwargs, web_settings):
-    filters = {
-        "disabled": 0
-    }
-    if user_role == "Guest":
-        display_both_item_and_variant= web_settings.display_both_item_and_variant 
-        if display_both_item_and_variant == 1:
-            filters['has_variants'] = 0
-            filters['show_on_website'] = 1
-    elif kwargs.get("category"):
-        filters['show_on_website'] = 1
-        filters['has_variants'] = 0
-    else:
-       filters['variant_of'] = ['is', "not set"]
-       filters['has_variants'] = 0  
-        
-    for key, val in kwargs.items():
-        if val:
-            filters.update({key: val})
-    return filters
-
-def get_filter_list(kwargs):
-	filters = {
-		"disabled": 0,
-	}
-	for key, val in kwargs.items():
-		if val:
-			filters.update({key: val})
-	return filters
 
 
 def get_field_names(product_type):
@@ -488,11 +454,7 @@ def get_list_product_limit(user_role, customer_group, web_settings):
     return 0
 
 
-def get_logged_user():
-    header = {"Authorization": frappe.request.headers.get('Authorization')}
-    response = requests.post(get_url() + "/api/method/frappe.auth.get_logged_user", headers=header)
-    user = response.json().get("message")
-    return user
+
 
 def get_customer_id(kwargs):
     customer_id = kwargs.get('customer_id')
@@ -673,20 +635,6 @@ def get_product_specifications(kwargs):
         # Assuming error_response is a function that creates an error response
         return error_response(str(e))
 
-
-def get_contact_us(kwargs):
-    try:
-        contact_us = frappe.get_doc("Contact Us")
-        result = {
-            "sales_email_id":contact_us.sales_email_id,
-            "sales_contact_number":contact_us.sales_contact_number,
-            "supports_email_id":contact_us.supports_email_id,
-            "supports_contact_number":contact_us.supports_contact_number
-        }
-        return success_response(result)
-    except Exception as e:
-        frappe.logger("utils").exception(e)
-        return error_response(str(e))    
 
 
 
@@ -944,50 +892,6 @@ def get_vehicle_detail(item):
 
 
 
-def get_customer_wise_loyalty_points(email_id, currency):
-    try:
-        from decimal import Decimal, ROUND_HALF_UP
-        from summitapp.api.v2.utils import get_item_price, get_price_list
-
-        
-        customer = frappe.get_list(
-            "Customer",
-            filters={"name": email_id},
-            fields=["name", "loyalty_program"]
-        )
-
-        if not customer:
-            return {}
-
-        loyalty_program_collections = frappe.get_all(
-            "Loyalty Program Collection",
-            filters={"parent": customer[0].loyalty_program},
-            fields=["item", "collection_factor"]
-        )
-
-        loyalty_points = {}
-
-        for collection in loyalty_program_collections:
-            item_price = get_item_price(
-                currency,
-                collection.item,
-                customer[0].name,
-                get_price_list(customer[0].name)
-            )
-
-            if item_price[0] and collection.collection_factor:
-                item_loyalty_point = item_price[0] / collection.collection_factor
-                rounded_points = int(Decimal(item_loyalty_point).to_integral_value(rounding=ROUND_HALF_UP))
-                loyalty_points[collection.item] = rounded_points
-            else:
-                loyalty_points[collection.item] = 0
-
-        return loyalty_points
-
-    except Exception as e:
-        frappe.logger('Loyalty').exception(e)
-        return error_response(str(e))
-    
 
 
 def add_item_description(item):

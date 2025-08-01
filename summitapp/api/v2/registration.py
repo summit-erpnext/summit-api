@@ -1,5 +1,5 @@
 import frappe
-from summitapp.summitapp.customizations.user.utils import signup, change_passwords, reset_passwords, reset_link, registration, subscriber
+from summitapp.summitapp.customizations.user.registration import signup, change_passwords, reset_passwords, reset_link, registration, subscriber
 
 
 # Customer Signup

@@ -1,4 +1,4 @@
-from summitapp.summitapp.customizations.user.utils import get_api_token, get_token_with_email, get_token_with_mobile
+from summitapp.summitapp.customizations.user.access_token import get_api_token, get_token_with_email, get_token_with_mobile
 
 # Get Access token from user
 def get_access_token(kwargs):

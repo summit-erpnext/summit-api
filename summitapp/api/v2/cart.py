@@ -1,6 +1,7 @@
 import frappe
-from summitapp.summitapp.customizations.quotation.utils import (get_cart_list, put_cart_products, delete_cart_products,
+from summitapp.summitapp.customizations.quotation.utils import (put_cart_products, delete_cart_products,
                                                                 clear_entire_cart, get_request_for_quotation, quotation_history)
+from summitapp.summitapp.customizations.quotation.get_cart_list import get_cart_list
 
 
 # Add products to Cart

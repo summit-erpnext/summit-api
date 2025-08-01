@@ -1,6 +1,7 @@
 from shutil import ExecError
 import frappe
-from summitapp.utils import error_response, success_response, get_allowed_brands
+from summitapp.utils import error_response, success_response
+from summitapp.summitapp.customizations.brand.utils import get_allowed_brands
 from summitapp.api.v2.product import get_list, get_details
 from summitapp.api.v2.utils import get_field_names
 from werkzeug.wrappers import Response
@@ -64,3 +65,19 @@ def custom_response(data, headers=None):
     response.data = json.dumps(data, default=json_handler, separators=(",", ":"))
     response.headers["Cache-Control"] = "max-age=450000"
     return response
+
+
+def get_allowed_brands(customer_id,customer_group):
+	brands = []
+	user = frappe.session.user
+	if user != "Guest":
+		if customer_id:
+			brands = frappe.db.get_values(
+				"Brand Multiselect", {"parent": customer_id}, "name1", pluck=1)
+			if not brands and customer_group:
+				brands = frappe.db.get_values(
+					"Brand Multiselect", {"parent": customer_group}, "name1", pluck=1)
+	if not brands:
+		brands = frappe.db.get_values(
+			"Brand Multiselect", {"parent": "Web Settings"}, "name1", pluck=1)
+	return brands

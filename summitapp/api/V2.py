@@ -63,20 +63,19 @@ class V2():
             'promotional_scheme': ["get_promotional_scheme", "get_promotional_scheme_items"],    
             'push_notification':["get_notification"],
             'registration': ['add_subscriber','customer_signup', 'change_password', 'reset_password', 'send_reset_link', 'create_registration'],                
-            "variant":["get_variants"],
             "seller": ['get'],
-            "signin": ['signin', 'get_user_profile', 'signin_as_guest', 'get_redirecting_urls', 'login_via_token','existing_user_signin'],
-            "store_credit": ['put', 'delete'],
             "seo": ["get_meta_tags","get_site_map"],
+            "signin": ['signin', 'get_user_profile','existing_user_signin', 'signin_as_guest', 'get_redirecting_urls'],
+            "store_credit": ['put', 'delete'],
+            "translation":["get_languages",'get_translation_text'],
+            "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "utils": ["validate_pincode", "get_cities", 'get_states', 'get_countries','get_contact_us','get_about_us','get_home_page',
                       'get_marquee','get_testomonial','get_company_motto','get_product_specifications','get_pdf_attachments'],
-            "translation":["get_languages",'get_translation_text'],
+            "variant":["get_variants"],
             "warranty_claim":["get_warranty_claim","create_warranty_claim",
                               "get_sr_no_list","get_sr_no_details","get_cust_wc_details"],
             "website_interface":["publish_website_interface"],
-            "user":["get_website_user","get_mechanic","update_mechanic_in_customer"],
             "whatsapp_msg": ["send_otp_whatsapp"],
-            
             "wishlist": ["add_to_wishlist", "remove_from_wishlist", "get_wishlist_items"]
         }
 

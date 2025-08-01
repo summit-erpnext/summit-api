@@ -1,250 +1,141 @@
-import frappe
-from frappe.utils.password import check_password
-from frappe import auth
+import frappe, requests
 from summitapp.utils import success_response, error_response
+from frappe.utils.data import get_url
+from frappe.utils import flt
+def website_user(kwargs=None):
+    if not kwargs:
+        kwargs = frappe.form_dict
+
+    parent_customer_group = kwargs.get("customer_group")
+
+    # Get the Authorization header
+    auth_token = frappe.local.request.headers.get("Authorization")
+
+    if not parent_customer_group:
+        return error_response("Please provide a customer_group")
+    if not auth_token:
+        return error_response("Authorization token missing in headers")
+
+    # Get child customer groups
+    child_customer_groups = frappe.get_all(
+        "Customer Group",
+        filters={"parent_customer_group": parent_customer_group},
+        pluck="name"
+    )
+
+    if not child_customer_groups:
+        return success_response([])
+
+    # Fetch customers
+    customers = frappe.get_all(
+        "Customer",
+        filters={"customer_group": ["in", child_customer_groups]},
+        fields=["name", "customer_name", "email", "customer_group","mechanic"]
+    )
+
+    result = []
+
+    for customer in customers:
+        company = get_company(customer["name"])
+        credit_data = fetch_credit_balance_from_api(customer["name"], company, auth_token)
+        loyalty_data = get_loyalty_collection_factor(customer["name"])
+        
+        # Merge data
+        customer.update(credit_data)
+        customer.update(loyalty_data)
+        
+        result.append(customer)
+
+    return success_response(result)
 
 
-# Manualy generated access token
-def get_api_token(kwargs):
+def fetch_credit_balance_from_api(customer_name, company, auth_token):
     try:
-        usr = kwargs.get("usr")
-        pwd = kwargs.get("pwd")
-        try:
-            check_password(usr, pwd)
-        except Exception as e:
-            return e
-        doc = frappe.get_doc("User", {"name": usr})
-        api_key = doc.api_key
-        api_secret = doc.get_password("api_secret")
-        if api_key and api_secret:
-            api_token = "token " + api_key + ":" + api_secret
-            full_name = doc.full_name
-            user_roles = frappe.get_roles(usr)
-            result = {"access_token": api_token, "full_name": full_name, "user_role":user_roles}
-        return success_response(data=result)
+        url = frappe.local.request.host_url.rstrip("/") + "/api/method/frappe.desk.query_report.run"
+        payload = {
+            "report_name": "Customer Credit Balance",
+            "filters": {
+                "customer": customer_name,
+                "company": company
+            }
+        }
+        headers = {
+            'Authorization': auth_token,
+            'Content-Type': 'application/json'
+        }
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            rows = data.get("message", {}).get("result", [])
+            if rows:
+                row = rows[0]
+                return {
+                    "credit_limit": row.get("credit_limit", 0),
+                    "outstanding_amount": row.get("outstanding_amount", 0)
+                }
     except Exception as e:
-        frappe.logger("token").exception(e)
-        return error_response(e)
+        frappe.log_error(f"Error calling credit balance API for {customer_name}: {e}")
+
+    return {"credit_limit": 0, "outstanding_amount": 0}
 
 
-def get_token_with_email(email):
-    doc = frappe.get_doc("User", {"email": email})
-    api_key = doc.api_key
-    api_secret = doc.get_password("api_secret")
-    if api_key and api_secret:
-        api_token = "token " + api_key + ":" + api_secret
-        access_api_token = api_token
-
-    return access_api_token
-
-
-def get_token_with_mobile(mobile):
-    try:
-        doc = frappe.get_doc("User", {"mobile_no": mobile})
-        if doc:
-            api_key = doc.api_key
-            api_secret = doc.get_password("api_secret")
-
-            if api_key and api_secret:
-                api_token = "token " + api_key + ":" + api_secret
-                result = {"access_token": api_token, "full_name": doc.full_name}
-                return success_response(result)
-            else:
-                # Handle the case where either api_key or api_secret is not found
-                return error_response("API key or API secret not found")
-    except Exception as e:
-        frappe.logger("token").exception(e)
-        return error_response(e)    
+def get_company(customer_name):
+    credit_limit_company = frappe.get_all(
+        "Customer Credit Limit",
+        filters={"parent": customer_name},
+        fields=["company"]
+    )
+    if credit_limit_company:
+        return credit_limit_company[0]["company"]
+    return None
 
 
-    
-import frappe
-from frappe.exceptions import DuplicateEntryError
-from summitapp.utils import success_response, error_response, send_mail,check_user_exists
-
-def signup(kwargs):
-	try:
-		"""
-			Creates required documents when a customer registers
-			In case of any errors, it will delete the created documents
-		"""
-		if frappe.db.exists('User', kwargs.get('usr') or kwargs.get('email')):
-			return error_response('Customer Already Exists')
-		frappe.local.login_manager.login_as('Administrator')
-		create_user(kwargs)
-		customer_doc = create_customer(kwargs)
-		if not kwargs.get('via_google', False):
-			create_address(kwargs,customer_doc.name) # for billing
-			kwargs['address_type'] = "Shipping"
-			create_address(kwargs, customer_doc.name) # for shipping
-		frappe.local.login_manager.login_as(kwargs.get('usr') or kwargs.get('email'))
-		return success_response(data = customer_doc.name)
-	except Exception as e:
-		frappe.logger("registration").exception(e) 
-		# delete_documents(kwargs,customer_doc.name)
-		return error_response(e)
-
-def change_passwords(kwargs):
-	try:
-		email = frappe.session.user
-		if email == "Guest":
-			return error_response('Please Login As A Customer')
-
-		if not frappe.db.exists('User',email):
-			return error_response('please login to change password')
-		user = frappe.get_doc('User',email)
-		if frappe.local.login_manager.check_password(email, kwargs.get('old_password')):
-			user.new_password = kwargs.get('new_password')
-			user.save(ignore_permissions=True)
-			return success_response("Password Updated!")
-		return error_response("Incorrect Old Password!")
-	except Exception as e:
-		frappe.logger("registration").exception(e) 
-		return error_response(e)
+def get_loyalty_collection_factor(customer_name):
+    # Get loyalty program from Customer
+    loyalty_points = frappe.db.get_value("Customer", customer_name, "loyalty_points")
+    return {"loyalty_points":loyalty_points}
+   
 
 
-def delete_documents(kwargs,id):
-	# Delete existing documents in case of errors
-	frappe.local.login_manager.login_as('Administrator')
-	frappe.delete_doc("User",kwargs.get('email'),ignore_permissions=True, ignore_missing=1)
-	frappe.delete_doc("Customer",id,ignore_permissions=True)
-	frappe.delete_doc("Address",{'email':kwargs.get('email')},ignore_permissions=True)
-	#ToDo: Delete dynamic link associated with address
+def mechanic(kwargs):
+    mechanics = frappe.get_list("Customer",filters={"customer_group":"Mechanic"},fields=["name","email_id"])
+    return success_response(mechanics)
 
 
-def create_address(kwargs,id):
-	#Create an Address Document for the Customer
-	address_doc = frappe.get_doc({
-			'doctype': "Address",
-			'gstin': kwargs.get('gst_number'),
-			'state': kwargs.get('state'),
-			'gst_state': kwargs.get('state'),
-			'email_id': kwargs.get('email'),
-			'phone': kwargs.get('contact_no') or kwargs.get("contact"),
-			'city': kwargs.get('city'),
-			'address_type': kwargs.get("address_type","Billing"),
-			'address_line1': kwargs.get('address') or kwargs.get("address_line_1"),
-			'address_line2': kwargs.get("address_line_2"),
-			'address_title': id,
-			'pincode': kwargs.get('postal_code'),
-			'gst_category': 'Registered Regular' if kwargs.get('gst_number') else 'Unregistered',
-			'is_primary_address': bool(kwargs.get("address_type", "Billing") == "Billing"),
-			'is_shipping_address': bool(kwargs.get("address_type") == "Shipping")
-		})
-	address_doc.append("links",{
-		"link_doctype" :"Customer", 
-		"link_name" : id
-	})
-	address_doc.save(ignore_permissions=True)
-	
-	return address_doc
+def mechanic_in_customer(kwargs):
+    email_id = kwargs.get("email_id")
+    mechanic = kwargs.get("mechanic")
 
-def create_user(kwargs):
-	#Creates User Document for the Customer
-	role_profile = kwargs.get("role")
-	if role_profile:
-		role = role_profile
-	else:
-		role = "Customer"	
-	user_doc = frappe.get_doc({
-		"doctype": 'User',
-		'email': kwargs.get("usr") or kwargs.get('email'),
-		'send_welcome_email': False,
-		'new_password': kwargs.get("password") or frappe.generate_hash(),
-		'first_name': kwargs.get("name"),
-		'language':kwargs.get("language_code"),
-		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'phone': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'roles': [{"doctype": "Has Role", "role": role}],
-		'role_profile_name': "Customer Summit" if role == "Customer" else "",
-		"api_key" : frappe.generate_hash(length=15), 
-		"summit_website_user": 1, 
-		"api_secret" : frappe.generate_hash(length=15) 
-	})
-	api_key = user_doc.get("api_key")
-	api_secret = user_doc.get("api_secret")
-	user_doc.insert(ignore_permissions=True)
-	return api_key,api_secret
+    if not email_id or not mechanic:
+        return {"status": "error", "message": "email_id and mechanic are required."}
 
-def create_customer(kwargs):
-	# create customer document
-	account_manager = check_user_exists(kwargs.get('email'))
-	is_mechanic = 1 if kwargs.get("customer_group") == "Mechanic" else 0
-	customer_doc = frappe.get_doc({
-		'doctype':"Customer",
-		'salutation':kwargs.get('salutation'),
-		'customer_name': kwargs.get('name'),
-		'mobile_no': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'mobile_number': kwargs.get('contact_no') or kwargs.get("contact") or kwargs.get("phone"),
-		'email_id': kwargs.get('usr') or kwargs.get('email'),
-		'email': kwargs.get('usr') or kwargs.get('email'),
-		'customer_type': 'Individual', 
-		'customer_group': kwargs.get('customer_group',frappe.db.get_single_value("Webshop Settings","default_customer_group")),
-		'territory': 'All Territories',
-		'custom_sales_person': kwargs.get('sales_person'),
-		'account_manager':account_manager,
-		'latitude': kwargs.get('latitude'),
-		'longitude': kwargs.get('longitude'),
-		'is_mechanic': is_mechanic
-		})
-	customer_doc.insert(ignore_permissions=True)
-	return customer_doc
+    customer = frappe.get_value("Customer", {"email_id": email_id}, "name")
+    if not customer:
+        return {"status": "error", "message": f"No customer found with email: {email_id}"}
 
-def reset_passwords(kwargs):
-	try:
-		email = kwargs.get('email')
-		if not frappe.db.exists('User',email):
-			return error_response('User With this email Does Not Exists')
-		user = frappe.get_doc('User',email)
-		user.new_password = kwargs.get('new_password')
-		user.save(ignore_permissions=True)
-		return success_response(data="Password Changed")
-	except Exception as e:
-		frappe.logger("registration").exception(e) 
-		return error_response(e)
+    doc = frappe.get_doc("Customer", customer)
+    doc.mechanic = mechanic
+    doc.save(ignore_permissions=True)
+    return {"status": "success", "message": "Mechanic updated successfully", "customer": doc.name}
 
-def reset_link(kwargs):
-	try:
-		email = kwargs.get('email')
-		if not frappe.db.exists('User',email): return error_response('User With this email Does Not Exists')
-		if not kwargs.get('link'): return error_response('Please Send Redirection Link')
-		send_mail("Send Reset Link", [email], {'link': kwargs.get('link')})
-		return success_response(data="Reset Link Sent")
-	except Exception as e:
-		frappe.logger("registration").exception(e) 
-		return error_response(e)
 
-def registration(kwargs):
-	doc = frappe.new_doc("Registration Details")
-	doc.update({
-		"username": kwargs.get("name"),
-		"designation": kwargs.get("designation"),
-		"company_name": kwargs.get("company_name"),
-		"address": kwargs.get("address"),
-		"city": kwargs.get("city"),
-		"pincode": kwargs.get("postal_code"),
-		"state": kwargs.get("state"),
-		"gst_no": kwargs.get("gst_number"),
-		"email_id": kwargs.get("email"),
-		"contact_no": kwargs.get("contact_no"),
-		"is_existing": kwargs.get("existing_customer"),
-		"buy_parts_for": kwargs.get("buy_parts_for")
-	})
-	doc.insert(ignore_permissions=True)
 
-	return success_response(data=doc.name)
+def check_user_exists(email):
+	"""
+	Check if a user with the provied Email. exists
+	"""
+	return frappe.db.exists('User', email)
 
-def subscriber(kwargs):
-	if not kwargs.get("email"):
-		return error_response("Email is mandatory")
-	try:
-		doc = frappe.get_doc({
-			"doctype": "Subscriber",
-			"email": kwargs.get("email"),
-			"mobile_number": kwargs.get("mobile_no")
-		}).insert(ignore_permissions=1)
-		return success_response("Subscriber Added")
-	except DuplicateEntryError:
-		return success_response("Already subscribed")
-	except Exception as e:
-		return error_response("Something went wrong")
+def check_user_exists_mobile(mobile):
+	"""
+	Check if a user with the provied mobile number.
+	"""
+	return frappe.db.get_list('User', filters={"mobile_no":mobile},
+			fields=['email','new_password','api_key','api_secret'])
+
+
+def get_logged_user():
+    header = {"Authorization": frappe.request.headers.get('Authorization')}
+    response = requests.post(get_url() + "/api/method/frappe.auth.get_logged_user", headers=header)
+    user = response.json().get("message")
+    return user            
