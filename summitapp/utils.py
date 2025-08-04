@@ -1,7 +1,7 @@
 import frappe
 from frappe.utils import random_string
 from frappe.utils.password import get_decrypted_password
-
+from frappe import AuthenticationError
 # sport_network.utils.check_user_exists
 
 
@@ -324,3 +324,49 @@ def get_child_categories(category, is_name = False, with_parent = False):
 		for category in category_list:
 			category_list += get_parent_categories(category, True, category_list, True)
 	return category_list
+
+
+def validate_user_activity():
+	from urllib.parse import urlparse,parse_qs
+	parsed_url = urlparse(frappe.request.url)
+	query_params = parse_qs(parsed_url.query)
+	parsed_url = urlparse(frappe.request.url)
+
+	user = frappe.session.user
+	redis = frappe.cache() 
+	if frappe.db.exists("DocType","Manufacturing API Credentials"):
+		catalog_front_end_url = frappe.db.sql("""
+				SELECT 
+					value as catalog_front_end_url
+				FROM 
+					`tabSingles` 
+				WHERE 
+					`doctype` = 'Manufacturing API Credentials' and field = 'catalog_front_end_url' 
+			""",as_dict=1)
+		if not catalog_front_end_url:
+			return
+		catalog_front_end_url = catalog_front_end_url[0].get('catalog_front_end_url')
+		origin = frappe.get_request_header("Origin") or frappe.get_request_header("Referer")
+
+		redis_key = f"unique_key:{frappe.session.user}"
+		hash = redis.get_value(redis_key)
+		
+		if not user:
+			return
+
+		if ((origin == frappe.utils.get_url() or (origin != catalog_front_end_url))):
+			return
+
+		query_params = parse_qs(parsed_url.query)
+
+		method , entity = "get_access_token" , "access_token"
+
+		if not (method == query_params.get('method', [None])[0] and entity == query_params.get('entity',[None])[0]):
+			query_params = parse_qs(parsed_url.query)
+			
+			redis_key = f"unique_key:{frappe.session.user}"
+			hash = redis.get_value(redis_key)
+			unique_key = frappe.get_request_header("x-api-key")
+
+			if hash != unique_key:
+				raise AuthenticationError("Please Login again")
