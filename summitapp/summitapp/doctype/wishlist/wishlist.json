@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:{user}",
  "creation": "2025-08-06 18:07:56.283779",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -25,10 +26,11 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-06 18:08:59.525447",
+ "modified": "2025-08-07 11:21:09.841858",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Wishlist",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
