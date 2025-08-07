@@ -72,6 +72,7 @@ def get_wishlist_items(kwargs):
 		if frappe.session.user == "Guest":
 			return error_response("Please Login first.")
 		wishlist_items = frappe.db.get_list("Wishlist Item", {"parent": frappe.session.user},pluck='item_code', ignore_permissions=True)
+		print("WISHLIST ITEM",wishlist_items)
 		# return wishlist_items
 		if kwargs.get('customer_id'):
 			customer_id = kwargs.get('customer_id')
