@@ -111,11 +111,6 @@ scheduler_events = {
 # ]
 
 fixtures = [
-    {"dt": "Custom Field", "filters": [
-        [
-            "module", "=", "SummitApp"
-        ]
-    ]},
     {"dt": "Property Setter", "filters": [
         [
             "module", "=", "SummitApp"
@@ -163,5 +158,11 @@ fixtures = [
     ]}
 ]
 
-# after_migrate = "summitapp.transalations.create_translations"
-after_migrate = "summitapp.migrate.after_migrate"
+export_custom_fields = {"dt": ["in", ["Blog Post", "Brand", "Customer","Customer Group", 
+                                      "Item", "Item Attribute Value", "Item Group", "Item Price", "Item Variant Attribute",
+                                      "Quotation", "Quotation Item", "Tag"
+                                      "Sales Invoice","Sales Order", "Sales Order Item", 
+                                      ]], "module": ["=", "SummitApp"]}
+
+
+after_migrate = "arcapp.migrate.after_migrate"

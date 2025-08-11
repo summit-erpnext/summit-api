@@ -1,0 +1,41 @@
+{
+ "Blog Post": [
+  {
+   "fieldname": "custom_slug",
+   "fieldtype": "Data",
+   "insert_after": "route",
+   "label": "slug",
+   "module": "SummitApp",
+   "unique": 1
+  },
+  {
+   "fieldname": "custom_image",
+   "fieldtype": "Attach",
+   "insert_after": "disable_likes",
+   "label": "Image",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_blog_detail_images",
+   "fieldtype": "Table",
+   "insert_after": "blog_intro",
+   "label": "Blog Detail Images",
+   "module": "SummitApp",
+   "options": "Item Images"
+  },
+  {
+   "fieldname": "custom_description_1",
+   "fieldtype": "Long Text",
+   "insert_after": "custom_blog_detail_images",
+   "label": "Description 1",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_description_2",
+   "fieldtype": "Long Text",
+   "insert_after": "custom_description_1",
+   "label": "Description 2",
+   "module": "SummitApp"
+  }
+ ]
+}

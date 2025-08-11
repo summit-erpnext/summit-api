@@ -1,0 +1,12 @@
+{
+ "Item Group": [
+  {
+   "depends_on": "show_in_website",
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "insert_after": "route",
+   "label": "Title",
+   "module": "SummitApp"
+  }
+ ]
+}

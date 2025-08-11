@@ -1,0 +1,218 @@
+{
+ "Sales Order": [
+  {
+   "fieldname": "send_sms",
+   "fieldtype": "Check",
+   "insert_after": "customer",
+   "label": "Send SMS",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "is_replacement",
+   "fieldtype": "Check",
+   "insert_after": "order_type",
+   "label": "Is Replacement",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "replacement_done",
+   "fieldtype": "Check",
+   "insert_after": "is_replacement",
+   "label": "Replacement Done",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "request_for_replacement",
+   "fieldtype": "Check",
+   "insert_after": "replacement_done",
+   "label": "Request For Replacement",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_session_id",
+   "fieldtype": "Data",
+   "insert_after": "request_for_replacement",
+   "label": "Session ID",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_party_name",
+   "fieldtype": "Link",
+   "insert_after": "custom_session_id",
+   "label": "Party Name",
+   "module": "SummitApp",
+   "options": "Customer"
+  },
+  {
+   "depends_on": "eval:doc.is_replacement=='1'",
+   "fieldname": "returrn_replacement_request",
+   "fieldtype": "Link",
+   "insert_after": "custom_session_id",
+   "label": "Returrn Replacement Request",
+   "module": "SummitApp",
+   "options": "Return Replacement Request"
+  },
+  {
+   "depends_on": "eval: doc.is_replacement",
+   "fieldname": "parent_sales_order",
+   "fieldtype": "Link",
+   "insert_after": "returrn_replacement_request",
+   "label": "Parent Sales Order",
+   "module": "SummitApp",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "return_days",
+   "fieldtype": "Int",
+   "insert_after": "po_date",
+   "label": "Return Days",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "finance_team_user_1",
+   "fieldtype": "Link",
+   "insert_after": "return_days",
+   "label": "Finance Team User 1",
+   "module": "SummitApp",
+   "options": "User"
+  },
+  {
+   "fieldname": "finance_team_user_2",
+   "fieldtype": "Link",
+   "insert_after": "finance_team_user_1",
+   "label": "Finance Team User 2",
+   "module": "SummitApp",
+   "options": "User"
+  },
+  {
+   "fieldname": "reference_page",
+   "fieldtype": "Data",
+   "insert_after": "project",
+   "label": "Reference Page",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "reference_id",
+   "fieldtype": "Data",
+   "insert_after": "reference_page",
+   "label": "Reference ID",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "tracking_status",
+   "fieldtype": "Data",
+   "insert_after": "scan_barcode",
+   "label": "Tracking Status",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "total_assembly_charges",
+   "fieldtype": "Float",
+   "insert_after": "base_net_total",
+   "label": "Total Assembly Charges",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "store_credit_used",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "insert_after": "column_break_50",
+   "label": "Store Credit Used",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Link",
+   "insert_after": "payment_schedule",
+   "label": "Payment Term",
+   "module": "SummitApp",
+   "options": "Payment Term"
+  },
+  {
+   "fieldname": "order_status",
+   "fieldtype": "Select",
+   "insert_after": "per_delivered",
+   "label": "Order Status",
+   "module": "SummitApp",
+   "options": "\nPending for Approval\nApproved\nBilled\nOut For Delivery\nOrder Delivered\nCancelled"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sms_message",
+   "fieldtype": "Check",
+   "insert_after": "update_auto_repeat_reference",
+   "label": "SMS Message",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "sales_order_confirmation_created",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "insert_after": "sms_message",
+   "label": "Sales Order Confirmation Created",
+   "module": "SummitApp",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "transportation_details",
+   "fieldtype": "Section Break",
+   "insert_after": "party_account_currency",
+   "label": "Transportation Details",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "transporter",
+   "fieldtype": "Link",
+   "insert_after": "transportation_details",
+   "label": "Transporter",
+   "module": "SummitApp",
+   "options": "Transporter"
+  },
+  {
+   "fieldname": "transport_charges",
+   "fieldtype": "Select",
+   "insert_after": "transporter",
+   "label": "Transport Charges",
+   "module": "SummitApp",
+   "options": "\nPaid\nTo Pay"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Small Text",
+   "insert_after": "transport_charges",
+   "label": "Location",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_column_break_2eqey",
+   "fieldtype": "Column Break",
+   "insert_after": "location",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "door_delivery",
+   "fieldtype": "Check",
+   "insert_after": "custom_column_break_2eqey",
+   "label": "Door Delivery",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "godown_delivery",
+   "fieldtype": "Check",
+   "insert_after": "door_delivery",
+   "label": "Godown Delivery",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "insert_after": "godown_delivery",
+   "label": "Remarks",
+   "module": "SummitApp"
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+{
+ "Item Variant Attribute": [
+  {
+   "depends_on": "eval:doc.variant_of",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "insert_after": "attribute_value",
+   "label": "Is Default",
+   "module": "SummitApp"
+  },
+  {
+   "depends_on": "eval:!doc.variant_of",
+   "fieldname": "display_thumbnail",
+   "fieldtype": "Check",
+   "insert_after": "is_default",
+   "label": "Display Thumbnail",
+   "module": "SummitApp"
+  },
+  {
+   "depends_on": "eval:doc.variant_of",
+   "fieldname": "toggle_default",
+   "fieldtype": "Button",
+   "in_list_view": 1,
+   "insert_after": "display_thumbnail",
+   "label": "Toggle Default",
+   "module": "SummitApp"
+  }
+ ]
+}

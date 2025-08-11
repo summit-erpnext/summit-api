@@ -1,0 +1,18 @@
+{
+ "Quotation Item": [
+  {
+   "fieldname": "reference_page",
+   "fieldtype": "Data",
+   "insert_after": "item_code",
+   "label": "Reference Page",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "reference_id",
+   "fieldtype": "Data",
+   "insert_after": "reference_page",
+   "label": "Reference ID",
+   "module": "SummitApp"
+  }
+ ]
+}
