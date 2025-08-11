@@ -1,0 +1,489 @@
+{
+ "Item": [
+  {
+   "fieldname": "oem_part_number",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "insert_after": "manufacturer_abbr",
+   "label": "Part number",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "access_level",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "insert_after": "oem_part_number",
+   "label": "Access Level",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "display_tag",
+   "fieldtype": "Table MultiSelect",
+   "hidden": 1,
+   "insert_after": "stock_uom",
+   "label": "Display Tag",
+   "module": "SummitApp",
+   "options": "Tags MultiSelect"
+  },
+  {
+   "fieldname": "purchase_order_limit_for_customer",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "insert_after": "display_tag",
+   "label": "Purchase Order Limit for Customer",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "product_type",
+   "fieldtype": "Link",
+   "insert_after": "purchase_order_limit_for_customer",
+   "label": "Product Type",
+   "module": "SummitApp",
+   "options": "Product Type"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "product_type",
+   "label": "Category",
+   "module": "SummitApp",
+   "options": "Category",
+   "reqd": 1
+  },
+  {
+   "fieldname": "custom_parent_category",
+   "fieldtype": "Data",
+   "insert_after": "category",
+   "label": "Parent Category",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sub_category",
+   "fieldtype": "Data",
+   "insert_after": "custom_parent_category",
+   "label": "Sub Category",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "show_on_website",
+   "fieldtype": "Check",
+   "insert_after": "process_type",
+   "label": "Show on website",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "bom_factory_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "insert_after": "valuation_rate",
+   "label": "BOM Factory Code",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "colour",
+   "fieldtype": "Data",
+   "insert_after": "opening_stock",
+   "label": "Colour",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "insert_after": "die_combination",
+   "label": "Sequence",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "rating",
+   "fieldtype": "Rating",
+   "hidden": 1,
+   "insert_after": "sequence",
+   "label": "Rating",
+   "module": "SummitApp"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "key_feature",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "insert_after": "highlights",
+   "label": "Key Feature",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "key_features",
+   "fieldtype": "Link",
+   "insert_after": "key_feature",
+   "label": "Group Key Features",
+   "module": "SummitApp",
+   "options": "Group Key Features"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "geometry",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "insert_after": "key_features",
+   "label": "Geometry",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "geometry_file",
+   "fieldtype": "Attach",
+   "insert_after": "geometry",
+   "label": "Geometry File",
+   "module": "SummitApp"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "advance_information",
+   "fieldtype": "Section Break",
+   "insert_after": "geometry_file",
+   "label": "Advance Information",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "size_chart",
+   "fieldtype": "Data",
+   "insert_after": "advance_information",
+   "label": "Size Chart",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "purity",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "insert_after": "custom_width",
+   "label": "Purity",
+   "module": "SummitApp",
+   "options": "Purity"
+  },
+  {
+   "fieldname": "why_to_buy",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "insert_after": "custom_factory",
+   "label": "Why To Buy",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "select_why_to_buy",
+   "fieldtype": "Data",
+   "insert_after": "why_to_buy",
+   "label": "Select Why To Buy",
+   "module": "SummitApp"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "video",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "insert_after": "select_why_to_buy",
+   "label": "Video",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "video_file",
+   "fieldtype": "Attach",
+   "insert_after": "video",
+   "label": "Video File",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "insert_after": "disable_ordering",
+   "label": "slug",
+   "module": "SummitApp",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "disable_ordering",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "insert_after": "image",
+   "label": "Disable Ordering",
+   "module": "SummitApp",
+   "options": "\nYes\nNo"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "custom_item_images_section_break",
+   "fieldtype": "Section Break",
+   "insert_after": "website_warehouse",
+   "label": "Item Images",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "website_warehouse",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "insert_after": "slug",
+   "label": "Website Warehouse",
+   "module": "SummitApp",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "custom_item_images",
+   "fieldtype": "Table",
+   "insert_after": "custom_item_images_section_break",
+   "label": "Item Images",
+   "module": "SummitApp",
+   "options": "Item Images"
+  },
+  {
+   "fieldname": "short_description",
+   "fieldtype": "Small Text",
+   "insert_after": "description",
+   "label": "Part Description",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "specification_description",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "insert_after": "short_description",
+   "label": "Specification Description",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "synonyms_description",
+   "fieldtype": "Text",
+   "hidden": 1,
+   "insert_after": "specification_description",
+   "label": "Synonyms Description",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_section_break_y8q87",
+   "fieldtype": "Section Break",
+   "insert_after": "custom_ecommerce_item_rejection_details",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_column_break_zf7bh",
+   "fieldtype": "Column Break",
+   "insert_after": "brand",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_purity",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "insert_after": "custom_column_break_zf7bh",
+   "label": "Purity",
+   "module": "SummitApp",
+   "options": "\n14 KT\n18 KT\n22 KT\n24 KT\n95 KT"
+  },
+  {
+   "fieldname": "custom_column_break_40hme",
+   "fieldtype": "Column Break",
+   "insert_after": "custom_purity",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_colour",
+   "fieldtype": "Data",
+   "insert_after": "custom_column_break_40hme",
+   "label": "Colour",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "custom_width",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "insert_after": "custom_colour",
+   "label": "Width",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_section_break_wnouc",
+   "fieldtype": "Section Break",
+   "insert_after": "custom_width",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_size",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "insert_after": "purity",
+   "label": "Size",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "custom_stone",
+   "fieldtype": "Data",
+   "insert_after": "custom_size",
+   "label": "Stone",
+   "module": "SummitApp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "custom_type",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "insert_after": "custom_stone",
+   "label": "Type",
+   "module": "SummitApp",
+   "options": "\nDrops\nHoops\nJhumka\nStuds"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "insert_after": "custom_type",
+   "label": "Tags",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "length",
+   "fieldtype": "Data",
+   "insert_after": "valuation_method",
+   "label": "Length",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "weight_range",
+   "fieldtype": "Link",
+   "insert_after": "column_break_47",
+   "label": "Weight Range",
+   "module": "SummitApp",
+   "options": "Weight Range",
+   "read_only": 1
+  },
+  {
+   "fieldname": "specifications",
+   "fieldtype": "Tab Break",
+   "hidden": 1,
+   "insert_after": "total_projected_qty",
+   "label": "Specifications",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "item_filters",
+   "fieldtype": "Table",
+   "insert_after": "specifications",
+   "label": "Specifications",
+   "module": "SummitApp",
+   "options": "Item Filters"
+  },
+  {
+   "fieldname": "return_days",
+   "fieldtype": "Int",
+   "insert_after": "item_filters",
+   "label": "Return Days",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "store_pick_up_available",
+   "fieldtype": "Select",
+   "insert_after": "return_days",
+   "label": "Store Pick Up Available",
+   "module": "SummitApp",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "home_delivery_available",
+   "fieldtype": "Select",
+   "insert_after": "store_pick_up_available",
+   "label": "Home Delivery Available",
+   "module": "SummitApp",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "extra_details",
+   "fieldtype": "Tab Break",
+   "hidden": 1,
+   "insert_after": "home_delivery_available",
+   "label": "Extra Details",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_e_commerce_platforms_",
+   "fieldtype": "Tab Break",
+   "hidden": 1,
+   "insert_after": "extra_details",
+   "label": "E Commerce Platforms ",
+   "module": "SummitApp"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "technology",
+   "fieldtype": "Section Break",
+   "insert_after": "custom_other_e_commerce",
+   "label": "Technology",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_other_e_commerce",
+   "fieldtype": "Table",
+   "insert_after": "custom_e_commerce_platforms_",
+   "label": "Other E Commerce",
+   "module": "SummitApp",
+   "options": "E Commerce Platforms"
+  },
+  {
+   "fieldname": "filter_type",
+   "fieldtype": "Data",
+   "insert_after": "technology",
+   "label": "Filter Type",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "material",
+   "fieldtype": "Data",
+   "insert_after": "filter_type",
+   "label": "Material",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "model_year",
+   "fieldtype": "Select",
+   "insert_after": "material",
+   "label": "Model Year",
+   "module": "SummitApp",
+   "options": "\n2020\n2021\n2022"
+  },
+  {
+   "fieldname": "technologies",
+   "fieldtype": "Link",
+   "insert_after": "model_year",
+   "label": "Group Technology",
+   "module": "SummitApp",
+   "options": "Group Technology"
+  },
+  {
+   "fieldname": "exterior_finish",
+   "fieldtype": "Data",
+   "insert_after": "technologies",
+   "label": "Exterior Finish",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "custom_metal_colour",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "insert_after": "exterior_finish",
+   "label": "Metal Colour",
+   "module": "SummitApp",
+   "options": "\nRose\nWhite\nYellow"
+  },
+  {
+   "fieldname": "custom_metal",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "insert_after": "custom_metal_colour",
+   "label": "Metal",
+   "module": "SummitApp",
+   "options": "\nGold\nPlatinum"
+  }
+ ]
+}

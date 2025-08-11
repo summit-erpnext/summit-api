@@ -1,0 +1,49 @@
+{
+ "Customer Group": [
+  {
+   "fieldname": "allowed_brands",
+   "fieldtype": "Table MultiSelect",
+   "insert_after": "is_group",
+   "label": "Allowed Brands",
+   "module": "SummitApp",
+   "options": "Brand Multiselect"
+  },
+  {
+   "fieldname": "select_category",
+   "fieldtype": "Table MultiSelect",
+   "insert_after": "allowed_brands",
+   "label": "Select Category",
+   "module": "SummitApp",
+   "options": "Category Multiselect"
+  },
+  {
+   "fieldname": "custom_mrp_price_list",
+   "fieldtype": "Link",
+   "insert_after": "default_price_list",
+   "label": "MRP Price List",
+   "module": "SummitApp",
+   "options": "Price List"
+  },
+  {
+   "fieldname": "access_level",
+   "fieldtype": "Int",
+   "insert_after": "payment_terms",
+   "label": "Access Level",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "set_product_limit",
+   "fieldtype": "Int",
+   "insert_after": "access_level",
+   "label": "Product Limit",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "apply_the_product_limit",
+   "fieldtype": "Check",
+   "insert_after": "set_product_limit",
+   "label": "Apply Product Limit",
+   "module": "SummitApp"
+  }
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "Sales Order Item": [
+  {
+   "allow_on_submit": 1,
+   "fieldname": "tracking_status",
+   "fieldtype": "Data",
+   "insert_after": "ensure_delivery_based_on_produced_serial_no",
+   "label": "Tracking Status",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "reference_page",
+   "fieldtype": "Data",
+   "insert_after": "project",
+   "label": "Reference Page",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "reference_id",
+   "fieldtype": "Data",
+   "insert_after": "reference_page",
+   "label": "Reference ID",
+   "module": "SummitApp"
+  }
+ ]
+}

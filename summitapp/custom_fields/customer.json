@@ -1,0 +1,27 @@
+{
+ "Customer": [
+  {
+   "fieldname": "mobile_number",
+   "fieldtype": "Data",
+   "insert_after": "mobile_no",
+   "label": "Mobile Number",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "insert_after": "email_id",
+   "label": "Email",
+   "module": "SummitApp",
+   "reqd": 1
+  },
+  {
+   "fieldname": "balance_amount",
+   "fieldtype": "Float",
+   "insert_after": "disabled",
+   "label": "Balance Amount(Store Credit Assigned)",
+   "module": "SummitApp",
+   "read_only": 1
+  }
+ ]
+}
