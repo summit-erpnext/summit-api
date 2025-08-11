@@ -1,0 +1,32 @@
+{
+ "Brand": [
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "insert_after": "image",
+   "label": "Slug",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "insert_after": "slug",
+   "label": "Sequence",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "publish",
+   "fieldtype": "Check",
+   "insert_after": "sequence",
+   "label": "Publish",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "brand_video_link",
+   "fieldtype": "Data",
+   "insert_after": "description",
+   "label": "Brand Video Link",
+   "module": "SummitApp"
+  }
+ ]
+}

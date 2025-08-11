@@ -1,0 +1,12 @@
+{
+ "Item Attribute Value": [
+  {
+   "fieldname": "attribute_colour",
+   "fieldtype": "Color",
+   "in_list_view": 1,
+   "insert_after": "abbr",
+   "label": "Attribute Colour",
+   "module": "SummitApp"
+  }
+ ]
+}

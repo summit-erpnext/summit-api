@@ -37,7 +37,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Website Item",
-   "options": "Website Item",
+   "options": "Item",
    "read_only": 1
   },
   {

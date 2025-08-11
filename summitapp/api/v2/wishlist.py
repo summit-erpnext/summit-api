@@ -16,3 +16,4 @@ def remove_from_wishlist(kwargs):
 @frappe.whitelist()
 def get_wishlist_items(kwargs):
 	return wishlist_items(kwargs)
+

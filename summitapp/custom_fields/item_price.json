@@ -1,0 +1,18 @@
+{
+ "Item Price": [
+  {
+   "fieldname": "strikethrough_rate",
+   "fieldtype": "Currency",
+   "insert_after": "selling",
+   "label": "Strikethrough Rate",
+   "module": "SummitApp"
+  },
+  {
+   "fieldname": "strikethrough",
+   "fieldtype": "Data",
+   "insert_after": "reference",
+   "label": "Strikethrough",
+   "module": "SummitApp"
+  }
+ ]
+}
