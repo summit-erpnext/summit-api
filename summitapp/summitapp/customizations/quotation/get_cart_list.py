@@ -3,7 +3,7 @@ from summitapp.utils import success_response, error_response
 from summitapp.summitapp.customizations.user.utils import get_logged_user
 from frappe.utils import flt
 from summitapp.api.v2.utils import (get_stock_info,get_field_names,get_product_url,
-				    get_currency,get_currency_symbol,get_logged_user,get_variant_attributes)
+				    get_currency,get_currency_symbol,get_variant_attributes)
 from summitapp.summitapp.doctype.category.utils import get_parent_categories
 
 def get_cart_list(kwargs):

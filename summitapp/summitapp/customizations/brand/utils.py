@@ -1,8 +1,7 @@
 from shutil import ExecError
 import frappe
 from summitapp.utils import error_response, success_response
-from summitapp.summitapp.customizations.brand.utils import get_allowed_brands
-from summitapp.api.v2.product import get_list, get_details
+from summitapp.api.v2.product import get_details
 from summitapp.api.v2.utils import get_field_names
 from werkzeug.wrappers import Response
 import json
@@ -36,14 +35,14 @@ def get_brand_json(brand):
         transformed_brand[field_name] = brand[field_name]
     return transformed_brand
 
-def get_list(kwargs):
-    try:
-        brand_name = kwargs.get('brand_name')
-        brand_name = frappe.db.get_value('Brand', {'slug': brand_name}, 'name')
-        return get_list({"brand" : brand_name})
-    except Exception as e:
-        frappe.logger('brand').exception(e)
-        return error_response(e)
+# def brand_product_list(kwargs):
+#     try:
+#         brand_name = kwargs.get('brand_name')
+#         brand_name = frappe.db.get_value('Brand', {'slug': brand_name}, 'name')
+#         return get_list({"brand" : brand_name})
+#     except Exception as e:
+#         frappe.logger('brand').exception(e)
+#         return error_response(e)
 
 def get_details(kwargs):
     try:

@@ -1,7 +1,7 @@
 import frappe, json
 from summitapp.utils import success_response, error_response
 from summitapp.summitapp.customizations.item.utils import json_handler, get_access_level, get_tagged_product_limit
-from summitapp.api.v2.translation import translate_result
+from summitapp.summitapp.doctype.translation_text.utils import translate_result
 from summitapp.api.v2.utils import get_processed_list
 
 def tagged_products(kwargs):

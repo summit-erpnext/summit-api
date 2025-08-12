@@ -3,6 +3,6 @@ from summitapp.summitapp.doctype.home_banner.utils import get_home_banner
 
 
 # Get Home Banner List
-@frappe.whitlist(allow_guest=True)
+@frappe.whitelist(allow_guest=True)
 def get(kwargs):
     return get_home_banner(kwargs)

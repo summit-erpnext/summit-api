@@ -2,13 +2,12 @@ import frappe, json
 from frappe import _
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import now
-from summitapp.summitapp.customizations.brand.utils import get_allowed_brands
 from summitapp.summitapp.doctype.category.utils import get_allowed_categories
 import datetime
 from werkzeug.wrappers import Response
 from summitapp.utils import success_response, error_response, get_access_level
 from summitapp.api.v2.utils import  get_processed_list, get_customer_id
-from summitapp.api.v2.translation import translate_result
+from summitapp.summitapp.doctype.translation_text.utils import translate_result
 from summitapp.api.v2.product import get_list
 
 def set_product_type_filter(self, method):
@@ -113,6 +112,7 @@ def validate_attribute_value(self):
 
 
 def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, page_no, vehicle_filters, limit, or_filters={}, debug=0):
+    from summitapp.summitapp.customizations.brand.utils import get_allowed_brands
     offset = 0
     if page_no is not None:
         if limit is None:

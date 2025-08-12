@@ -1,5 +1,6 @@
 import frappe
-from summitapp.utils import error_response, success_response, check_user_exists, send_mail
+from summitapp.utils import error_response, success_response, send_mail
+from summitapp.summitapp.customizations.user.utils import check_user_exists
 from frappe.exceptions import DuplicateEntryError
 
 def signup(kwargs):

@@ -1,5 +1,7 @@
 import frappe
-from summitapp.utils import check_user_exists,success_response,error_response, resync_cart
+from summitapp.utils import success_response,error_response
+from summitapp.summitapp.customizations.quotation.resync_cart import resync_cart
+from summitapp.summitapp.customizations.user.utils import check_user_exists
 from summitapp.api.v2.access_token import get_access_token,get_token
 
 

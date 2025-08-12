@@ -7,7 +7,7 @@ from summitapp.api.v1.utils import (get_price_list,get_field_names,get_guest_use
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from frappe.utils import flt, getdate
 import json
-from summitapp.api.v1.translation import translate_result
+from summitapp.summitapp.doctype.translation_text.utils import translate_result
 from summitapp.summitapp.doctype.category.utils import get_parent_categories
 
 

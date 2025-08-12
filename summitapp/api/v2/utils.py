@@ -6,12 +6,12 @@ from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
 import requests
 import json
-from summitapp.api.v2.item_wise_sales_history import get_monthly_target_qty, get_yearly_target_qty
+from summitapp.summitapp.customizations.general_ledger.utils import get_monthly_target_qty, get_yearly_target_qty
 from pypika.enums import Order
 from summitapp.summitapp.doctype.pin_code.utils import val_pincode
 from summitapp.summitapp.doctype.city.utils import cities
 from summitapp.summitapp.doctype.state.utils import states, countries
-from summitapp.summitapp.customizations.contact.utils import contact_us
+from summitapp.summitapp.doctype.contact_us.utils import contact_us
 
 # Validate pincode
 @frappe.whitelist()

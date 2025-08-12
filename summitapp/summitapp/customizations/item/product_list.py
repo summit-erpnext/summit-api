@@ -1,7 +1,7 @@
 import frappe, json
 from frappe.utils.global_search import search
 from frappe.utils import cint
-from summitapp.api.v2.translation import translate_result
+from summitapp.summitapp.doctype.translation_text.utils import translate_result
 from summitapp.api.v2.utils import (check_brand_exist, get_processed_list, create_user_tracking,
                                     get_list_product_limit,get_customer_id)
 from summitapp.utils import error_response, get_access_level

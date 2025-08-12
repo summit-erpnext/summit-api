@@ -1,5 +1,6 @@
 import frappe, json, requests, random
-from summitapp.utils import success_response, error_response,send_mail,check_user_exists
+from summitapp.utils import success_response, error_response,send_mail
+from summitapp.summitapp.customizations.user.utils import check_user_exists
 from summitapp.api.v2.access_token import get_token_with_mobile
 from frappe.utils import now_datetime
 

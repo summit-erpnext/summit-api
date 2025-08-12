@@ -4,7 +4,7 @@ from summitapp.utils import error_response, success_response
 from frappe.utils import getdate, now_datetime, add_months
 from datetime import timedelta
 from frappe.utils.dateutils import get_period, get_dates_from_timegrain
-from summitapp.api.v2.utils import get_logged_user
+from summitapp.summitapp.customizations.user.utils import get_logged_user
 from erpnext.selling.report.item_wise_sales_history.item_wise_sales_history import get_data
 
 

@@ -14,41 +14,41 @@ doctype_js = {"Sales Order" : "public/js/sales_order.js",
 
 doc_events = {
     "Address": {
-		"before_validate": "summitapp.customizations.address.address.before_validate"
+		"before_validate": "summitapp.customizations.address.events.before_validate"
 	},
     "Contact": {
-		"validate": "summitapp.customizations.contact.contact.validate"
+		"validate": "summitapp.customizations.contact.events.validate"
 	},
 	"Currency Exchange":{
-		"validate":"summitapp.customizations.currency_exchange.currency_exchange.validate"
+		"validate":"summitapp.customizations.currency_exchange.events.validate"
 	},
     "Customer Group":{
-		"validate": "summitapp.customizations.customer_group.customer_group.validate"
+		"validate": "summitapp.customizations.customer_group.events.validate"
 	},
 	"Item":{
-		"before_save": "summitapp.summitapp.customizations.item.item.on_save",
-		"validate": "summitapp.summitapp.customizations.item.item.validate"
+		"before_save": "summitapp.summitapp.customizations.item.events.on_save",
+		"validate": "summitapp.summitapp.customizations.item.events.validate"
 	},
 	"Quotation": {
 		"on_payment_authorized": "summitapp.summitapp.customizations.quotation.utils.on_payment_authorized",
-		"validate": "summitapp.summitapp.customizations.quotation.quotation.validate"
+		"validate": "summitapp.summitapp.customizations.quotation.events.validate"
 	},
 	"Customer":{
-		"on_update": "summitapp.summitapp.customizations.customer.customer.on_update",
-		"before_save": "summitapp.summitapp.customizations.customer.customer.on_save",
-		"validate": "summitapp.summitapp.customizations.customer.customer.validate"
+		"on_update": "summitapp.summitapp.customizations.customer.events.on_update",
+		"before_save": "summitapp.summitapp.customizations.customer.events.on_save",
+		"validate": "summitapp.summitapp.customizations.customer.events.validate"
 	},
 	"Sales Invoice":{
-		"on_cancel":"summitapp.summitapp.customizations.sales_invoice.sales_invoice.on_cancel",
-		"on_submit": "summitapp.summitapp.customizations.sales_invoice.sales_invoice.on_submit"
+		"on_cancel":"summitapp.summitapp.customizations.sales_invoice.events.on_cancel",
+		"on_submit": "summitapp.summitapp.customizations.sales_invoice.events.on_submit"
 	},
 	"Sales Order": {
 		"on_payment_authorized": "summitapp.summitapp.customizations.sales_order.utils.on_payment_authorized",
-		"on_submit": "summitapp.summitapp.customizations.sales_order.sales_order.on_submit",
-        "on_cancel": "summitapp.summitapp.customizations.sales_order.sales_order.on_cancel",
-        "validate": "summitapp.summitapp.customizations.sales_order.sales_order.validate" ,
-        "on_update_after_submit": "summitapp.summitapp.customizations.sales_order.sales_order.on_update_after_submit",
-        "autoname":"summitapp.summitapp.customizations.sales_order.sales_order.autoname"
+		"on_submit": "summitapp.summitapp.customizations.sales_order.events.on_submit",
+        "on_cancel": "summitapp.summitapp.customizations.sales_order.events.on_cancel",
+        "validate": "summitapp.summitapp.customizations.sales_order.events.validate" ,
+        "on_update_after_submit": "summitapp.summitapp.customizations.sales_order.events.on_update_after_submit",
+        "autoname":"summitapp.summitapp.customizations.sales_order.events.autoname"
 	},
 	"*": {
 		"validate": "summitapp.utils.autofill_slug"
