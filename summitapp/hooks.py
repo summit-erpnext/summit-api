@@ -165,4 +165,4 @@ export_custom_fields = {"dt": ["in", ["Blog Post", "Brand", "Customer","Customer
                                       ]], "module": ["=", "SummitApp"]}
 
 
-after_migrate = "arcapp.migrate.after_migrate"
+after_migrate = "summitapp.migrate.after_migrate"
