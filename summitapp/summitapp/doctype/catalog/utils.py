@@ -1,6 +1,6 @@
 import frappe
 from summitapp.utils import success_response,error_response
-from summitapp.api.v2.product import get_list as get_item_details
+
 
 
 def get_catalog_list(kwargs):
@@ -13,6 +13,7 @@ def get_catalog_list(kwargs):
 		return error_response(e)
 
 def get_item(kwargs):
+    from summitapp.api.v2.product import get_list as get_item_details
     try:
         catalog_slug = kwargs.get('catalog_slug')
         catalog = frappe.db.get_value('Catalog', {'slug': catalog_slug})

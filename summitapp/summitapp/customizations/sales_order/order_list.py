@@ -3,8 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from frappe.utils import flt, format_date
 from summitapp.utils import error_response
-from summitapp.api.v2.utils import get_field_names,get_currency,get_currency_symbol
-from summitapp.api.v2.product import get_product_url
+from summitapp.api.v2.utils import get_field_names,get_currency,get_currency_symbol, get_product_url
 from summitapp.summitapp.customizations.address.utils import get_details as get_address_details
 from summitapp.summitapp.customizations.sales_order.utils import get_charges_from_table
 

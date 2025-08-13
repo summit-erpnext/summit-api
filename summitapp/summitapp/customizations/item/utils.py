@@ -8,7 +8,7 @@ from werkzeug.wrappers import Response
 from summitapp.utils import success_response, error_response, get_access_level
 from summitapp.api.v2.utils import  get_processed_list, get_customer_id
 from summitapp.summitapp.doctype.translation_text.utils import translate_result
-from summitapp.api.v2.product import get_list
+
 
 def set_product_type_filter(self, method):
 	if self.get("product_type"):
@@ -286,7 +286,7 @@ def get_products_recommendation(kwargs):
 
 def get_detailed_item_list(currency, items, customer_id=None, filters=None, product_limit=None):
     from itertools import islice
-
+    
     filters = filters or {}
     customer_id = customer_id or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name')
     access_level = get_access_level(customer_id)
@@ -327,26 +327,27 @@ def get_tagged_product_limit(user_role, customer_id):
 
 
 def top_categories(kwargs):
-	categories = cyu_categories(kwargs)
-	limit = int(kwargs.get('limit', 3))
-	if limit and len(categories) > limit:
-		categories = categories[:limit]
-	res = []
-	for category in categories:
-		data = {
-			"container": {
-				"container_name": category.get("product_category"),
-				"slug": category.get("slug"),
-				"banner_img": category.get("product_img"),
-				"banner_description": category.get("description"),
-			}}
-		kwargs['category'] = category.get('slug')
-		kwargs['internal'] = 1
-		kwargs['limit'] = 8
-		p_list = get_list(kwargs)
-		data['product_list'] = p_list
-		res.append(data)
-	return success_response(res)
+    from summitapp.api.v2.product import get_list
+    categories = cyu_categories(kwargs)
+    limit = int(kwargs.get('limit', 3))
+    if limit and len(categories) > limit:
+        categories = categories[:limit]
+    res = []
+    for category in categories:
+        data = {
+            "container": {
+                "container_name": category.get("product_category"),
+                "slug": category.get("slug"),
+                "banner_img": category.get("product_img"),
+                "banner_description": category.get("description"),
+            }}
+        kwargs['category'] = category.get('slug')
+        kwargs['internal'] = 1
+        kwargs['limit'] = 8
+        p_list = get_list(kwargs)
+        data['product_list'] = p_list
+        res.append(data)
+    return success_response(res)
 
 
 def default_currency(kwargs):

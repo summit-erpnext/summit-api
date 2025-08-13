@@ -2,7 +2,7 @@ from summitapp.summitapp.customizations.item.utils import (set_product_type_filt
 															add_model_no, update_image, validate_category_lvl_4, validate_attribute_value)
 
 def on_save(self, method):
-	set_product_type_filter(self)
+	set_product_type_filter(self, method)
 
 def validate(self, method=None):
 	set_parent_category(self)

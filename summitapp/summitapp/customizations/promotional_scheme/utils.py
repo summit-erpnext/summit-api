@@ -1,6 +1,6 @@
 import frappe
 from summitapp.api.v2.utils import success_response, error_response
-from summitapp.api.v2.product import get_details, get_count
+
 
 @frappe.whitelist(allow_guest=True)
 def promotional_scheme_items(kwargs):

@@ -1,5 +1,5 @@
 import frappe
-from summitapp.api.v2.utils import (get_field_names, get_filter_list, get_customer_wise_loyalty_points, create_user_tracking,
+from summitapp.api.v2.utils import (get_field_names, create_user_tracking,
                                     get_item_field_values,get_item_varient_attribute)
 from summitapp.utils import error_response, get_access_level
 from summitapp.summitapp.customizations.item.variants import get_product_variants
@@ -8,6 +8,8 @@ from frappe import _
 
 def get_product_details(kwargs):
     try:
+        from summitapp.summitapp.customizations.item.product_list import get_filter_list
+        from summitapp.api.v2.product import get_customer_wise_loyalty_points
         create_user_tracking(kwargs, "Product Detail")
         item_slug = kwargs.get('item')
         currency = kwargs.get('currency')
@@ -87,3 +89,6 @@ def get_product_details(kwargs):
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
+    
+
+    

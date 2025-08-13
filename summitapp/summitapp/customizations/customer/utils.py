@@ -150,7 +150,7 @@ def _make_address(args, is_primary_address=1):
 import frappe
 import erpnext
 from summitapp.utils import error_response, success_response
-from summitapp.api.v2.customer_address import get_details as get_address_details
+from summitapp.summitapp.customizations.address.utils import get_details as get_address_details
 
 
 def get_user_profile(kwargs):

@@ -97,5 +97,5 @@ def item_search(kwargs):
 
 # Get customer wise loyalty points
 @frappe.whitelist()
-def get_customer_wise_loyalty_points(kwargs):
-    return customer_wise_loyalty_points(kwargs)
+def get_customer_wise_loyalty_points(customer_id, currency):
+    return customer_wise_loyalty_points(customer_id, currency)

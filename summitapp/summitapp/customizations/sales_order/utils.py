@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from summitapp.utils import make_payment_entry
 from summitapp.utils import error_response, success_response
 from summitapp.api.v2.utils import get_currency_symbol
-from summitapp.api.v2.product import get_detailed_item_list
+
 
 @frappe.whitelist()
 def make_seller_order_confirmation(doc):
@@ -281,6 +281,7 @@ def confirm_order(so_doc):
 
 def recently_bought_items(kwargs):
 	try:
+		from summitapp.summitapp.customizations.item.utils import get_detailed_item_list
 		if frappe.session.user == "Guest":
 			return error_response("Please login first")
 		customer = kwargs.get("customer_id")

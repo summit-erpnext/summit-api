@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from summitapp.utils import error_response, success_response
-from summitapp.api.v2.mega_menu import get_item_url
 from summitapp.summitapp.doctype.category.utils import get_parent_categories
 
 

@@ -154,3 +154,18 @@ def get_variant_info_limited(variant_list,variant_attribute_on_product_card):
         variant_info['image'] = get_item_images(item.name)
         varient_info_list.append(variant_info)
     return varient_info_list
+
+
+
+def get_item(item_code, size, colour):  # for cart
+	variant_list = get_variant_details({'item_code': item_code})
+	variants = get_variant_info(variant_list)
+	if size and colour:
+		item_code = [i.get('variant_code') for i in variants if i.get('size') == size and i.get('colour') == colour]
+	elif size:
+		item_code = [i.get('variant_code') for i in variants if i.get('size') == size]
+	elif colour:
+		item_code = [i.get('variant_code') for i in variants if i.get('colour') == colour]
+	else:
+		item_code = [item_code]
+	return item_code[0] if item_code else []

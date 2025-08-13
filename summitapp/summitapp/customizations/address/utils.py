@@ -1,7 +1,6 @@
 import frappe
 from summitapp.utils import success_response,error_response, update_customer
-from summitapp.api.v2.registration import create_user,create_customer,create_address
-
+from summitapp.summitapp.customizations.user.registration import create_user, create_customer, create_address
 
 def set_gst_category_and_address_type(self, method=None):
     if not self.gst_category:

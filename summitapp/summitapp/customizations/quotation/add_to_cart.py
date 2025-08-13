@@ -6,6 +6,7 @@ from frappe.utils import flt
 
 def put_cart_products(kwargs):  
 	try:
+		from summitapp.api.v2.utils import get_stock_info
 		access_token = None
 		email = None
 		session_id = None
@@ -28,6 +29,7 @@ def put_cart_products(kwargs):
 				return error_response("Invalid session ID or no matching Quotation found")
 			quotation = frappe.get_doc("Quotation", quotation_id)
 		items = kwargs.get('item_list')
+		print("ITEM LIST",items)
 		if isinstance(items,str):
 			items = json.loads(items)
 		item_list = []
@@ -38,6 +40,7 @@ def put_cart_products(kwargs):
 		for row in items:
 			kwargs.update({"item_only":1,"item_code":row.get("item_code"), "ptype":"Mandatory"})
 			recommendations = get_recommendation(kwargs)
+			print("RECOM",recommendations)
 			if recommendations:
 				for item in recommendations:
 					if not item:
@@ -84,54 +87,55 @@ def put_cart_products(kwargs):
 		return error_response(e)
 	
 def add_item_to_cart(item_list, access_token, currency, fields={}):
-    customer_id = frappe.db.get_value('Customer', {'email': frappe.session.user})
-    quotation = create_cart(currency, access_token, customer_id)
-    price_list = get_price_list(customer_id)
-    
-    # Check if currency is already set in the quotation
-    if quotation.currency is not None and currency != quotation.currency:
-        return 'Currency cannot be changed for the same cart.'
-    
-    quotation.update(fields)
-    quotation.selling_price_list = price_list
-    
-    for item in item_list:
-        if isinstance(item, dict):
-            item_code = item.get("item_code")
-            quantity = item.get("quantity")
-            
-            if item_code and quantity:
-                quotation_items = [qi for qi in quotation.items if qi.item_code == item_code]
-                
-                if not quotation_items:
-                    item_data = {
-                        "doctype": "Quotation Item",
-                        "item_code": item_code,
-                        "qty": quantity
-                    }
-                    
-                    if "size" in item:
-                        item_data["size"] = item["size"]
-                    if "wastage" in item:
-                        item_data["wastage"] = item["wastage"]
-                    if "remark" in item:
-                        item_data["remark"] = item["remark"]
-                    if "colour" in item:
-                        item_data["colour"] = item["colour"]
-                    if "purity" in item:
-                        item_data["purity"] = item["purity"]
-                    
-                    quotation.append("items", item_data)
-                else:
-                    quotation_items[0].qty = quantity
-    
-    quotation.flags.ignore_mandatory = True
-    quotation.flags.ignore_permissions = True
-    quotation.payment_schedule = []
-    quotation.save(ignore_permissions=True)
+	customer_id = frappe.db.get_value('Customer', {'email': frappe.session.user})
+	quotation = create_cart(currency, access_token, customer_id)
+	price_list = get_price_list(customer_id)
+	
+	# Check if currency is already set in the quotation
+	if quotation.currency is not None and currency != quotation.currency:
+		return 'Currency cannot be changed for the same cart.'
+	
+	quotation.update(fields)
+	quotation.selling_price_list = price_list
+	
+	for item in item_list:
+		if isinstance(item, dict):
+			item_code = item.get("item_code")
+			print("ITEM CODE",item_code)
+			quantity = item.get("quantity")
+			
+			if item_code and quantity:
+				quotation_items = [qi for qi in quotation.items if qi.item_code == item_code]
+				print("QUOTAION ITEMS",quotation_items)
+				if not quotation_items:
+					item_data = {
+						"doctype": "Quotation Item",
+						"item_code": item_code,
+						"qty": quantity
+					}
+					
+					if "size" in item:
+						item_data["size"] = item["size"]
+					if "wastage" in item:
+						item_data["wastage"] = item["wastage"]
+					if "remark" in item:
+						item_data["remark"] = item["remark"]
+					if "colour" in item:
+						item_data["colour"] = item["colour"]
+					if "purity" in item:
+						item_data["purity"] = item["purity"]
+					
+					quotation.append("items", item_data)
+				else:
+					quotation_items[0].qty = quantity
+	
+	quotation.flags.ignore_mandatory = True
+	quotation.flags.ignore_permissions = True
+	quotation.payment_schedule = []
+	quotation.save()
 
-    item_codes = ", ".join([row.item_code for row in quotation.items])
-    return f'Item {item_codes} Added To Cart'
+	item_codes = ", ".join([row.item_code for row in quotation.items])
+	return f'Item {item_codes} Added To Cart'
 
 
 

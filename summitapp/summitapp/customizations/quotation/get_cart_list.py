@@ -19,6 +19,7 @@ def get_cart_list(kwargs):
         else:
             token = auth_header
         customer = frappe.get_value("Customer", {'email': email})
+        print("CUSTOMER",customer)
         result = get_quotation_details(customer, token)
         return {'msg': 'success', 'data': result}
     except Exception as e:

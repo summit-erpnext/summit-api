@@ -155,7 +155,7 @@ def get_product_url(item_detail, url_type = "product"):
 	item_cat = item_detail.get('category')
 	item_cat_slug = frappe.db.get_value('Category',item_cat,'slug')
 	product_slug = item_detail.get("slug")
-	from summitapp.api.v2.mega_menu import get_item_url
+	from summitapp.summitapp.doctype.category.utils import get_item_url
 	return get_item_url(url_type, item_cat_slug, product_slug)
 
 
