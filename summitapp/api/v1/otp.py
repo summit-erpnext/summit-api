@@ -1,5 +1,6 @@
 import frappe
-from summitapp.utils import success_response, error_response, send_mail,check_user_exists
+from summitapp.utils import success_response, error_response, send_mail
+from summitapp.summitapp.customizations.user.utils import check_user_exists
 import json
 import random
 

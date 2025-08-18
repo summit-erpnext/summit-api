@@ -1,13 +1,15 @@
 import frappe
 from summitapp.utils import (error_response, success_response, create_temp_user,
-			     get_company_address, check_guest_user, get_parent_categories,create_access_token)
+			     get_company_address, check_guest_user,create_access_token)
 from summitapp.api.v1.product import get_stock_info, get_slide_images, get_recommendation, get_product_url
 from summitapp.api.v1.utils import (get_price_list,get_field_names,get_guest_user,
 				    get_currency,get_currency_symbol,get_logged_user)
 from erpnext.controllers.accounts_controller import get_taxes_and_charges
 from frappe.utils import flt, getdate
 import json
-from summitapp.api.v1.translation import translate_result
+from summitapp.summitapp.doctype.translation_text.utils import translate_result
+from summitapp.summitapp.doctype.category.utils import get_parent_categories
+
 
 @frappe.whitelist(allow_guest=True)
 def get_list(kwargs):
@@ -208,6 +210,7 @@ def get_processed_cart(quot_doc):
             'item_list': item_list,
             'category': item_doc.category  # Add the category field to the dictionary
         }
+		
     processed = [
         {
             "category": items.get('category'),  # Get the category from the dictionary

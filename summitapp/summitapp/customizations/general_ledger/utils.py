@@ -1,0 +1,380 @@
+import frappe
+from frappe import _
+from summitapp.utils import error_response, success_response
+from frappe.utils import getdate, now_datetime, add_months
+from datetime import timedelta
+from frappe.utils.dateutils import get_period, get_dates_from_timegrain
+from summitapp.summitapp.customizations.user.utils import get_logged_user
+from erpnext.selling.report.item_wise_sales_history.item_wise_sales_history import get_data
+
+
+def dealer_ledger(kwargs):
+	frappe.set_user("Administrator")
+	try:
+		email = None	
+		headers = frappe.request.headers
+		if not headers or 'Authorization' not in headers:
+			return error_response('Please Specify Authorization Token')
+		if headers:
+			email = get_logged_user()
+			if kwargs.get("from_date") and kwargs.get("to_date"):
+				start = getdate(kwargs.get("from_date"), "%d-%m-%Y")
+				end = getdate(kwargs.get("to_date"), "%d-%m-%Y")
+				range = f"{kwargs.get('from_date')} To {kwargs.get('to_date')}"
+			else:
+				start, end = get_dates(kwargs.get('month'))
+				range = kwargs.get('month')
+			party = kwargs.get('party')
+			if not party:
+				party = frappe.db.get_value("Customer", {"email", email})
+		report = frappe.get_doc(
+			"Report", "General Ledger", ignore_permissions=True)
+		custom_filter = {
+			"company": kwargs.get('company', frappe.db.get_single_value("Global Defaults", "default_company")),
+			"from_date": start, "to_date": end,
+			"group_by": "Group by Voucher (Consolidated)", "include_dimensions": 1, "party_type": "Customer",
+			"party": [kwargs.get('party')]
+		}
+		col, data = report.get_data(filters=custom_filter, as_dict=True)
+		# first & last row would be opening & closing balances
+		first, last = data[0], data[-1]
+		due_date_obj = end.replace(day=13)
+		due_date= due_date_obj.strftime('%Y-%m-%d')
+		general_data = {
+			"opening_balance": first.get("balance"),
+			"payment_due_date":due_date,
+			"credit_opening_balance": first.get('credit'),
+			"credit_closing_balance": last.get("credit"),
+			"debit_opening_balance": first.get('debit'),
+			"debit_closing_balance": last.get("debit"),
+			"current_total": last.get("balance")
+		}
+		sales_data = []
+		sno = 1
+		opening_blnc = first.get('balance')
+		for row in data[1:-2]:
+			sales = {
+				"id": sno,
+				"party_name": row.get("party"),
+				"posting_date": row.get("posting_date").strftime("%d-%m-%Y"),
+				"opening_balance": opening_blnc,
+				"closing_balance": row.get("balance"),
+				"debit_amount": row.get("debit"),
+				"credit_amount": row.get("credit"),
+				"voucher_type": row.get("voucher_type"),
+				"Voucher_number": row.get("voucher_no"),
+				"pdf_link": get_si_pdf_link(row.get("voucher_type"), row.get("voucher_no"))
+			}
+			sno += 1
+			sales_data.append(sales)
+
+		result = {
+			'party_name': kwargs.get('party'),
+			'range': range,
+			'general_data': general_data,
+			'sales_data': sales_data
+		}
+		return success_response(data=result)
+	except Exception as e:
+		frappe.logger('gl').exception(e)
+		return error_response(e)
+
+def get_si_pdf_link(voucher_type, voucher_no, print_format=None):
+	if voucher_type != "Sales Invoice":
+		return "#"
+	
+	pdf_data = get_pdf_data(voucher_type, voucher_no)
+	file_name = f"{voucher_no}.pdf".format(to_name=voucher_no.replace("/", "-"))   
+	attached_file = frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": file_name,
+				"attached_to_doctype": "Sales Invoice",
+				"attached_to_name": voucher_no,
+				"file_url": "",
+				"content": pdf_data,
+			}
+		)
+	attached_file.save()
+	file_url_link = attached_file.file_url
+	return f"{frappe.utils.get_url()}{file_url_link}"
+
+def get_pdf_data(doctype, name):
+	html = frappe.get_print(doctype, name)
+	return frappe.utils.pdf.get_pdf(html)     
+
+
+def ledger_summary(kwargs):
+	frappe.set_user("Administrator")
+	try:
+		email = None	
+		headers = frappe.request.headers
+		if not headers or 'Authorization' not in headers:
+			return error_response('Please Specify Authorization Token')
+		if headers:
+			email = get_logged_user()
+		party = frappe.db.get_value("Customer", {"email": email})
+		report = frappe.get_doc(
+			"Report", "Customer Credit Balance", ignore_permissions=True)
+		custom_filter = {
+			"company": kwargs.get('company', frappe.db.get_single_value("Global Defaults", "default_company")),
+			"customer": party
+		}
+		col, data = report.get_data(filters=custom_filter, as_dict=True)
+		general_ledger_report = frappe.get_doc(
+			"Report", "General Ledger", ignore_permissions=True)
+		current_date = getdate()
+		one_month_ago_date = current_date - timedelta(days=current_date.day)
+		thirteenth_date_next_month = add_months(current_date, 1).replace(day=13)
+		
+		ledger_custom_filter = {
+			"company": kwargs.get('company', frappe.db.get_single_value("Global Defaults", "default_company")),
+			"from_date":one_month_ago_date , "to_date":current_date,
+			"group_by": "Group by Voucher (Consolidated)", "include_dimensions": 1, "party_type": "Customer",
+			"party":[party]
+		}
+		ledger_col, ledger_data = general_ledger_report.get_data(filters=ledger_custom_filter, as_dict=True)
+		first = ledger_data[0]
+		result = {}
+		if data:
+			data = data[0]
+			first_entry = frappe.db.get_value(
+				"GL Entry", {"party": party}, 'posting_date', order_by='posting_date asc')
+			dates = list(map(get_period, get_dates_from_timegrain(
+				getdate(first_entry), now_datetime(), "Monthly")))
+			result = {
+				"party_name": data.get("customer"),
+				"remaining_credit_balance": data.get("credit_balance"),
+				"total_credit_amount": data.get("credit_limit"),
+				"due_payment_amount": data.get("outstanding_amt"),
+				"credit_amount_used": data.get("credit_limit") - data.get("credit_balance"),
+				"months": dates,
+				"payment_due_date":thirteenth_date_next_month,
+				"opening_balance":first.get("balance")
+	
+			}
+		return success_response(data=result)
+	except Exception as e:
+		frappe.logger('gl').exception(e)
+		return error_response(e)
+
+
+def get_dates(month):
+	# month = "Dec 2022"
+	m = month.split(" ")
+	year = m[1]
+	mth = m[0]
+	from frappe.utils import getdate, get_first_day, get_last_day
+	dt = getdate(f"{year}-{mth}-01")
+	return get_first_day(dt), get_last_day(dt)
+
+
+def export_ledger_data(kwargs):
+	try:
+		frappe.set_user("Administrator")
+		from frappe.utils.xlsxutils import make_xlsx
+
+		if kwargs.get("from_date") and kwargs.get("to_date"):
+			start = getdate(kwargs.get("from_date"))
+			end = getdate(kwargs.get("to_date"))
+		else:
+			start, end = get_dates(kwargs.get('month'))
+		party = kwargs.get('party')
+		if not party:
+			party = frappe.db.get_value(
+				"Customer", {"email", frappe.session.user})
+		filters = {
+			"company": kwargs.get('company', frappe.db.get_single_value("Global Defaults", "default_company")),
+			"from_date": start, "to_date": end,
+			"group_by": "Group by Voucher (Consolidated)", "include_dimensions": 1, "party_type": "Customer",
+			"party": [party]
+		}
+		data = {}
+		report = frappe.get_doc(
+			"Report", "General Ledger", ignore_permissions=True)
+		data["columns"], data["result"] = report.get_data(
+			filters=filters, as_dict=True)
+
+		columns = ["posting_date", "party", "balance",
+				   "debit", "credit", "voucher_type", "voucher_no"]
+		custom_idx = {"party": 1}
+		xlsx_data, column_widths = build_xlsx_data(columns, data, custom_idx)
+
+		xlsx_file = make_xlsx(xlsx_data, "Query Report",
+							  column_widths=column_widths)
+
+		frappe.response["filename"] = "report.xlsx"
+		frappe.response["filecontent"] = xlsx_file.getvalue()
+		frappe.response["type"] = "binary"
+	except Exception as e:
+		frappe.logger('gl').exception(e)
+		return e
+
+
+def build_xlsx_data(selected_column, data, cidx={}, include_indentation=False):
+	import datetime
+	from frappe.utils import cint, cstr
+
+	EXCEL_TYPES = (
+		str,
+		bool,
+		type(None),
+		int,
+		float,
+		datetime.datetime,
+		datetime.date,
+		datetime.time,
+		datetime.timedelta,
+	)
+
+	result = [[]]
+	column_widths = []
+
+	for column in data.get("columns"):
+		if column.get("hidden") or column.get("fieldname") not in selected_column:
+			continue
+		column_width = cint(column.get("width", 0))
+		# to convert into scale accepted by openpyxl
+		column_width /= 10
+		if idx := cidx.get(column.get("fieldname")):
+			column_widths.insert(idx, column_width)
+			result[0].insert(idx, _(column.get("label")))
+		else:
+			result[0].append(_(column.get("label")))
+			column_widths.append(column_width)
+
+	# build table from result
+	for row_idx, row in enumerate(data.get("result")):
+		row_data = []
+		if isinstance(row, dict):
+			for col_idx, column in enumerate(data.get("columns")):
+				if column.get("hidden") or column.get("fieldname") not in selected_column:
+					continue
+				label = column.get("label")
+				fieldname = column.get("fieldname")
+				cell_value = row.get(fieldname, row.get(label, ""))
+				if not isinstance(cell_value, EXCEL_TYPES):
+					cell_value = cstr(cell_value)
+
+				if cint(include_indentation) and "indent" in row and col_idx == 0:
+					cell_value = (
+						"	" * cint(row["indent"])) + cstr(cell_value)
+				if idx := cidx.get(column.get("fieldname")):
+					row_data.insert(idx, cell_value)
+				else:
+					row_data.append(cell_value)
+		elif row:
+			row_data = row
+
+		result.append(row_data)
+
+	result[1][1] = "Opening"
+	result[-2][1] = "Total"
+	result[-1][1] = "Closing (Opening + Total)"
+	return result, column_widths
+
+
+import json
+import frappe
+from frappe import _
+from erpnext.selling.report.item_wise_sales_history.item_wise_sales_history import get_data
+from summitapp.utils import error_response, success_response
+
+
+
+def item_wise_sales_history(kwargs):
+    try:
+        if isinstance(kwargs, str):
+            kwargs = json.loads(kwargs)
+
+        filters = kwargs.get("filters", {})
+        if isinstance(filters, str):
+            filters = json.loads(filters)
+
+        filters = frappe._dict(filters)
+        
+        # Set default dates
+        from frappe.utils import nowdate, getdate, add_years
+        
+        # Default to_date = today
+        if not filters.get('to_date'):
+            filters.to_date = nowdate()
+        
+        # Default from_date = 1 year before today
+        if not filters.get('from_date'):
+            today = getdate(nowdate())
+            one_year_ago = add_years(today, -1)
+            filters.from_date = one_year_ago.strftime('%Y-%m-%d')
+
+        if filters.from_date > filters.to_date:
+            frappe.throw(_("From Date cannot be greater than To Date"))
+        # Get original report data
+        report_data = get_data(filters)
+        
+        # Calculate targets and enhance data
+        enhanced_data = add_target_quantities(report_data, filters)
+        
+        return success_response(enhanced_data)
+    except Exception as e:
+        frappe.logger('REPORT').exception(e)
+        return error_response(str(e))
+
+
+def add_target_quantities(data, filters):
+    # Group data for target calculations
+    target_map = {}
+    for row in data:
+        key = (row['item_code'], row['customer'])
+        if key not in target_map:
+            target_map[key] = {'monthly': {}, 'yearly': {}}
+        
+        date = frappe.utils.getdate(row['transaction_date'])
+        year = date.year
+        month = date.month
+        
+        # Monthly aggregation
+        month_key = (year, month)
+        target_map[key]['monthly'][month_key] = target_map[key]['monthly'].get(month_key, 0) + row['quantity']
+        
+        # Yearly max tracking
+        if year not in target_map[key]['yearly'] or target_map[key]['monthly'][month_key] > target_map[key]['yearly'][year]:
+            target_map[key]['yearly'][year] = target_map[key]['monthly'][month_key]
+
+    # Enhance original data with targets
+    for row in data:
+        date = frappe.utils.getdate(row['transaction_date'])
+        year = date.year
+        month = date.month
+        key = (row['item_code'], row['customer'])
+        
+        # Add monthly target (total sales for that month)
+        row['monthly_target_qty'] = target_map[key]['monthly'].get((year, month), 0)
+        
+        # Add yearly target (max monthly sales in the year)
+        row['target_qty'] = target_map[key]['yearly'].get(year, 0)
+
+    return data
+
+
+def get_monthly_target_qty(customer, item):
+    get_company = frappe.get_doc("Webshop Settings")
+    company = get_company.company
+
+    filters = {"company": company, "customer": customer, "item_code": item}
+    sales_orders = item_wise_sales_history({"filters": filters})  
+
+    if sales_orders and sales_orders.get("data"):
+        return sales_orders["data"][0].get('monthly_target_qty')
+    return None
+
+
+def get_yearly_target_qty(customer, item):
+    get_company = frappe.get_doc("Webshop Settings")
+    company = get_company.company
+
+    filters = {"company": company, "customer": customer, "item_code": item}
+    sales_orders = item_wise_sales_history({"filters": filters})  
+
+    if sales_orders and sales_orders.get("data"):
+        return sales_orders["data"][0].get('target_qty')
+    return None

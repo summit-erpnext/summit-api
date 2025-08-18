@@ -1,102 +1,32 @@
 import frappe
-from summitapp.utils import check_user_exists,success_response,error_response, resync_cart
-from summitapp.api.v2.access_token import get_access_token,get_token
+from summitapp.summitapp.customizations.user.signin import (user_signin, allow_existing_user_signin, user_profile, 
+                                                            guest_user_signin, redirecting_urls)
 
+# User Signin
+@frappe.whitelist()
 def signin(kwargs):
-	try:
-		if (kwargs.get('usr', kwargs.get("email"))) == frappe.session.user: return success_response(data='Already Logged In')
-		if kwargs.get('via_google'):
-			return login_via_google(kwargs)
-		if not check_user_exists(kwargs.get('usr') or kwargs.get('email')):
-			return error_response('No account with this Email id')
-		if kwargs.get('with_otp'):
-			# Validate OTP
-			from summitapp.api.v2.otp import verify_otp
-			if verify_otp({"email":kwargs.get('usr'), "otp":kwargs.get('pwd')}).get('msg') != 'success':
-				return error_response('Invalid OTP')
-			else:
-				return login_via_otp(kwargs.get('usr'))
-	except frappe.exceptions.AuthenticationError as e:
-		frappe.logger("registration").exception(e)
-		return error_response(e)
+	return user_signin(kwargs)
 
+
+# Existing User Signin
+@frappe.whitelist()
 def existing_user_signin(kwargs):
-    try:
-        temp_session = kwargs.get("guest_token")
-        # Authenticate the user
-        login_manager = frappe.auth.LoginManager()
-        login_manager.authenticate(user=kwargs.get('usr'), pwd=kwargs.get('pwd'))
-        login_manager.post_login()
-        
-        synced = resync_cart(temp_session)
-        token = get_access_token(kwargs)
-        
-        frappe.response["data"] = {"is_synced": synced, "message": "Logged In", "access_token": token}
-        
-    except frappe.exceptions.AuthenticationError as e:
-        frappe.logger("signin").exception(e)
-        return error_response(e)
+    return allow_existing_user_signin(kwargs)
 
 
-
-    
-def signin_as_guest(kwargs):
-	try:
-		"""
-			Store guest user id, Create User with given params
-			Login User and Transfer Quotation Items From Guest Cart to User Cart 
-		"""
-		from summitapp.api.v2.registration import create_user, create_customer, create_address
-		temp_user = frappe.session.user
-		temp_session = frappe.session.sid
-		if not check_user_exists(kwargs.get('email')): 
-			create_user(kwargs)
-			customer_doc = create_customer(kwargs)
-		else:
-			customer_doc = frappe.get_doc('Customer', {'email': kwargs.get('email')})
-		frappe.local.login_manager.login_as(kwargs.get('email'))
-		address_doc = create_address(kwargs,customer_doc.name)
-		address_doc.save(ignore_permissions=True)
-		resync_cart(temp_user)
-		return success_response(data={"address_id":address_doc.name, "customer_id":customer_doc.name})
-	except Exception as e:
-		frappe.logger('utils').exception(e)
-		return error_response(e)
-
-
+# Get User Profile
+@frappe.whitelist()
 def get_user_profile(kwargs):
-	roles = frappe.get_roles(frappe.session.user)
-	is_superadmin = "Administrator" in roles
-	is_dealer = "Dealer" in roles
-	is_catalog_user = "Catalog User" in roles
-	return success_response(data = {
-									"is_superadmin": is_superadmin,
-									"is_dealer": is_dealer,
-									"is_catalog_user": is_catalog_user
-								})
+	return user_profile(kwargs)
 
 
-def login_via_google(kwargs):
-	if check_user_exists(kwargs.get('usr', kwargs.get("email"))):
-		return login_without_password(kwargs.get('usr', kwargs.get("email")))
-	else:
-		from summitapp.api.v2.registration import customer_signup
-		return customer_signup(kwargs)
+# Guest Iser Signin
+@frappe.whitelist()    
+def signin_as_guest(kwargs):
+	return guest_user_signin(kwargs)
 
-def login_via_otp(email):
-	return login_without_password(email)
 
-def login_without_password(email):
-	access_token = get_token(email)
-	roles = frappe.get_roles(frappe.session.user)
-	is_superadmin = "Administrator" in roles
-	is_dealer = "Dealer" in roles
-	doc = frappe.get_doc("User", {"name": email})
-	full_name = doc.full_name
-	return success_response(data = {
-									"access_token":access_token,
-									"full_name": full_name
-								})
-
+# Get Redirecting URLS
+@frappe.whitelist()
 def get_redirecting_urls(kwargs):
-	return frappe.get_all("Redirect URLs",fields=["from", "to"])
+	return redirecting_urls(kwargs)

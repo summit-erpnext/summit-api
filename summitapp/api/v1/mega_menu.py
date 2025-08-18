@@ -1,6 +1,6 @@
 import frappe
-from summitapp.utils import error_response, success_response, get_allowed_categories, get_parent_categories
-
+from summitapp.utils import error_response, success_response
+from summitapp.summitapp.doctype.category.utils import get_allowed_categories, get_parent_categories
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
 def get(kwargs):

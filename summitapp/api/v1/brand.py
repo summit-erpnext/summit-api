@@ -1,10 +1,11 @@
 from shutil import ExecError
 import frappe
-from summitapp.utils import error_response, success_response, get_allowed_brands
+from summitapp.utils import error_response, success_response
 from summitapp.api.v1.product import get_list, get_details
 from summitapp.api.v1.utils import get_field_names
 
 def get(kwargs):
+    from summitapp.summitapp.customizations.brand.utils import get_allowed_brands
     filters = {"publish":1}
     if brands:=get_allowed_brands():
         filters["name"] = ["in", brands]
