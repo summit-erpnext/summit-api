@@ -211,25 +211,73 @@ def get_details(kwargs):
                     colours.append(varient["Colour"])
             translated_item_fields["thumbnail_images"] = thumbnail_images
             if translated_item_fields:
+                filter_list = kwargs.get('filter')
+                base_filters = {
+                "category": item.category,
+                "show_on_website": 1,
+                "disabled": 0,
+            }
+
+                filters = build_filters(base_filters, filter_list)
                 translated_item_fields['previous_item'] = frappe.db.get_value(
-                    "Item",
-                    {"modified": (">", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
-                    "slug",
-                    order_by="modified asc"
+                        "Item",
+                        {**filters, "modified": (">", item.modified)},
+                        "slug",
+                        order_by="modified asc"
                 )
                 translated_item_fields['next_item'] = frappe.db.get_value(
-                    "Item",
-                    {"modified": ("<", item.modified), "category": item.category, "show_on_website": 1, "disabled": 0},
-                    "slug",
-                    order_by="modified desc"
-                )
-        
+                        "Item",
+                        {**filters, "modified": ("<", item.modified)},
+                        "slug",
+                        order_by="modified desc"
+                    )
         return {'msg':('Success'), 'data': translated_item_fields}
     
     except Exception as e:
         frappe.logger('product').exception(e)
         return error_response(str(e))
 
+import re
+
+def normalize_fieldname(name: str) -> str:
+    """Convert section names into valid fieldnames: 'Weight Range' -> 'weight_range'"""
+    return re.sub(r'\s+', '_', name.strip().lower())
+
+def build_filters(base_filters, filter_list):
+    """Merge base filters with dynamic filters from request"""
+    filters = dict(base_filters)
+
+    if not filter_list:
+        return filters
+
+    try:
+        parsed_filters = json.loads(filter_list)
+
+        # Case 1: Dict style ({"Category": "X", "sections": [...]})
+        if isinstance(parsed_filters, dict):
+            for key, val in parsed_filters.items():
+                if key == "sections":
+                    continue
+                filters[normalize_fieldname(key)] = val
+
+            for section in parsed_filters.get("sections", []):
+                fieldname = normalize_fieldname(section.get("name", ""))
+                values = section.get("value", [])
+                if fieldname and values:
+                    filters[fieldname] = ["in", values] if len(values) > 1 else values[0]
+
+        # Case 2: List style ([{"name":"..","value":[..]}, ...])
+        elif isinstance(parsed_filters, list):
+            for section in parsed_filters:
+                fieldname = normalize_fieldname(section.get("name", ""))
+                values = section.get("value", [])
+                if fieldname and values:
+                    filters[fieldname] = ["in", values] if len(values) > 1 else values[0]
+
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Filter Parsing Error")
+    
+    return filters
 
 
 # Whitelisted Function
