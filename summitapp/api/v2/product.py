@@ -188,8 +188,8 @@ def get_details(kwargs):
                 translated_item_fields["attributes"] = processed_items_varient["attributes"]
             product_attributes = {}
             if not translated_item_fields["is_template"]:
-                for item in get_item_varient_attribute(item.name):
-                    product_attributes[item["attribute"]] = item["abbr"]
+                for attr in get_item_varient_attribute(item.name):
+                    product_attributes[attr["attribute"]] = attr["abbr"]
             translated_item_fields["product_attributes"] = product_attributes
             thumbnail_images = []
             colours = []
