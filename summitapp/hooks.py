@@ -106,9 +106,9 @@ scheduler_events = {
 # Authentication and authorization
 # --------------------------------
 
-# auth_hooks = [
-# 	"summitapp.auth.validate"
-# ]
+auth_hooks = [
+	"summitapp.utils.validate_user_activity"
+]
 
 fixtures = [
     {"dt": "Property Setter", "filters": [
