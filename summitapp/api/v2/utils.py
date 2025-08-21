@@ -740,7 +740,7 @@ def get_item_images(item_code):
     child_images = []
     for img in child_image_docs:
         # Use large_size_image if present, otherwise fall back to upload_image
-        image = img.large_size_image if img.large_size_image else img.upload_image
+        image = img.upload_image
         if image:
             child_images.append(image)
     
