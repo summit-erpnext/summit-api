@@ -146,107 +146,25 @@ def get_variants(kwargs):
         frappe.logger('product').exception(e)
         return error_response(e)
 
-# Whitelisted Function
-@frappe.whitelist(allow_guest=True)
-def get_details(kwargs):
-    try:
-        create_user_tracking(kwargs, "Product Detail")
-        item_slug = kwargs.get('item')
-        currency = kwargs.get('currency')
-        if not item_slug:
-            return error_response(_("Invalid key 'item'"))
-        customer_id = kwargs.get('customer_id') or frappe.db.get_value("Customer", {"email": frappe.session.user}, 'name') if frappe.session.user != "Guest" else None
-        filters = get_filter_list({'slug': item_slug, 'access_level': get_access_level(customer_id)})
-        item_list = frappe.get_list("Item", filters=filters, fields=["*"])
-        if not item_list:
-            return error_response(_("Item not found"))
+import frappe, json, re
+from frappe import _
+from typing import Any, Dict, List, Optional, Tuple
 
-        item = item_list[0]  # Now item is a dict, not a list
-
-        field_names = get_field_names('Details')
-        translated_item_fields = {}
-        if item:
-            loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
-            item_fields = get_item_field_values(currency, item, customer_id, None, field_names,loyalty_points_map,None,None)
-            for fieldname, value in item_fields.items():
-                translated_item_fields[fieldname] = _(value)
-            translated_item_fields["variants"] = []
-            translated_item_fields["attributes"] = []
-            translated_item_fields["is_template"] = False
-            varient_item = frappe.get_value("Item", {"slug": item_slug}, 'variant_of')
-            has_varient = frappe.get_value("Item", {"slug": item_slug}, 'has_variants')
-            if varient_item is not None or has_varient == 1:
-                if has_varient == 1:
-                    template = item_slug
-                    translated_item_fields["is_template"] = True
-                else:
-                    template = varient_item
-                processed_items_varient = get_variants({"item": template})['data']
-                if processed_items_varient["item_code"]:
-                    translated_item_fields["item_code"] = processed_items_varient["item_code"]
-                translated_item_fields["variants"] = processed_items_varient["variants"]
-                translated_item_fields["attributes"] = processed_items_varient["attributes"]
-            product_attributes = {}
-            if not translated_item_fields["is_template"]:
-                for attr in get_item_varient_attribute(item.name):
-                    product_attributes[attr["attribute"]] = attr["abbr"]
-            translated_item_fields["product_attributes"] = product_attributes
-            thumbnail_images = []
-            colours = []
-            if translated_item_fields.get("slide_img") and 'Colour' in translated_item_fields['product_attributes'].keys() and translated_item_fields['product_attributes']["Colour"] not in colours:
-                thumbnail_images.append({ 
-                                            "field_name": "Colour",
-                                            "Colour": translated_item_fields['product_attributes']["Colour"],
-                                            # "image": translated_item_fields.get("slide_img")[0]
-                                         })
-                colours.append(translated_item_fields['product_attributes']["Colour"])
-            
-            for varient in translated_item_fields["variants"]:
-                if varient.get("image") and 'Colour' in varient.keys() and varient["Colour"] not in colours:
-                    thumbnail_images.append({ 
-                                            "field_name": "Colour",
-                                            "Colour": varient["Colour"],
-                                            "image": varient.get("image")[0]
-                                         })
-                    colours.append(varient["Colour"])
-            translated_item_fields["thumbnail_images"] = thumbnail_images
-            if translated_item_fields:
-                filter_list = kwargs.get('filter')
-                base_filters = {
-                "category": item.category,
-                "show_on_website": 1,
-                "disabled": 0,
-            }
-
-                filters = build_filters(base_filters, filter_list)
-                translated_item_fields['previous_item'] = frappe.db.get_value(
-                        "Item",
-                        {**filters, "modified": (">", item.modified)},
-                        "slug",
-                        order_by="modified asc"
-                )
-                translated_item_fields['next_item'] = frappe.db.get_value(
-                        "Item",
-                        {**filters, "modified": ("<", item.modified)},
-                        "slug",
-                        order_by="modified desc"
-                    )
-        return {'msg':('Success'), 'data': translated_item_fields}
-    
-    except Exception as e:
-        frappe.logger('product').exception(e)
-        return error_response(str(e))
-
-import re
+# ----------------------------
+# Utilities
+# ----------------------------
 
 def normalize_fieldname(name: str) -> str:
-    """Convert section names into valid fieldnames: 'Weight Range' -> 'weight_range'"""
+    """Convert human-readable names into valid fieldnames: 'Weight Range' -> 'weight_range'"""
     return re.sub(r'\s+', '_', name.strip().lower())
 
-def build_filters(base_filters, filter_list):
-    """Merge base filters with dynamic filters from request"""
-    filters = dict(base_filters)
 
+def build_filters(base_filters: Dict[str, Any], filter_list: Optional[str]) -> Dict[str, Any]:
+    """
+    Merge base filters with dynamic filters from request.
+    Supports dict-style and list-style filter payloads.
+    """
+    filters = dict(base_filters)
     if not filter_list:
         return filters
 
@@ -276,9 +194,171 @@ def build_filters(base_filters, filter_list):
 
     except Exception:
         frappe.log_error(frappe.get_traceback(), "Filter Parsing Error")
-    
+
     return filters
 
+
+def build_prev_next_items(
+    item_slug: str, kwargs: Dict[str, Any], item_category: str
+) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Compute previous and next slugs for given item based on filters and sort order.
+    """
+    # Extract sorting info
+    sort_by = kwargs.get("sort_by") or "creation"
+    order_by = None  # decided inside get_list_data
+
+    # Base filters
+    base_filters = {"category": item_category, "show_on_website": 1, "disabled": 0}
+    filters = build_filters(base_filters, kwargs.get("filter"))
+
+    # Fetch all items for navigation
+    total_count, all_items = get_list_data(
+        kwargs=kwargs,
+        order_by=order_by,
+        sort_by=sort_by,
+        filters=filters,
+        price_range=None,
+        global_items=None,
+        page_no=None,  # fetch all for prev/next
+        vehicle_filters=None,
+        limit=0,  # 0 means no limit
+    )
+
+    # Find current index
+    current_index = next((i for i, d in enumerate(all_items) if d["slug"] == item_slug), None)
+
+    prev_slug, next_slug = None, None
+    if current_index is not None:
+        if current_index > 0:
+            prev_slug = all_items[current_index - 1]["slug"]
+        if current_index < len(all_items) - 1:
+            next_slug = all_items[current_index + 1]["slug"]
+
+    return prev_slug, next_slug
+
+
+def get_thumbnail_images(translated_item_fields: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Build thumbnail images list based on colour attributes from item & variants.
+    """
+    thumbnail_images, colours = [], []
+
+    # Add base item image if Colour exists
+    if (
+        translated_item_fields.get("slide_img")
+        and "Colour" in translated_item_fields["product_attributes"].keys()
+    ):
+        colour = translated_item_fields["product_attributes"]["Colour"]
+        if colour not in colours:
+            thumbnail_images.append({
+                "field_name": "Colour",
+                "Colour": colour,
+                # "image": translated_item_fields.get("slide_img")[0]
+            })
+            colours.append(colour)
+
+    # Add variant images
+    for var in translated_item_fields.get("variants", []):
+        if var.get("image") and "Colour" in var and var["Colour"] not in colours:
+            thumbnail_images.append({
+                "field_name": "Colour",
+                "Colour": var["Colour"],
+                "image": var.get("image")[0],
+            })
+            colours.append(var["Colour"])
+
+    return thumbnail_images
+
+
+def get_item_details_dict(item: Dict[str, Any], kwargs: Dict[str, Any], customer_id: Optional[str], currency: str) -> Dict[str, Any]:
+    """
+    Build complete item details dictionary with translations, variants, attributes, etc.
+    """
+    field_names = get_field_names("Details")
+    loyalty_points_map = get_customer_wise_loyalty_points(customer_id, currency)
+
+    # Translate item fields
+    item_fields = get_item_field_values(currency, item, customer_id, None, field_names, loyalty_points_map, None, None)
+    translated_item_fields = {fname: _(val) for fname, val in item_fields.items()}
+
+    # Default placeholders
+    translated_item_fields.update({
+        "variants": [],
+        "attributes": [],
+        "is_template": False,
+    })
+
+    # Check variants/template
+    varient_item, has_varient = frappe.db.get_value(
+        "Item", {"slug": item.slug}, ["variant_of", "has_variants"]
+    ) or (None, 0)
+
+    if varient_item or has_varient == 1:
+        template = item.slug if has_varient == 1 else varient_item
+        translated_item_fields["is_template"] = bool(has_varient == 1)
+
+        processed_items_varient = get_variants({"item": template})["data"]
+        if processed_items_varient.get("item_code"):
+            translated_item_fields["item_code"] = processed_items_varient["item_code"]
+
+        translated_item_fields["variants"] = processed_items_varient.get("variants", [])
+        translated_item_fields["attributes"] = processed_items_varient.get("attributes", [])
+
+    # Product attributes
+    product_attributes = {}
+    if not translated_item_fields["is_template"]:
+        for attr in get_item_varient_attribute(item.name):
+            product_attributes[attr["attribute"]] = attr["abbr"]
+    translated_item_fields["product_attributes"] = product_attributes
+
+    # Thumbnail images
+    translated_item_fields["thumbnail_images"] = get_thumbnail_images(translated_item_fields)
+
+    # Prev / Next items
+    prev_slug, next_slug = build_prev_next_items(item.slug, kwargs, item.category)
+    translated_item_fields["previous_item"] = prev_slug
+    translated_item_fields["next_item"] = next_slug
+
+    return translated_item_fields
+
+
+# ----------------------------
+# Main API
+# ----------------------------
+
+@frappe.whitelist(allow_guest=True)
+def get_details(kwargs: Dict[str, Any]):
+    try:
+        create_user_tracking(kwargs, "Product Detail")
+
+        item_slug = kwargs.get("item")
+        currency = kwargs.get("currency")
+        if not item_slug:
+            return error_response(_("Invalid key 'item'"))
+
+        # Get customer id
+        customer_id = None
+        if frappe.session.user != "Guest":
+            customer_id = kwargs.get("customer_id") or frappe.db.get_value(
+                "Customer", {"email": frappe.session.user}, "name"
+            )
+
+        # Fetch item
+        filters = get_filter_list({"slug": item_slug, "access_level": get_access_level(customer_id)})
+        item_list = frappe.get_list("Item", filters=filters, fields=["*"])
+        if not item_list:
+            return error_response(_("Item not found"))
+
+        item = item_list[0]
+
+        translated_item_fields = get_item_details_dict(item, kwargs, customer_id, currency)
+
+        return {"msg": "Success", "data": translated_item_fields}
+
+    except Exception as e:
+        frappe.logger("product").exception(e)
+        return error_response(str(e))
 
 # Whitelisted Function
 @frappe.whitelist(allow_guest=True)
