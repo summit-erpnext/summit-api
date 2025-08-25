@@ -60,8 +60,11 @@ def process_single_image(image):
         else:
             rgb_img = img
 
-        def save_resized_webp_image(size, prefix):
-            resized_img = rgb_img.resize((size, size))
+        def save_resized_webp_image(size, prefix, resize=True):
+            if resize:
+                resized_img = rgb_img.resize((size, size))
+            else:
+                resized_img = rgb_img  # keep original resolution
             with io.BytesIO() as temp:
                 resized_img.save(temp, format="WEBP", quality=90)
                 file_name = f"{prefix}-{os.path.splitext(os.path.basename(image.upload_image))[0]}.webp"
@@ -75,8 +78,8 @@ def process_single_image(image):
                 file_doc.save()
                 return file_doc.file_url
 
-        small_image_url = save_resized_webp_image(600, "small")
-        large_image_url = save_resized_webp_image(1200, "large")
+        small_image_url = save_resized_webp_image(600, "small", resize=True)
+        large_image_url = save_resized_webp_image(None, "large", resize=False)
 
         frappe.db.set_value(
             "Item Images",
