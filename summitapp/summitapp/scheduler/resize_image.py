@@ -34,6 +34,8 @@ def resize_image():
                 try:
                     process_single_image(image)
                 except Exception as e:
+                    frappe.db.set_value("Item Images", image.name, "image_unavailable", 1)
+                    frappe.log_error(f"Error processing image {image.name}: {str(e)}")
                     continue
 
     except Exception as e:
@@ -54,14 +56,17 @@ def process_single_image(image):
 
     with Image.open(response.raw) as img:
         if img.mode in ("RGBA", "LA"):
-            rgb_img = img
+            rgb_img = img.convert("RGB") 
         elif img.mode != "RGB":
             rgb_img = img.convert("RGB")
         else:
             rgb_img = img
 
-        def save_resized_webp_image(size, prefix):
-            resized_img = rgb_img.resize((size, size))
+        def save_resized_webp_image(max_size, prefix):
+            resized_img = rgb_img.copy()
+            if max_size:
+                resized_img.thumbnail((max_size, max_size), Image.LANCZOS)
+
             with io.BytesIO() as temp:
                 resized_img.save(temp, format="WEBP", quality=90)
                 file_name = f"{prefix}-{os.path.splitext(os.path.basename(image.upload_image))[0]}.webp"
