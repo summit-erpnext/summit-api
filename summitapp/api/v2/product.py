@@ -1,18 +1,16 @@
-import frappe
+import frappe,json
 from summitapp.utils import error_response, success_response, get_access_level, get_allowed_categories, get_allowed_brands, get_child_categories
-import json
 from frappe import _
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils.global_search import search
 from frappe.utils import flt, cint, today, add_days
 from summitapp.api.v2.translation import translate_result
 from summitapp.api.v2.e_tag import handle_etag, handle_response
-from summitapp.api.v2.utils import (check_brand_exist, get_filter_list, get_filter_listing,
-                                       get_item_images, get_stock_info, 
-									   get_processed_list, get_item_field_values, 
-									   get_field_names, create_user_tracking,
-									   get_default_variant, variant_thumbnail_reqd,
-                                    	get_list_product_limit,get_customer_id,get_customer_wise_loyalty_points)
+from summitapp.api.v2.utils import (
+    check_brand_exist, get_filter_list, get_filter_listing,get_item_images, get_stock_info, get_processed_list, get_item_field_values, 
+    get_field_names, create_user_tracking,get_default_variant, variant_thumbnail_reqd,get_list_product_limit,get_customer_id,
+    get_customer_wise_loyalty_points,get_category_size
+)
 from werkzeug.wrappers import Response
 import datetime
 
@@ -319,9 +317,26 @@ def get_item_details_dict(item: Dict[str, Any], kwargs: Dict[str, Any], customer
     prev_slug, next_slug = build_prev_next_items(item.slug, kwargs, item.category)
     translated_item_fields["previous_item"] = prev_slug
     translated_item_fields["next_item"] = next_slug
-
+    translated_item_fields["item_details"] = get_item_field_details(item.category,item.name)
     return translated_item_fields
 
+
+def get_item_field_details(category,item):
+    if not (category or item):
+        return []
+    
+    item_detail_fields = frappe.db.get_all(
+        "Item Details",filters = {"parent":category},fields = ["label","fieldname"]
+    )
+
+    for field in item_detail_fields:
+        field["value"] = (
+            get_category_size(category) or []
+            if field.label.lower() == "size" 
+            else frappe.db.get_value("Item", item, field["fieldname"])
+        )
+        
+    return item_detail_fields
 
 # ----------------------------
 # Main API
