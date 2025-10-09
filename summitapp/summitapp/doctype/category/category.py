@@ -3,6 +3,8 @@
 
 # import frappe
 from frappe.utils.nestedset import NestedSet
+from .utils import set_item_fields
 
 class Category(NestedSet):
-	pass
+	def validate(self):
+		set_item_fields(self)

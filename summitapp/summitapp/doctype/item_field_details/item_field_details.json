@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:label_value",
+ "creation": "2025-10-06 17:11:09.177967",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "column_break_ovho",
+  "fieldname",
+  "section_break_owxa",
+  "label_value"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Label"
+  },
+  {
+   "fieldname": "fieldname",
+   "fieldtype": "Data",
+   "label": "Fieldname"
+  },
+  {
+   "fieldname": "column_break_ovho",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_owxa",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "label_value",
+   "fieldtype": "Data",
+   "label": "Label Value",
+   "unique": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-06 21:48:02.279106",
+ "modified_by": "Administrator",
+ "module": "SummitApp",
+ "name": "Item Field Details",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

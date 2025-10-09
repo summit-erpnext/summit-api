@@ -28,7 +28,8 @@
   "section_break_tlfu",
   "custom_item_characteristics",
   "custom_item_description",
-  "item_specification"
+  "item_specification",
+  "item_details"
  ],
  "fields": [
   {
@@ -158,14 +159,19 @@
    "fieldtype": "Table",
    "label": "Item Specification",
    "options": "Item Specification Detail"
+  },
+  {
+   "fieldname": "item_details",
+   "fieldtype": "Table",
+   "label": "Item Details",
+   "options": "Item Details"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
-
- "modified": "2025-06-20 13:01:39.106623",
+ "modified": "2025-10-06 16:49:23.096286",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
