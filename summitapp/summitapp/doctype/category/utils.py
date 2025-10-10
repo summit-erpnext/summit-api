@@ -13,3 +13,5 @@ def set_item_fields(doc):
         label = item_field.label
         if label in item_field_map:
             item_field.fieldname = item_field_map[label]
+        else:
+            item_field.fieldname = None
