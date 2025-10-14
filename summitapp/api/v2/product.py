@@ -317,7 +317,7 @@ def get_item_details_dict(item: Dict[str, Any], kwargs: Dict[str, Any], customer
     prev_slug, next_slug = build_prev_next_items(item.slug, kwargs, item.category)
     translated_item_fields["previous_item"] = prev_slug
     translated_item_fields["next_item"] = next_slug
-    translated_item_fields["item_details"] = get_item_field_details(item.category,item.name)
+    translated_item_fields["item_field_details"] = get_item_field_details(item.category,item.name)
     return translated_item_fields
 
 
@@ -326,15 +326,15 @@ def get_item_field_details(category,item):
         return []
     
     item_detail_fields = frappe.db.get_all(
-        "Item Details",filters = {"parent":category},fields = ["label","fieldname"]
+        "Item Details",filters = {"parent":category,"fieldname":["NOT IN",["",None]]},fields = ["label","fieldname"]
     )
 
+    fields = [ field.fieldname for field in item_detail_fields ]
+    
+    item_field_values = frappe.db.get_value("Item",item,fields,as_dict=True)
+
     for field in item_detail_fields:
-        field["value"] = (
-            get_category_size(category) or []
-            if field.label.lower() == "size" 
-            else frappe.db.get_value("Item", item, field["fieldname"])
-        )
+        field["value"] =  item_field_values.get(field.fieldname)
         
     return item_detail_fields
 
