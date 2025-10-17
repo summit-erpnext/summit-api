@@ -13,6 +13,7 @@
   "image",
   "column_break_snyvc",
   "enable_category",
+  "disable_for_mobile",
   "url",
   "sequence",
   "slug",
@@ -165,13 +166,19 @@
    "fieldtype": "Table",
    "label": "Item Details",
    "options": "Item Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "disable_for_mobile",
+   "fieldtype": "Check",
+   "label": "Disable for Mobile"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-06 16:49:23.096286",
+ "modified": "2025-10-17 14:01:55.933239",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
