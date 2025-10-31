@@ -29,7 +29,8 @@
   "section_break_tlfu",
   "custom_item_characteristics",
   "custom_item_description",
-  "item_specification"
+  "item_specification",
+  "item_details"
  ],
  "fields": [
   {
@@ -165,13 +166,19 @@
    "fieldname": "disable_for_mobile",
    "fieldtype": "Check",
    "label": "Disable for Mobile"
+  },
+  {
+   "fieldname": "item_details",
+   "fieldtype": "Table",
+   "label": "Item Details",
+   "options": "Item Details"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2025-10-17 11:09:42.485794",
+ "modified": "2025-10-31 10:01:12.537683",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Category",
