@@ -348,6 +348,7 @@
    "fieldtype": "Data",
    "insert_after": "valuation_method",
    "label": "Length",
+   "reqd": 1,
    "module": "SummitApp"
   },
   {
