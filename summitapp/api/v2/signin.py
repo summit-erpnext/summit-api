@@ -69,10 +69,16 @@ def get_user_profile(kwargs):
 	is_superadmin = "Administrator" in roles
 	is_dealer = "Dealer" in roles
 	is_catalog_user = "Catalog User" in roles
+	is_show_orders = "Show Orders" in roles
+	is_show_reports = "Show Reports" in roles
+	is_show_dashboard = "Show Dashboard" in roles
 	return success_response(data = {
 									"is_superadmin": is_superadmin,
 									"is_dealer": is_dealer,
-									"is_catalog_user": is_catalog_user
+									"is_catalog_user": is_catalog_user,
+									"is_show_orders": is_show_orders,
+									"is_show_reports": is_show_reports,
+									"is_show_dashboard": is_show_dashboard
 								})
 
 
