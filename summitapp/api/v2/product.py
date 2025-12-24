@@ -51,6 +51,10 @@ def get_list(kwargs):
                 item_value = frappe.get_value('Item', {'name': kwargs.get('item')}) #recheck use case
                 if item_value:
                     filter_args["name"] = item_value
+            if category_slug == "review":
+                review_list = frappe.get_list("RND Review", { "ss_selection": "", "if_selection": "Accepted" }, pluck="name")
+                filter_args["name"] = ["in", review_list]
+                filter_args["show_on_website"] = 1
 
             filters = get_filter_listing(user_role,filter_args, web_settings) # web settings
             type = 'brand-product' if check_brand_exist(filters) else 'product'
