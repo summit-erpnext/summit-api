@@ -78,8 +78,7 @@ class V2():
             "customer_group":["get_customer_group"],
             "item_wise_sales_history":["get_item_wise_sales_history"],
             "whatsapp_msg": ["send_otp_whatsapp"],
-            "promotional_scheme": ["get_promotional_scheme", "get_promotional_scheme_items"],
-            "rnd_review": ["get_list", "update_doc"]
+            "promotional_scheme": ["get_promotional_scheme", "get_promotional_scheme_items"]
         }
 
     def class_map(self, kwargs):
