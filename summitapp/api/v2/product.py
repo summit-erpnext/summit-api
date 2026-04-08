@@ -51,7 +51,7 @@ def get_list(kwargs):
                 item_value = frappe.get_value('Item', {'name': kwargs.get('item')}) #recheck use case
                 if item_value:
                     filter_args["name"] = item_value
-            if category_slug == "review":
+            if "review" in category_slug:
                 review_list = frappe.get_list("RND Review", { "ss_selection": "", "if_selection": "Accepted" }, pluck="name")
                 filter_args["name"] = ["in", review_list]
                 filter_args["show_on_website"] = 1
