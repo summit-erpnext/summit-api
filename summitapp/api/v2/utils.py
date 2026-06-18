@@ -742,13 +742,14 @@ def get_item_images(item_code):
         order_by="idx asc"
     )
     
+    # Process each record to get the appropriate image
     child_images = []
     for img in child_image_docs:
-        image_path = img.upload_image
-        if image_path:
-            base64_image = convert_image_to_base64(image_path)
-            if base64_image:
-                child_images.append(base64_image)
+        # Use large_size_image if present, otherwise fall back to upload_image
+        image = img.upload_image
+        if image:
+            child_images.append(image)
+    
     return child_images
 
 def convert_image_to_base64(image_path):
