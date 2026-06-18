@@ -134,6 +134,8 @@ def get_item_field_values(currency, item, customer_id, url_type, field_names,loy
             'brand_video_url': lambda: {'brand_video_url': frappe.get_value('Brand', item.get('brand'), ['brand_video_link']) or None},
             'size_chart': lambda: {'size_chart': frappe.get_value('Size Chart', item.get('size_chart'), 'chart')},
             'slide_img': lambda: {'slide_img': get_item_images(item.get("name"))},
+            'image': lambda:{'image': convert_image_to_base64(item.get("image"))},
+            'custom_item_image':  lambda:{'image': convert_image_to_base64(item.get("custom_item_image"))},
             'features': lambda: {'features': get_features(item.key_features) if item.key_features else []},
             'why_to_buy': lambda: {'why_to_buy': frappe.db.get_value('Why To Buy', item.get("select_why_to_buy"), "name1")},
             'prod_specifications': lambda: {'prod_specifications': get_specifications(item)},
@@ -727,6 +729,10 @@ def get_home_page(kwargs):
         return error_response(str(e))   
 
 
+import base64
+import os
+import frappe
+
 def get_item_images(item_code):
     # Get all Item Images records for the parent item
     child_image_docs = frappe.get_all(
@@ -736,15 +742,52 @@ def get_item_images(item_code):
         order_by="idx asc"
     )
     
-    # Process each record to get the appropriate image
     child_images = []
     for img in child_image_docs:
-        # Use large_size_image if present, otherwise fall back to upload_image
-        image = img.upload_image
-        if image:
-            child_images.append(image)
-    
+        image_path = img.upload_image
+        if image_path:
+            base64_image = convert_image_to_base64(image_path)
+            if base64_image:
+                child_images.append(base64_image)
     return child_images
+
+def convert_image_to_base64(image_path):
+    """
+    Convert a Frappe file path to a base64 data URI.
+    Handles both /files/ paths and /private/files/ paths.
+    """
+    try:
+        # Determine the absolute path on disk
+        if image_path.startswith("/files/"):
+            abs_path = frappe.get_site_path("public", image_path.lstrip("/"))
+        elif image_path.startswith("/private/files/"):
+            abs_path = frappe.get_site_path(image_path.lstrip("/"))
+        else:
+            # Fallback: try treating as relative to site public folder
+            abs_path = frappe.get_site_path("public", image_path.lstrip("/"))
+        if not os.path.exists(abs_path):
+            frappe.logger('product').warning(f"Image file not found: {abs_path}")
+            return None
+
+        # Detect MIME type from extension
+        ext = os.path.splitext(abs_path)[1].lower()
+        mime_types = {
+            ".jpg":  "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png":  "image/png",
+            ".gif":  "image/gif",
+            ".webp": "image/webp",
+            ".svg":  "image/svg+xml",
+        }
+        mime_type = mime_types.get(ext, "image/jpeg")
+        # Read and encode the file
+        with open(abs_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("utf-8")
+        return f"data:{mime_type};base64,{encoded}"
+
+    except Exception:
+        frappe.logger('product').exception(f"Error converting image to base64: {image_path}")
+        return None
 
 
 def get_variant_attributes(item):
