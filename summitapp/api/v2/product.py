@@ -878,7 +878,8 @@ def product_search(kwargs):
         filters = { "disabled": 0},
         or_filters=[
             {"name": search_value}, 
-            {"bom_factory_code": search_value}  
+            {"bom_factory_code": search_value},
+            {"market_design_name": search_value} 
         ],
         fields=["name", "category", "slug"]
     )
