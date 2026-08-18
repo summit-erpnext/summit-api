@@ -469,6 +469,8 @@ def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, 
             order_by = "creation desc"
         elif sort_by == "sequence":
             order_by = "bom_factory_code asc"
+        elif sort_by == "weight_range":
+            order_by = "weight_per_unit asc"
     else:
         order_by = order_by
     data = frappe.get_list('Item',
