@@ -200,21 +200,24 @@ def build_filters(base_filters: Dict[str, Any], filter_list: Optional[str]) -> D
     return filters
 
 
-def build_prev_next_items(
-    item_slug: str, kwargs: Dict[str, Any], item_category: str
-) -> Tuple[Optional[str], Optional[str]]:
-    """
-    Compute previous and next slugs for given item based on filters and sort order.
-    """
-    # Extract sorting info
+def build_prev_next_items(item_slug: str, kwargs: Dict[str, Any], item_category: str):
     sort_by = kwargs.get("sort_by") or "creation"
-    order_by = None  # decided inside get_list_data
+    order_by = None  
 
-    # Base filters
+    page = int(kwargs.get("page") or 1)
+    offset = int(kwargs.get("offset") or 1)
+
+    # If UI does not send limit, assume offset is absolute index
+    limit = kwargs.get("limit")
+    if limit:
+        limit = int(limit)
+        absolute_index = (page - 1) * limit + (offset - 1)
+    else:
+        absolute_index = offset - 1   # treat offset as absolute index
+
     base_filters = {"category": item_category, "show_on_website": 1, "disabled": 0}
     filters = build_filters(base_filters, kwargs.get("filter"))
 
-    # Fetch all items for navigation
     total_count, all_items = get_list_data(
         kwargs=kwargs,
         order_by=order_by,
@@ -222,22 +225,20 @@ def build_prev_next_items(
         filters=filters,
         price_range=None,
         global_items=None,
-        page_no=None,  # fetch all for prev/next
+        page_no=None,
         vehicle_filters=None,
-        limit=0,  # 0 means no limit
+        limit=0,
     )
 
-    # Find current index
-    current_index = next((i for i, d in enumerate(all_items) if d["slug"] == item_slug), None)
-
     prev_slug, next_slug = None, None
-    if current_index is not None:
-        if current_index > 0:
-            prev_slug = all_items[current_index - 1]["slug"]
-        if current_index < len(all_items) - 1:
-            next_slug = all_items[current_index + 1]["slug"]
+    if absolute_index < len(all_items):
+        if absolute_index > 0:
+            prev_slug = all_items[absolute_index - 1]["slug"]
+        if absolute_index < len(all_items) - 1:
+            next_slug = all_items[absolute_index + 1]["slug"]
 
     return prev_slug, next_slug
+
 
 
 def get_thumbnail_images(translated_item_fields: Dict[str, Any]) -> List[Dict[str, Any]]:
