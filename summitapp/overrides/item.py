@@ -65,6 +65,8 @@ def set_custom_attributes(doc):
 
 
 def validate_bom_factory_code(self):
+	if not (self.bom_factory_code or "").strip():
+		return
 	is_bom_code_exists = frappe.get_list(self.doctype, {"bom_factory_code": self.bom_factory_code, "name": ["!=", self.name]})
 	if is_bom_code_exists:
 		frappe.throw(_(f"BOM Factory Code {self.bom_factory_code} already exists"))
