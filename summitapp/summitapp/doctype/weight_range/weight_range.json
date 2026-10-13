@@ -16,14 +16,14 @@
   },
   {
    "fieldname": "from_range",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "From range",
    "reqd": 1
   },
   {
    "fieldname": "to_range",
-   "fieldtype": "Int",
+   "fieldtype": "Float",
    "in_list_view": 1,
    "label": "To Range",
    "reqd": 1
@@ -31,7 +31,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-02-17 18:13:02.203045",
+ "modified": "2026-10-13 16:26:24.034039",
  "modified_by": "Administrator",
  "module": "SummitApp",
  "name": "Weight Range",
