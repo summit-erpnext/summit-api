@@ -24,6 +24,7 @@ def validate(self, method=None):
 	update_image(self)
 	validate_category_lvl_4(self)
 	validate_attribute_value(self)
+	validate_bom_factory_code(self)
 
 
 def add_model_no(self):
@@ -61,6 +62,13 @@ def set_custom_attributes(doc):
     doc.custom_colour = colour
     doc.custom_size = size
     doc.custom_stone = stone
+
+
+def validate_bom_factory_code(self):
+	is_bom_code_exists = frappe.get_list(self.doctype, {"bom_factory_code": self.bom_factory_code, "name": ["!=", self.name]})
+	if is_bom_code_exists:
+		frappe.throw(_(f"BOM Factory Code {self.bom_factory_code} already exists"))
+	
 
 
 
