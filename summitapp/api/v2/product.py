@@ -81,6 +81,9 @@ def get_list(kwargs):
                 vehicle_filters = json.loads(vehicle_filters)
                 vehicle_filter_conditions = parse_vehicle_filter(vehicle_filters)
                 filters.update(vehicle_filter_conditions)
+            bom_code = (kwargs.get('bom_code') or '').strip()
+            if bom_code:
+                filters["bom_factory_code"] = ["like", f"%{escape_like(bom_code)}%"]
             debug = kwargs.get("debug_query", 0)
             count, data = get_list_data(kwargs,order_by, sort_by, filters, price_range, None, page_no, vehicle_filters,limit,or_filters=or_filters, debug=debug)
         else:
@@ -427,6 +430,11 @@ def get_top_categories(kwargs):
 		data['product_list'] = p_list
 		res.append(data)
 	return success_response(res)
+
+
+def escape_like(value: str) -> str:
+    """Escape LIKE wildcards so user input is matched literally."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def get_list_data(kwargs,order_by, sort_by, filters, price_range, global_items, page_no, vehicle_filters, limit, or_filters={}, debug=0):
